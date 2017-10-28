@@ -1,29 +1,31 @@
 {
-  project : {
+  project: {
     
-    //These first two are required
-    name : 'social',
-    version : '1.0.0',
-    author : 'iLXXIX',
+    // These first two are required
+    name: 'social',
+    version: '1.0.0',
+    author: 'iLXXIX',
     
-    //This configures your app.
-    //The package is important, it's used 
-    //for save locations, initializing mobile project files etc
-    app : {
-      name : 'social',
-      package : 'com.iLXXIX.social'
+    // This configures your app.
+    // The package is important, it's used 
+    // for save locations, initializing mobile project files etc
+    app: {
+      name: 'social',
+      package: 'com.iLXXIX.social'
     },
     
-    //This configures the build process
-    build : {
-      dependencies : {
-        luxe : '*'
+    // This configures the build process
+    build: {
+      dependencies: {
+        luxe: '*'
       }
     },
     
-    //Copies over all the assets to the output
-    files : {
-      assets : 'assets/'
+    // Copies over all the assets to the output
+    files: {
+      assets: 'assets/',
+      files: 'bin/web/ => ../../docs/',
+      assets_to_docs: 'assets/ => ../../docs/assets'
     }
   }
 }
