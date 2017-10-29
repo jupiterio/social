@@ -2758,9 +2758,6 @@ entities_Bubble.prototype = $extend(luxe_Sprite.prototype,{
 		difference_w = 0;
 		difference__construct = false;
 		var distance = Math.sqrt(difference_x * difference_x + difference_y * difference_y);
-		if(this.get_name() == "Profile") {
-			haxe_Log.trace(distance,{ fileName : "Bubble.hx", lineNumber : 36, className : "entities.Bubble", methodName : "onmousemove"});
-		}
 		var _this = this.size;
 		var _this1 = this.size;
 		var _y1 = 48 + Math.max(10 - distance / 4,0);
@@ -2825,53 +2822,12 @@ entities_Bubble.prototype = $extend(luxe_Sprite.prototype,{
 		difference__construct = false;
 		var distance = Math.sqrt(difference_x * difference_x + difference_y * difference_y);
 		if(distance < 20) {
+			this.pressed = true;
 			this.color.tween(0.2,{ a : 1});
 		}
 	}
 	,onmouseup: function(event) {
-		var difference_z;
-		var difference_y;
-		var difference_x;
-		var difference_w;
-		var difference_listen_z;
-		var difference_listen_y;
-		var difference_listen_x;
-		var difference_ignore_listeners;
-		var difference__construct;
-		var a = this.get_pos();
-		var b = event.pos;
-		var _x = a.x - b.x;
-		var _y = a.y - b.y;
-		var _z = a.z - b.z;
-		difference_x = 0;
-		difference_y = 0;
-		difference_z = 0;
-		difference_w = 0;
-		difference_ignore_listeners = false;
-		difference__construct = false;
-		difference__construct = true;
-		difference_x = _x;
-		if(!difference__construct) {
-			if(difference_listen_x != null && !difference_ignore_listeners) {
-				difference_listen_x(_x);
-			}
-		}
-		difference_y = _y;
-		if(!difference__construct) {
-			if(difference_listen_y != null && !difference_ignore_listeners) {
-				difference_listen_y(_y);
-			}
-		}
-		difference_z = _z;
-		if(!difference__construct) {
-			if(difference_listen_z != null && !difference_ignore_listeners) {
-				difference_listen_z(_z);
-			}
-		}
-		difference_w = 0;
-		difference__construct = false;
-		var distance = Math.sqrt(difference_x * difference_x + difference_y * difference_y);
-		if(distance < 20) {
+		if(this.pressed) {
 			this.onclicked(event);
 			this.color.tween(0.2,{ a : 0.75});
 		}

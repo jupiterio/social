@@ -15,6 +15,7 @@ typedef BubbleOptions = {
 class Bubble extends Sprite {
     
     var onclicked : MouseEvent -> Void;
+    var pressed : Bool;
     
     override function init() {
         texture = Luxe.resources.texture("assets/ui/bubble.png");
@@ -33,7 +34,6 @@ class Bubble extends Sprite {
     override function onmousemove(event:MouseEvent) {
         var difference = Vector.Subtract(pos, event.pos);
         var distance = Math.sqrt(difference.x*difference.x + difference.y*difference.y);
-        if(name == "Profile") trace(distance);
         
         size.x = size.y = 48 + Math.max(10 - distance/4, 0);
     }
@@ -43,15 +43,13 @@ class Bubble extends Sprite {
         var distance = Math.sqrt(difference.x*difference.x + difference.y*difference.y);
         
         if (distance < 20) {
+            pressed = true;
             color.tween(0.2, {a: 1});
         }
     }
     
     override function onmouseup(event:MouseEvent) {
-        var difference = Vector.Subtract(pos, event.pos);
-        var distance = Math.sqrt(difference.x*difference.x + difference.y*difference.y);
-        
-        if (distance < 20) {
+        if (pressed) {
             onclicked(event);
             color.tween(0.2, {a: 0.75});
         }
