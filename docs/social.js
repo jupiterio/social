@@ -2830,6 +2830,7 @@ entities_Bubble.prototype = $extend(luxe_Sprite.prototype,{
 		if(this.pressed) {
 			this.onclicked(event);
 			this.color.tween(0.2,{ a : 0.75});
+			this.pressed = false;
 		}
 	}
 	,ondestroy: function() {

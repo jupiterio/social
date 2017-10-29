@@ -52,6 +52,7 @@ class Bubble extends Sprite {
         if (pressed) {
             onclicked(event);
             color.tween(0.2, {a: 0.75});
+            pressed = false;
         }
     }
     
