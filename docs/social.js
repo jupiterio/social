@@ -2340,9 +2340,13 @@ Main.prototype = $extend(luxe_Game.prototype,{
 		autocanvas.auto_listen();
 		Main.canvas = autocanvas;
 		Main.focus = new mint_focus_Focus(Main.canvas);
-		this.profileBubble = new entities_Bubble({ parent : Main.canvas, name : "Profile", x : 10, y : 10, onclicked : function(_1,_2) {
-			haxe_Log.trace("profile clicked!",{ fileName : "Main.hx", lineNumber : 76, className : "Main", methodName : "assets_loaded"});
-		}});
+		this.bubbles = new entities_BubbleMenu({ parent : Main.canvas, name : "Toolbar", x : 10, y : 10, w : 58, h : 180},[{ name : "Profile", onclicked : function(_1,_2) {
+			haxe_Log.trace("Profile clicked!",{ fileName : "Main.hx", lineNumber : 78, className : "Main", methodName : "assets_loaded"});
+		}},{ name : "Map", onclicked : function(_3,_4) {
+			haxe_Log.trace("Map clicked!",{ fileName : "Main.hx", lineNumber : 82, className : "Main", methodName : "assets_loaded"});
+		}},{ name : "LogOut", onclicked : function(_5,_6) {
+			haxe_Log.trace("LogOut clicked!",{ fileName : "Main.hx", lineNumber : 86, className : "Main", methodName : "assets_loaded"});
+		}}]);
 	}
 	,onkeyup: function(event) {
 		if(event.keycode == 27) {
@@ -2740,17 +2744,17 @@ var entities_Bubble = function(options) {
 			pressed = false;
 		}
 	});
+	var originalx = this.x;
+	var originaly = this.y;
 	this.onmouseenter.listen(function(_2,_3) {
-		var tmp = _gthis.set_h(58);
-		_gthis.set_w(tmp);
+		luxe_tween_Actuate.tween(_gthis,0.1,{ w : 58, h : 58, x : originalx - 5, y : originaly - 5},true);
 	});
 	this.onmouseleave.listen(function(_4,_5) {
 		if(pressed) {
 			visual.color.tween(0.2,{ a : 0.85});
 			pressed = false;
 		}
-		var tmp1 = _gthis.set_h(48);
-		_gthis.set_w(tmp1);
+		luxe_tween_Actuate.tween(_gthis,0.1,{ w : 48, h : 48, x : originalx, y : originaly},true);
 	});
 };
 $hxClasses["entities.Bubble"] = entities_Bubble;
@@ -2758,6 +2762,62 @@ entities_Bubble.__name__ = ["entities","Bubble"];
 entities_Bubble.__super__ = mint_Image;
 entities_Bubble.prototype = $extend(mint_Image.prototype,{
 	__class__: entities_Bubble
+});
+var mint_Panel = function(_options) {
+	this.options = _options;
+	if(this.options.name == null) {
+		var tmp = mint_types_Helper.uniqueid();
+		this.options.name = "panel." + tmp;
+	}
+	mint_Control.call(this,this.options);
+	this.renderer = this.rendering.get(mint_Panel,this);
+	var _idx = 0;
+	var _count = this.oncreate.listeners.length;
+	while(_idx < _count) {
+		if(this.oncreate != null) {
+			var fn = this.oncreate.listeners[_idx];
+			if(fn != null) {
+				fn();
+			}
+		}
+		++_idx;
+	}
+	if(this.oncreate != null) {
+		while(_count > 0) {
+			var fn1 = this.oncreate.listeners[_count - 1];
+			if(fn1 == null) {
+				this.oncreate.listeners.splice(_count - 1,1);
+			}
+			--_count;
+		}
+	}
+};
+$hxClasses["mint.Panel"] = mint_Panel;
+mint_Panel.__name__ = ["mint","Panel"];
+mint_Panel.__super__ = mint_Control;
+mint_Panel.prototype = $extend(mint_Control.prototype,{
+	__class__: mint_Panel
+});
+var entities_BubbleMenu = function(options,bubblesOp) {
+	options.w = 58;
+	mint_Panel.call(this,options);
+	this.bubbles = [];
+	var _g = 0;
+	while(_g < bubblesOp.length) {
+		var bubbleOp = bubblesOp[_g];
+		++_g;
+		bubbleOp.parent = this;
+		bubbleOp.x = 5;
+		bubbleOp.y = 5 + 60 * this.bubbles.length;
+		var bubble = new entities_Bubble(bubbleOp);
+		this.bubbles.push(bubble);
+	}
+};
+$hxClasses["entities.BubbleMenu"] = entities_BubbleMenu;
+entities_BubbleMenu.__name__ = ["entities","BubbleMenu"];
+entities_BubbleMenu.__super__ = mint_Panel;
+entities_BubbleMenu.prototype = $extend(mint_Panel.prototype,{
+	__class__: entities_BubbleMenu
 });
 var haxe_StackItem = $hxClasses["haxe.StackItem"] = { __ename__ : ["haxe","StackItem"], __constructs__ : ["CFunction","Module","FilePos","Method","LocalFunction"] };
 haxe_StackItem.CFunction = ["CFunction",0];
@@ -20172,41 +20232,6 @@ mint_List.prototype = $extend(mint_Control.prototype,{
 		}
 	}
 	,__class__: mint_List
-});
-var mint_Panel = function(_options) {
-	this.options = _options;
-	if(this.options.name == null) {
-		var tmp = mint_types_Helper.uniqueid();
-		this.options.name = "panel." + tmp;
-	}
-	mint_Control.call(this,this.options);
-	this.renderer = this.rendering.get(mint_Panel,this);
-	var _idx = 0;
-	var _count = this.oncreate.listeners.length;
-	while(_idx < _count) {
-		if(this.oncreate != null) {
-			var fn = this.oncreate.listeners[_idx];
-			if(fn != null) {
-				fn();
-			}
-		}
-		++_idx;
-	}
-	if(this.oncreate != null) {
-		while(_count > 0) {
-			var fn1 = this.oncreate.listeners[_count - 1];
-			if(fn1 == null) {
-				this.oncreate.listeners.splice(_count - 1,1);
-			}
-			--_count;
-		}
-	}
-};
-$hxClasses["mint.Panel"] = mint_Panel;
-mint_Panel.__name__ = ["mint","Panel"];
-mint_Panel.__super__ = mint_Control;
-mint_Panel.prototype = $extend(mint_Control.prototype,{
-	__class__: mint_Panel
 });
 var mint_Progress = function(_options) {
 	this.progress = 0.5;
