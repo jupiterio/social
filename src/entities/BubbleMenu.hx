@@ -1,38 +1,32 @@
 package entities;
 
-import luxe.Entity;
-import luxe.Input;
-
 import entities.Bubble;
+import mint.Panel;
 
-typedef BubbleMenuOptions = {
-    name: String,
-    icon: phoenix.Texture,
-    clicked: MouseEvent -> Void
-};
+typedef BubbleMenuOptions = PanelOptions
+typedef BubbleOptionsM = {
+    > BubbleOptions,
+    ?parent: mint.Control
+}
 
-class BubbleMenu extends Entity {
+class BubbleMenu extends Panel {
     
     public var bubbles : Array<Bubble>;
     
-    override function init() { }
-    
-    public function startup(bubblesOp : Array<BubbleMenuOptions>) {
+    override public function new(options : BubbleMenuOptions, bubblesOp : Array<BubbleOptionsM>) {
+        options.w = 58;
+        super(options);
+        
         bubbles = [];
         for (bubbleOp in bubblesOp) {
-            var bubble = new Bubble({
-                name: bubbleOp.name,
-                pos: new luxe.Vector(pos.x, pos.y + (60 * bubbles.length))
-            });
+            bubbleOp.parent = this;
+            bubbleOp.x = 5;
+            bubbleOp.y = 5 + 60 * bubbles.length;
             
-            bubble.startup(bubbleOp);
+            var bubble = new Bubble(bubbleOp);
             
             bubbles.push(bubble);
         }
-    }
-
-    override function update(dt:Float) {
-        
     }
 
 }

@@ -17,7 +17,8 @@
     // This configures the build process
     build: {
       dependencies: {
-        luxe: '*'
+        luxe: '*',
+        mint: '*'
       }
     },
     

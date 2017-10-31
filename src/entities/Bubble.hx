@@ -1,59 +1,61 @@
 package entities;
 
-import luxe.Input;
-
-import luxe.Vector;
-import luxe.Color;
-
-import luxe.Sprite;
+import mint.Control;
+import mint.Image;
 
 typedef BubbleOptions = {
-    icon: phoenix.Texture,
-    clicked: MouseEvent -> Void
+    > ImageOptions,
+    
+    ?path: String,
+    
+    ?icon: phoenix.Texture,
+    onclicked: MouseSignal,
 };
 
-class Bubble extends Sprite {
+class Bubble extends Image {
     
-    var onclicked : MouseEvent -> Void;
-    var pressed : Bool;
+    var onclicked : MouseSignal;
     
-    override function init() {
-        texture = Luxe.resources.texture("assets/ui/bubble.png");
-        size = new Vector(48, 48);
-        color = new Color(1, 1, 1, 0.75);
-    }
-    
-    public function startup(options:BubbleOptions) {
-        onclicked = options.clicked;
-    }
-    
-    override function update(dt:Float) {
+    override public function new(options : BubbleOptions) {
+        options.path = "assets/ui/bubble.png";
+        options.w = options.h = 48;
+        options.options = { color: new luxe.Color(1,1,1,0.85) };
         
-    }
-    
-    override function onmousemove(event:MouseEvent) {
-        var difference = Vector.Subtract(pos, event.pos);
-        var distance = Math.sqrt(difference.x*difference.x + difference.y*difference.y);
+        super(options);
         
-        size.x = size.y = 48 + Math.max(10 - distance/4, 0);
-    }
-    
-    override function onmousedown(event:MouseEvent) {
-        var difference = Vector.Subtract(pos, event.pos);
-        var distance = Math.sqrt(difference.x*difference.x + difference.y*difference.y);
+        mouse_input = true;
+        onclicked = options.onclicked;
         
-        if (distance < 20) {
+        var visual = (cast (renderer, mint.render.luxe.Image)).visual;
+        var pressed = false;
+        
+        onmousedown.listen(function(_,_) {
+            visual.color.tween(0.2,{a:1});
             pressed = true;
-            color.tween(0.2, {a: 1});
-        }
-    }
-    
-    override function onmouseup(event:MouseEvent) {
-        if (pressed) {
-            onclicked(event);
-            color.tween(0.2, {a: 0.75});
-            pressed = false;
-        }
+        });
+        
+        onmouseup.listen(function(a,b) {
+            if (pressed) {
+                visual.color.tween(0.2,{a:0.85});
+                onclicked(a,b);
+                pressed = false;
+            }
+        });
+        
+        var originalx = x;
+        var originaly = y;
+        
+        onmouseenter.listen(function(_,_) {
+            luxe.tween.Actuate.tween(this, 0.1, {w: 58, h:58, x: originalx - 5, y: originaly - 5}, true);
+        });
+        
+        onmouseleave.listen(function(_,_) {
+            if (pressed) {
+                visual.color.tween(0.2,{a:0.85});
+                pressed = false;
+            }
+            luxe.tween.Actuate.tween(this, 0.1, {w: 48, h:48, x: originalx, y: originaly}, true);
+        });
     }
     
 }

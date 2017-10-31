@@ -7,6 +7,1933 @@ function $extend(from, fields) {
 	if( fields.toString !== Object.prototype.toString ) proto.toString = fields.toString;
 	return proto;
 }
+var mint_Control = function(_options,_emit_oncreate) {
+	if(_emit_oncreate == null) {
+		_emit_oncreate = false;
+	}
+	this.ignore_spatial = false;
+	this.updating = false;
+	this.update_vis_state = true;
+	this.vis_state = true;
+	this.depth_offset = 0;
+	this.depth = 1.0;
+	this.visible = true;
+	this.destroyed = false;
+	this.renderable = false;
+	this.key_input = false;
+	this.mouse_input = false;
+	this.ishovered = false;
+	this.iscaptured = false;
+	this.ismarked = false;
+	this.isfocused = false;
+	this.h_max = 0;
+	this.w_max = 0;
+	this.h_min = 0;
+	this.w_min = 0;
+	this.name = "control";
+	this._options_ = _options;
+	if(this._options_.options == null) {
+		this._options_.options = { };
+	}
+	this.oncreate = new mint_core_Signal();
+	this.onrender = new mint_core_Signal();
+	this.onrenamed = new mint_core_Signal();
+	this.onbounds = new mint_core_Signal();
+	this.ondestroy = new mint_core_Signal();
+	this.onvisible = new mint_core_Signal();
+	this.ondepth = new mint_core_Signal();
+	this.onclip = new mint_core_Signal();
+	this.onchildadd = new mint_core_Signal();
+	this.onchildremove = new mint_core_Signal();
+	this.onmousedown = new mint_core_Signal();
+	this.onmouseup = new mint_core_Signal();
+	this.onmousemove = new mint_core_Signal();
+	this.onmousewheel = new mint_core_Signal();
+	this.onmouseleave = new mint_core_Signal();
+	this.onmouseenter = new mint_core_Signal();
+	this.onkeydown = new mint_core_Signal();
+	this.onkeyup = new mint_core_Signal();
+	this.ontextinput = new mint_core_Signal();
+	this.onfocused = new mint_core_Signal();
+	this.onmarked = new mint_core_Signal();
+	this.oncaptured = new mint_core_Signal();
+	this.children = [];
+	if(this._options_.name == null) {
+		var tmp = mint_types_Helper.uniqueid();
+		this._options_.name = "control." + tmp;
+	}
+	this.set_name(this._options_.name);
+	this.user = this._options_.user;
+	if(this._options_.depth == null) {
+		this._options_.depth = 0;
+	}
+	this.depth_offset = this._options_.depth;
+	if(this._options_.w_min == null) {
+		this._options_.w_min = 0;
+	}
+	this.set_w_min(this._options_.w_min);
+	if(this._options_.h_min == null) {
+		this._options_.h_min = 0;
+	}
+	this.set_h_min(this._options_.h_min);
+	if(this._options_.w_max == null) {
+		this._options_.w_max = 0;
+	}
+	this.set_w_max(this._options_.w_max);
+	if(this._options_.h_max == null) {
+		this._options_.h_max = 0;
+	}
+	this.set_h_max(this._options_.h_max);
+	this.ignore_spatial = true;
+	if(this._options_.x == null) {
+		this._options_.x = 0;
+	}
+	this.set_x(this._options_.x);
+	if(this._options_.y == null) {
+		this._options_.y = 0;
+	}
+	this.set_y(this._options_.y);
+	if(this._options_.w == null) {
+		this._options_.w = 32;
+	}
+	this.set_w(this._options_.w);
+	if(this._options_.h == null) {
+		this._options_.h = 32;
+	}
+	this.set_h(this._options_.h);
+	this.set_x_local(this.x);
+	this.set_y_local(this.y);
+	this.ignore_spatial = false;
+	if(this._options_.mouse_input == null) {
+		this._options_.mouse_input = false;
+	}
+	this.mouse_input = this._options_.mouse_input;
+	if(this._options_.key_input == null) {
+		this._options_.key_input = false;
+	}
+	this.key_input = this._options_.key_input;
+	this.children_bounds = { x : 0, y : 0, w : 0, h : 0, x_local : 0, y_local : 0};
+	if(this._options_.parent != null) {
+		this.canvas = this._options_.parent.canvas;
+		this._options_.parent.add(this);
+	} else if(!js_Boot.__instanceof(this,mint_Canvas) && this.canvas == null) {
+		throw new js__$Boot_HaxeError("Control without a canvas " + Std.string(this._options_));
+	}
+	this.closest_to_canvas = this.find_top_parent();
+	if(_options.rendering == null) {
+		_options.rendering = this.canvas.rendering;
+	}
+	this.rendering = _options.rendering;
+	if(this._options_.renderable != null) {
+		this.renderable = this._options_.renderable;
+	} else if(this.canvas != null) {
+		this.renderable = this.canvas.renderable;
+	}
+	if(this._options_.visible != null) {
+		this.set_visible(this._options_.visible);
+	} else if(this._options_.internal_visible != null) {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		this.update_vis_state = false;
+		this.set_visible(this._options_.internal_visible);
+		this.update_vis_state = true;
+	} else if(this.parent != null) {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		this.update_vis_state = false;
+		this.set_visible(this.parent.visible);
+		this.update_vis_state = true;
+	}
+	if(_emit_oncreate) {
+		var _idx = 0;
+		var _count = this.oncreate.listeners.length;
+		while(_idx < _count) {
+			if(this.oncreate != null) {
+				var fn = this.oncreate.listeners[_idx];
+				if(fn != null) {
+					fn();
+				}
+			}
+			++_idx;
+		}
+		if(this.oncreate != null) {
+			while(_count > 0) {
+				var fn1 = this.oncreate.listeners[_count - 1];
+				if(fn1 == null) {
+					this.oncreate.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+	}
+};
+$hxClasses["mint.Control"] = mint_Control;
+mint_Control.__name__ = ["mint","Control"];
+mint_Control.prototype = {
+	children_at_point: function(_x,_y,_into) {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		if(_into == null) {
+			_into = [];
+		}
+		var _result = _into;
+		if(this.children.length == 0) {
+			return _result;
+		}
+		var _g = 0;
+		var _g1 = this.children;
+		while(_g < _g1.length) {
+			var _child = _g1[_g];
+			++_g;
+			if(_child.contains(_x,_y) && _child.visible) {
+				_result.push(_child);
+				if(_child.children.length > 0) {
+					return _child.children_at_point(_x,_y,_result);
+				}
+			}
+		}
+		_result.sort(function(a,b) {
+			if(a.depth == b.depth) {
+				return 0;
+			}
+			if(a.depth < b.depth) {
+				return -1;
+			}
+			return 1;
+		});
+		return _result;
+	}
+	,topmost_child_at_point: function(_x,_y) {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		if(this.children.length == 0) {
+			return this;
+		}
+		var highest_child = this;
+		var highest_depth = 0.0;
+		var _g = 0;
+		var _g1 = this.children;
+		while(_g < _g1.length) {
+			var _child = _g1[_g];
+			++_g;
+			if(_child.visible && _child.contains(_x,_y)) {
+				if(_child.depth >= highest_depth) {
+					highest_child = _child;
+					highest_depth = _child.depth;
+				}
+			}
+		}
+		if(highest_child != this && highest_child.children.length != 0) {
+			return highest_child.topmost_child_at_point(_x,_y);
+		} else {
+			return highest_child;
+		}
+	}
+	,contains: function(_x,_y) {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		var inside = mint_types_Helper.in_rect(_x,_y,this.x,this.y,this.w,this.h);
+		if(this.clip_with == null) {
+			return inside;
+		}
+		if(inside) {
+			return this.clip_with.contains(_x,_y);
+		} else {
+			return false;
+		}
+	}
+	,onclipchanged: function() {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		if(this.clip_with != null) {
+			var _idx = 0;
+			var _count = this.onclip.listeners.length;
+			while(_idx < _count) {
+				if(this.onclip != null) {
+					var fn = this.onclip.listeners[_idx];
+					if(fn != null) {
+						fn(false,this.clip_with.x,this.clip_with.y,this.clip_with.w,this.clip_with.h);
+					}
+				}
+				++_idx;
+			}
+			if(this.onclip != null) {
+				while(_count > 0) {
+					var fn1 = this.onclip.listeners[_count - 1];
+					if(fn1 == null) {
+						this.onclip.listeners.splice(_count - 1,1);
+					}
+					--_count;
+				}
+			}
+		}
+	}
+	,set_clip_with: function(_other) {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		if(this.clip_with != null) {
+			this.clip_with.onbounds.remove($bind(this,this.onclipchanged));
+		}
+		this.clip_with = _other;
+		if(this.clip_with != null) {
+			this.clip_with.onbounds.listen($bind(this,this.onclipchanged));
+			var _g = 0;
+			var _g1 = this.children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				child.set_clip_with(this.clip_with);
+			}
+			this.onclipchanged();
+		} else {
+			var _idx = 0;
+			var _count = this.onclip.listeners.length;
+			while(_idx < _count) {
+				if(this.onclip != null) {
+					var fn = this.onclip.listeners[_idx];
+					if(fn != null) {
+						fn(true,0,0,0,0);
+					}
+				}
+				++_idx;
+			}
+			if(this.onclip != null) {
+				while(_count > 0) {
+					var fn1 = this.onclip.listeners[_count - 1];
+					if(fn1 == null) {
+						this.onclip.listeners.splice(_count - 1,1);
+					}
+					--_count;
+				}
+			}
+		}
+		return this.clip_with;
+	}
+	,set_visible_only: function(_visible) {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		this.update_vis_state = false;
+		this.set_visible(_visible);
+		this.update_vis_state = true;
+	}
+	,set_visible: function(_visible) {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		this.visible = _visible;
+		if(this.update_vis_state) {
+			this.vis_state = _visible;
+		}
+		var _idx = 0;
+		var _count = this.onvisible.listeners.length;
+		while(_idx < _count) {
+			if(this.onvisible != null) {
+				var fn = this.onvisible.listeners[_idx];
+				if(fn != null) {
+					fn(this.visible);
+				}
+			}
+			++_idx;
+		}
+		if(this.onvisible != null) {
+			while(_count > 0) {
+				var fn1 = this.onvisible.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onvisible.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+		var _g = 0;
+		var _g1 = this.children;
+		while(_g < _g1.length) {
+			var _child = _g1[_g];
+			++_g;
+			if(_child.destroyed != false) {
+				throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + _child.name + " was already destroyed but is being interacted with") + " )")));
+			}
+			_child.update_vis_state = false;
+			_child.set_visible(this.visible && _child.vis_state);
+			_child.update_vis_state = true;
+		}
+		this.canvas.focus_invalid = true;
+		return this.visible;
+	}
+	,find_top_parent: function(_from) {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		var _target = _from == null ? this : _from;
+		if(_target == null || _target.parent == null) {
+			return null;
+		}
+		if(js_Boot.__instanceof(_target.parent,mint_Canvas)) {
+			return _target;
+		} else {
+			return this.parent.find_top_parent(this);
+		}
+	}
+	,add: function(child) {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		if(child.parent != null) {
+			child.parent.remove(child);
+		}
+		if(child.parent != this) {
+			this.children.push(child);
+			child.set_parent(this);
+			var _idx = 0;
+			var _count = this.onchildadd.listeners.length;
+			while(_idx < _count) {
+				if(this.onchildadd != null) {
+					var fn = this.onchildadd.listeners[_idx];
+					if(fn != null) {
+						fn(child);
+					}
+				}
+				++_idx;
+			}
+			if(this.onchildadd != null) {
+				while(_count > 0) {
+					var fn1 = this.onchildadd.listeners[_count - 1];
+					if(fn1 == null) {
+						this.onchildadd.listeners.splice(_count - 1,1);
+					}
+					--_count;
+				}
+			}
+		}
+		this.canvas.sync_depth();
+	}
+	,remove: function(child) {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		if(child.parent == this) {
+			HxOverrides.remove(this.children,child);
+			var _idx = 0;
+			var _count = this.onchildremove.listeners.length;
+			while(_idx < _count) {
+				if(this.onchildremove != null) {
+					var fn = this.onchildremove.listeners[_idx];
+					if(fn != null) {
+						fn(child);
+					}
+				}
+				++_idx;
+			}
+			if(this.onchildremove != null) {
+				while(_count > 0) {
+					var fn1 = this.onchildremove.listeners[_count - 1];
+					if(fn1 == null) {
+						this.onchildremove.listeners.splice(_count - 1,1);
+					}
+					--_count;
+				}
+			}
+			child.set_parent(null);
+			this.canvas.sync_depth();
+		}
+	}
+	,get_children_bounds: function() {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		if(this.children.length == 0) {
+			this.children_bounds.x = 0;
+			this.children_bounds.y = 0;
+			this.children_bounds.w = 0;
+			this.children_bounds.h = 0;
+			this.children_bounds.x_local = 0;
+			this.children_bounds.y_local = 0;
+			return this.children_bounds;
+		}
+		var _first_child = this.children[0];
+		var _current_x = _first_child.get_x_local();
+		var _current_y = _first_child.get_y_local();
+		var _current_r = _first_child.get_x_local() + _first_child.w;
+		var _current_b = _first_child.get_y_local() + _first_child.h;
+		var _real_x = _first_child.x;
+		var _real_y = _first_child.y;
+		var _g = 0;
+		var _g1 = this.children;
+		while(_g < _g1.length) {
+			var child = _g1[_g];
+			++_g;
+			_current_x = Math.min(child.get_x_local(),_current_x);
+			_current_y = Math.min(child.get_y_local(),_current_y);
+			_current_r = Math.max(_current_r,child.get_x_local() + child.w);
+			_current_b = Math.max(_current_b,child.get_y_local() + child.h);
+			_real_x = Math.min(child.x,_real_x);
+			_real_y = Math.min(child.y,_real_y);
+		}
+		this.children_bounds.x_local = _current_x;
+		this.children_bounds.y_local = _current_y;
+		this.children_bounds.x = _real_x;
+		this.children_bounds.y = _real_y;
+		this.children_bounds.w = _current_r;
+		this.children_bounds.h = _current_b;
+		return this.children_bounds;
+	}
+	,render: function() {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		if(this.renderable) {
+			var _idx = 0;
+			var _count = this.onrender.listeners.length;
+			while(_idx < _count) {
+				if(this.onrender != null) {
+					var fn = this.onrender.listeners[_idx];
+					if(fn != null) {
+						fn();
+					}
+				}
+				++_idx;
+			}
+			if(this.onrender != null) {
+				while(_count > 0) {
+					var fn1 = this.onrender.listeners[_count - 1];
+					if(fn1 == null) {
+						this.onrender.listeners.splice(_count - 1,1);
+					}
+					--_count;
+				}
+			}
+		}
+		var _g = 0;
+		var _g1 = this.children;
+		while(_g < _g1.length) {
+			var child = _g1[_g];
+			++_g;
+			child.render();
+		}
+	}
+	,keyup: function(e) {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		var _idx = 0;
+		var _count = this.onkeyup.listeners.length;
+		while(_idx < _count) {
+			if(this.onkeyup != null) {
+				var fn = this.onkeyup.listeners[_idx];
+				if(fn != null) {
+					fn(e,this);
+				}
+			}
+			++_idx;
+		}
+		if(this.onkeyup != null) {
+			while(_count > 0) {
+				var fn1 = this.onkeyup.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onkeyup.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+		if(this.parent != null && this.parent != this.canvas && this.canvas != this && e.bubble) {
+			this.parent.keyup(e);
+		}
+	}
+	,keydown: function(e) {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		var _idx = 0;
+		var _count = this.onkeydown.listeners.length;
+		while(_idx < _count) {
+			if(this.onkeydown != null) {
+				var fn = this.onkeydown.listeners[_idx];
+				if(fn != null) {
+					fn(e,this);
+				}
+			}
+			++_idx;
+		}
+		if(this.onkeydown != null) {
+			while(_count > 0) {
+				var fn1 = this.onkeydown.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onkeydown.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+		if(this.parent != null && this.parent != this.canvas && this.canvas != this && e.bubble) {
+			this.parent.keydown(e);
+		}
+	}
+	,textinput: function(e) {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		var _idx = 0;
+		var _count = this.ontextinput.listeners.length;
+		while(_idx < _count) {
+			if(this.ontextinput != null) {
+				var fn = this.ontextinput.listeners[_idx];
+				if(fn != null) {
+					fn(e,this);
+				}
+			}
+			++_idx;
+		}
+		if(this.ontextinput != null) {
+			while(_count > 0) {
+				var fn1 = this.ontextinput.listeners[_count - 1];
+				if(fn1 == null) {
+					this.ontextinput.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+		if(this.parent != null && this.parent != this.canvas && this.canvas != this && e.bubble) {
+			this.parent.textinput(e);
+		}
+	}
+	,mousemove: function(e) {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		var _idx = 0;
+		var _count = this.onmousemove.listeners.length;
+		while(_idx < _count) {
+			if(this.onmousemove != null) {
+				var fn = this.onmousemove.listeners[_idx];
+				if(fn != null) {
+					fn(e,this);
+				}
+			}
+			++_idx;
+		}
+		if(this.onmousemove != null) {
+			while(_count > 0) {
+				var fn1 = this.onmousemove.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onmousemove.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+		if(this.parent != null && this.parent != this.canvas && this.canvas != this && e.bubble) {
+			this.parent.mousemove(e);
+		}
+	}
+	,mouseup: function(e) {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		var _idx = 0;
+		var _count = this.onmouseup.listeners.length;
+		while(_idx < _count) {
+			if(this.onmouseup != null) {
+				var fn = this.onmouseup.listeners[_idx];
+				if(fn != null) {
+					fn(e,this);
+				}
+			}
+			++_idx;
+		}
+		if(this.onmouseup != null) {
+			while(_count > 0) {
+				var fn1 = this.onmouseup.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onmouseup.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+		if(this.parent != null && this.parent != this.canvas && this.canvas != this && e.bubble) {
+			this.parent.mouseup(e);
+		}
+	}
+	,mousewheel: function(e) {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		var _idx = 0;
+		var _count = this.onmousewheel.listeners.length;
+		while(_idx < _count) {
+			if(this.onmousewheel != null) {
+				var fn = this.onmousewheel.listeners[_idx];
+				if(fn != null) {
+					fn(e,this);
+				}
+			}
+			++_idx;
+		}
+		if(this.onmousewheel != null) {
+			while(_count > 0) {
+				var fn1 = this.onmousewheel.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onmousewheel.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+		if(this.parent != null && this.parent != this.canvas && this.canvas != this && e.bubble) {
+			this.parent.mousewheel(e);
+		}
+	}
+	,mousedown: function(e) {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		var _idx = 0;
+		var _count = this.onmousedown.listeners.length;
+		while(_idx < _count) {
+			if(this.onmousedown != null) {
+				var fn = this.onmousedown.listeners[_idx];
+				if(fn != null) {
+					fn(e,this);
+				}
+			}
+			++_idx;
+		}
+		if(this.onmousedown != null) {
+			while(_count > 0) {
+				var fn1 = this.onmousedown.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onmousedown.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+		if(this.parent != null && this.parent != this.canvas && this.canvas != this && e.bubble) {
+			this.parent.mousedown(e);
+		}
+	}
+	,mouseenter: function(e) {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		var _idx = 0;
+		var _count = this.onmouseenter.listeners.length;
+		while(_idx < _count) {
+			if(this.onmouseenter != null) {
+				var fn = this.onmouseenter.listeners[_idx];
+				if(fn != null) {
+					fn(e,this);
+				}
+			}
+			++_idx;
+		}
+		if(this.onmouseenter != null) {
+			while(_count > 0) {
+				var fn1 = this.onmouseenter.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onmouseenter.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+		this.ishovered = true;
+	}
+	,mouseleave: function(e) {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		var _idx = 0;
+		var _count = this.onmouseleave.listeners.length;
+		while(_idx < _count) {
+			if(this.onmouseleave != null) {
+				var fn = this.onmouseleave.listeners[_idx];
+				if(fn != null) {
+					fn(e,this);
+				}
+			}
+			++_idx;
+		}
+		if(this.onmouseleave != null) {
+			while(_count > 0) {
+				var fn1 = this.onmouseleave.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onmouseleave.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+		this.ishovered = false;
+	}
+	,destroy_children: function() {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		while(this.children.length > 0) {
+			var child = this.children.shift();
+			child.destroy();
+		}
+	}
+	,destroy: function() {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("attempt to destroy control twice `" + Std.string(this) + "` (" + this.name + ")") + " )")));
+		}
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		if(this.canvas != this) {
+			if(this.canvas.get_marked() == this) {
+				this.canvas.set_marked(null);
+				var _idx = 0;
+				var _count = this.onmarked.listeners.length;
+				while(_idx < _count) {
+					if(this.onmarked != null) {
+						var fn = this.onmarked.listeners[_idx];
+						if(fn != null) {
+							fn(false);
+						}
+					}
+					++_idx;
+				}
+				if(this.onmarked != null) {
+					while(_count > 0) {
+						var fn1 = this.onmarked.listeners[_count - 1];
+						if(fn1 == null) {
+							this.onmarked.listeners.splice(_count - 1,1);
+						}
+						--_count;
+					}
+				}
+			}
+		}
+		this.unfocus();
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		if(this.canvas != this) {
+			if(this.canvas.get_captured() == this) {
+				this.canvas.set_captured(null);
+				var _idx1 = 0;
+				var _count1 = this.oncaptured.listeners.length;
+				while(_idx1 < _count1) {
+					if(this.oncaptured != null) {
+						var fn2 = this.oncaptured.listeners[_idx1];
+						if(fn2 != null) {
+							fn2(false);
+						}
+					}
+					++_idx1;
+				}
+				if(this.oncaptured != null) {
+					while(_count1 > 0) {
+						var fn3 = this.oncaptured.listeners[_count1 - 1];
+						if(fn3 == null) {
+							this.oncaptured.listeners.splice(_count1 - 1,1);
+						}
+						--_count1;
+					}
+				}
+			}
+		}
+		this.destroy_children();
+		if(this.clip_with != null) {
+			this.clip_with.onbounds.remove($bind(this,this.onclipchanged));
+		}
+		if(this.parent != null) {
+			this.parent.remove(this);
+		}
+		var _idx2 = 0;
+		var _count2 = this.ondestroy.listeners.length;
+		while(_idx2 < _count2) {
+			if(this.ondestroy != null) {
+				var fn4 = this.ondestroy.listeners[_idx2];
+				if(fn4 != null) {
+					fn4();
+				}
+			}
+			++_idx2;
+		}
+		if(this.ondestroy != null) {
+			while(_count2 > 0) {
+				var fn5 = this.ondestroy.listeners[_count2 - 1];
+				if(fn5 == null) {
+					this.ondestroy.listeners.splice(_count2 - 1,1);
+				}
+				--_count2;
+			}
+		}
+		this.user = null;
+		var _this = this.oncreate;
+		_this.listeners = null;
+		_this.listeners = [];
+		this.oncreate = null;
+		var _this1 = this.onrender;
+		_this1.listeners = null;
+		_this1.listeners = [];
+		this.onrender = null;
+		var _this2 = this.onrenamed;
+		_this2.listeners = null;
+		_this2.listeners = [];
+		this.onrenamed = null;
+		var _this3 = this.onbounds;
+		_this3.listeners = null;
+		_this3.listeners = [];
+		this.onbounds = null;
+		var _this4 = this.ondestroy;
+		_this4.listeners = null;
+		_this4.listeners = [];
+		this.ondestroy = null;
+		var _this5 = this.onvisible;
+		_this5.listeners = null;
+		_this5.listeners = [];
+		this.onvisible = null;
+		var _this6 = this.ondepth;
+		_this6.listeners = null;
+		_this6.listeners = [];
+		this.ondepth = null;
+		var _this7 = this.onclip;
+		_this7.listeners = null;
+		_this7.listeners = [];
+		this.onclip = null;
+		var _this8 = this.onchildadd;
+		_this8.listeners = null;
+		_this8.listeners = [];
+		this.onchildadd = null;
+		var _this9 = this.onchildremove;
+		_this9.listeners = null;
+		_this9.listeners = [];
+		this.onchildremove = null;
+		var _this10 = this.onmousedown;
+		_this10.listeners = null;
+		_this10.listeners = [];
+		this.onmousedown = null;
+		var _this11 = this.onmouseup;
+		_this11.listeners = null;
+		_this11.listeners = [];
+		this.onmouseup = null;
+		var _this12 = this.onmousemove;
+		_this12.listeners = null;
+		_this12.listeners = [];
+		this.onmousemove = null;
+		var _this13 = this.onmousewheel;
+		_this13.listeners = null;
+		_this13.listeners = [];
+		this.onmousewheel = null;
+		var _this14 = this.onmouseleave;
+		_this14.listeners = null;
+		_this14.listeners = [];
+		this.onmouseleave = null;
+		var _this15 = this.onmouseenter;
+		_this15.listeners = null;
+		_this15.listeners = [];
+		this.onmouseenter = null;
+		var _this16 = this.onkeydown;
+		_this16.listeners = null;
+		_this16.listeners = [];
+		this.onkeydown = null;
+		var _this17 = this.onkeyup;
+		_this17.listeners = null;
+		_this17.listeners = [];
+		this.onkeyup = null;
+		var _this18 = this.ontextinput;
+		_this18.listeners = null;
+		_this18.listeners = [];
+		this.ontextinput = null;
+		var _this19 = this.onfocused;
+		_this19.listeners = null;
+		_this19.listeners = [];
+		this.onfocused = null;
+		var _this20 = this.onmarked;
+		_this20.listeners = null;
+		_this20.listeners = [];
+		this.onmarked = null;
+		var _this21 = this.oncaptured;
+		_this21.listeners = null;
+		_this21.listeners = [];
+		this.oncaptured = null;
+		this.destroyed = true;
+	}
+	,update: function(dt) {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+	}
+	,focus: function() {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		if(this.canvas == this) {
+			return;
+		}
+		var _pre = this.canvas.get_focused() == this;
+		this.canvas.set_focused(this);
+		if(!_pre) {
+			var _idx = 0;
+			var _count = this.onfocused.listeners.length;
+			while(_idx < _count) {
+				if(this.onfocused != null) {
+					var fn = this.onfocused.listeners[_idx];
+					if(fn != null) {
+						fn(true);
+					}
+				}
+				++_idx;
+			}
+			if(this.onfocused != null) {
+				while(_count > 0) {
+					var fn1 = this.onfocused.listeners[_count - 1];
+					if(fn1 == null) {
+						this.onfocused.listeners.splice(_count - 1,1);
+					}
+					--_count;
+				}
+			}
+		}
+	}
+	,unfocus: function() {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		if(this.canvas == this) {
+			return;
+		}
+		if(this.canvas.get_focused() == this) {
+			this.canvas.set_focused(null);
+			var _idx = 0;
+			var _count = this.onfocused.listeners.length;
+			while(_idx < _count) {
+				if(this.onfocused != null) {
+					var fn = this.onfocused.listeners[_idx];
+					if(fn != null) {
+						fn(false);
+					}
+				}
+				++_idx;
+			}
+			if(this.onfocused != null) {
+				while(_count > 0) {
+					var fn1 = this.onfocused.listeners[_count - 1];
+					if(fn1 == null) {
+						this.onfocused.listeners.splice(_count - 1,1);
+					}
+					--_count;
+				}
+			}
+		}
+	}
+	,capture: function() {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		if(this.canvas == this) {
+			return;
+		}
+		var _pre = this.canvas.get_captured() == this;
+		this.canvas.set_captured(this);
+		if(!_pre) {
+			var _idx = 0;
+			var _count = this.oncaptured.listeners.length;
+			while(_idx < _count) {
+				if(this.oncaptured != null) {
+					var fn = this.oncaptured.listeners[_idx];
+					if(fn != null) {
+						fn(true);
+					}
+				}
+				++_idx;
+			}
+			if(this.oncaptured != null) {
+				while(_count > 0) {
+					var fn1 = this.oncaptured.listeners[_count - 1];
+					if(fn1 == null) {
+						this.oncaptured.listeners.splice(_count - 1,1);
+					}
+					--_count;
+				}
+			}
+		}
+	}
+	,uncapture: function() {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		if(this.canvas == this) {
+			return;
+		}
+		if(this.canvas.get_captured() == this) {
+			this.canvas.set_captured(null);
+			var _idx = 0;
+			var _count = this.oncaptured.listeners.length;
+			while(_idx < _count) {
+				if(this.oncaptured != null) {
+					var fn = this.oncaptured.listeners[_idx];
+					if(fn != null) {
+						fn(false);
+					}
+				}
+				++_idx;
+			}
+			if(this.oncaptured != null) {
+				while(_count > 0) {
+					var fn1 = this.oncaptured.listeners[_count - 1];
+					if(fn1 == null) {
+						this.oncaptured.listeners.splice(_count - 1,1);
+					}
+					--_count;
+				}
+			}
+		}
+	}
+	,mark: function() {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		if(this.canvas == this) {
+			return;
+		}
+		var _pre = this.canvas.get_marked() == this;
+		this.canvas.set_marked(this);
+		if(!_pre) {
+			var _idx = 0;
+			var _count = this.onmarked.listeners.length;
+			while(_idx < _count) {
+				if(this.onmarked != null) {
+					var fn = this.onmarked.listeners[_idx];
+					if(fn != null) {
+						fn(true);
+					}
+				}
+				++_idx;
+			}
+			if(this.onmarked != null) {
+				while(_count > 0) {
+					var fn1 = this.onmarked.listeners[_count - 1];
+					if(fn1 == null) {
+						this.onmarked.listeners.splice(_count - 1,1);
+					}
+					--_count;
+				}
+			}
+		}
+	}
+	,unmark: function() {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		if(this.canvas == this) {
+			return;
+		}
+		if(this.canvas.get_marked() == this) {
+			this.canvas.set_marked(null);
+			var _idx = 0;
+			var _count = this.onmarked.listeners.length;
+			while(_idx < _count) {
+				if(this.onmarked != null) {
+					var fn = this.onmarked.listeners[_idx];
+					if(fn != null) {
+						fn(false);
+					}
+				}
+				++_idx;
+			}
+			if(this.onmarked != null) {
+				while(_count > 0) {
+					var fn1 = this.onmarked.listeners[_count - 1];
+					if(fn1 == null) {
+						this.onmarked.listeners.splice(_count - 1,1);
+					}
+					--_count;
+				}
+			}
+		}
+	}
+	,refresh_bounds: function() {
+		var _idx = 0;
+		var _count = this.onbounds.listeners.length;
+		while(_idx < _count) {
+			if(this.onbounds != null) {
+				var fn = this.onbounds.listeners[_idx];
+				if(fn != null) {
+					fn();
+				}
+			}
+			++_idx;
+		}
+		if(this.onbounds != null) {
+			while(_count > 0) {
+				var fn1 = this.onbounds.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onbounds.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+		var _g = 0;
+		var _g1 = this.children;
+		while(_g < _g1.length) {
+			var _child = _g1[_g];
+			++_g;
+			_child.refresh_bounds();
+		}
+	}
+	,bounds_changed: function(_dx,_dy,_dw,_dh) {
+		if(_dh == null) {
+			_dh = 0.0;
+		}
+		if(_dw == null) {
+			_dw = 0.0;
+		}
+		if(_dy == null) {
+			_dy = 0.0;
+		}
+		if(_dx == null) {
+			_dx = 0.0;
+		}
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		if(this.updating) {
+			return;
+		}
+		if(_dx != 0.0 || _dy != 0.0) {
+			var _g = 0;
+			var _g1 = this.children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				child.set_pos(child.x + _dx,child.y + _dy);
+			}
+		}
+		var _idx = 0;
+		var _count = this.onbounds.listeners.length;
+		while(_idx < _count) {
+			if(this.onbounds != null) {
+				var fn = this.onbounds.listeners[_idx];
+				if(fn != null) {
+					fn();
+				}
+			}
+			++_idx;
+		}
+		if(this.onbounds != null) {
+			while(_count > 0) {
+				var fn1 = this.onbounds.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onbounds.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+	}
+	,set_pos: function(_x,_y) {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		this.updating = true;
+		var _dx = _x - this.x;
+		var _dy = _y - this.y;
+		this.set_x(_x);
+		this.set_y(_y);
+		this.updating = false;
+		this.bounds_changed(_dx,_dy,0,0);
+	}
+	,set_size: function(_w,_h) {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		this.updating = true;
+		var _dw = _w - this.w;
+		var _dh = _h - this.h;
+		this.set_w(_w);
+		this.set_h(_h);
+		this.updating = false;
+		this.bounds_changed(0,0,_dw,_dh);
+	}
+	,get_right: function() {
+		return this.x + this.w;
+	}
+	,get_bottom: function() {
+		return this.y + this.h;
+	}
+	,set_name: function(_name) {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		var _prev = this.name;
+		this.name = _name;
+		var _idx = 0;
+		var _count = this.onrenamed.listeners.length;
+		while(_idx < _count) {
+			if(this.onrenamed != null) {
+				var fn = this.onrenamed.listeners[_idx];
+				if(fn != null) {
+					fn(_prev,_name);
+				}
+			}
+			++_idx;
+		}
+		if(this.onrenamed != null) {
+			while(_count > 0) {
+				var fn1 = this.onrenamed.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onrenamed.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+		return this.name;
+	}
+	,set_x: function(_x) {
+		var _dx = _x - this.x;
+		this.x = _x;
+		if(!this.ignore_spatial) {
+			this.ignore_spatial = true;
+			if(this.parent != null) {
+				this.set_x_local(this.x - this.parent.x);
+			} else {
+				this.set_x_local(this.x);
+			}
+			this.ignore_spatial = false;
+		}
+		this.bounds_changed(_dx);
+		return this.x;
+	}
+	,set_y: function(_y) {
+		var _dy = _y - this.y;
+		this.y = _y;
+		if(!this.ignore_spatial) {
+			this.ignore_spatial = true;
+			if(this.parent != null) {
+				this.set_y_local(this.y - this.parent.y);
+			} else {
+				this.set_y_local(this.y);
+			}
+			this.ignore_spatial = false;
+		}
+		this.bounds_changed(0,_dy);
+		return this.y;
+	}
+	,set_w_min: function(_w_min) {
+		this.w_min = _w_min;
+		if(this.w < this.w_min) {
+			this.set_w(this.w_min);
+		}
+		return this.w_min;
+	}
+	,set_h_min: function(_h_min) {
+		this.h_min = _h_min;
+		if(this.h < this.h_min) {
+			this.set_h(this.h_min);
+		}
+		return this.h_min;
+	}
+	,set_w_max: function(_w_max) {
+		this.w_max = _w_max;
+		if(this.w > this.w_max) {
+			this.set_w(this.w_max);
+		}
+		return this.w_max;
+	}
+	,set_h_max: function(_h_max) {
+		this.h_max = _h_max;
+		if(this.h > this.h_max) {
+			this.set_h(this.h_max);
+		}
+		return this.h_max;
+	}
+	,set_w: function(_w) {
+		if(_w < this.w_min) {
+			_w = this.w_min;
+		}
+		if(_w > this.w_max && this.w_max != 0) {
+			_w = this.w_max;
+		}
+		var _dw = _w - this.w;
+		this.w = _w;
+		this.bounds_changed(0,0,_dw);
+		return this.w;
+	}
+	,set_h: function(_h) {
+		if(_h < this.h_min) {
+			_h = this.h_min;
+		}
+		if(_h > this.h_max && this.h_max != 0) {
+			_h = this.h_max;
+		}
+		var _dh = _h - this.h;
+		this.h = _h;
+		this.bounds_changed(0,0,0,_dh);
+		return this.h;
+	}
+	,set_x_local: function(_x) {
+		this.x_local = _x;
+		if(!this.ignore_spatial) {
+			this.ignore_spatial = true;
+			if(this.parent != null) {
+				this.set_x(this.parent.x + this.get_x_local());
+			} else {
+				this.set_x(this.get_x_local());
+			}
+			this.ignore_spatial = false;
+		}
+		return this.get_x_local();
+	}
+	,set_y_local: function(_y) {
+		this.y_local = _y;
+		if(!this.ignore_spatial) {
+			this.ignore_spatial = true;
+			if(this.parent != null) {
+				this.set_y(this.parent.y + this.get_y_local());
+			} else {
+				this.set_y(this.get_y_local());
+			}
+			this.ignore_spatial = false;
+		}
+		return this.get_y_local();
+	}
+	,get_x_local: function() {
+		return this.x_local;
+	}
+	,get_y_local: function() {
+		return this.y_local;
+	}
+	,get_nodes: function() {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		var _nodes = 1;
+		var _g = 0;
+		var _g1 = this.children;
+		while(_g < _g1.length) {
+			var child = _g1[_g];
+			++_g;
+			_nodes += child.get_nodes();
+		}
+		return _nodes;
+	}
+	,get_depth: function() {
+		return this.depth;
+	}
+	,set_depth: function(_depth) {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		this.depth = _depth;
+		var _idx = 0;
+		var _count = this.ondepth.listeners.length;
+		while(_idx < _count) {
+			if(this.ondepth != null) {
+				var fn = this.ondepth.listeners[_idx];
+				if(fn != null) {
+					fn(this.depth);
+				}
+			}
+			++_idx;
+		}
+		if(this.ondepth != null) {
+			while(_count > 0) {
+				var fn1 = this.ondepth.listeners[_count - 1];
+				if(fn1 == null) {
+					this.ondepth.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+		return this.depth;
+	}
+	,set_parent: function(p) {
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		this.parent = p;
+		if(this.parent != null) {
+			this.ignore_spatial = true;
+			this.set_x(this.parent.x + this.get_x_local());
+			this.set_y(this.parent.y + this.get_y_local());
+			this.ignore_spatial = false;
+		}
+		return this.parent;
+	}
+	,get_parent: function() {
+		return this.parent;
+	}
+	,__class__: mint_Control
+	,__properties__: {set_depth:"set_depth",get_depth:"get_depth",set_parent:"set_parent",get_parent:"get_parent",get_children_bounds:"get_children_bounds",set_visible:"set_visible",get_nodes:"get_nodes",set_clip_with:"set_clip_with",set_y_local:"set_y_local",get_y_local:"get_y_local",set_x_local:"set_x_local",get_x_local:"get_x_local",get_bottom:"get_bottom",get_right:"get_right",set_h_max:"set_h_max",set_w_max:"set_w_max",set_h_min:"set_h_min",set_w_min:"set_w_min",set_h:"set_h",set_w:"set_w",set_y:"set_y",set_x:"set_x",set_name:"set_name"}
+};
+var mint_Canvas = function(_options) {
+	this._mouse_down = false;
+	this.depth_idx = 0.0;
+	this.scale = 1.0;
+	this.focus_invalid = true;
+	this.options = _options;
+	this.onfocusedchange = new mint_core_Signal();
+	this.onmarkedchange = new mint_core_Signal();
+	this.oncapturedchange = new mint_core_Signal();
+	this.onscalechange = new mint_core_Signal();
+	if(this.options == null) {
+		throw new js__$Boot_HaxeError(mint_core_DebugError.null_assertion("options was null" + (" ( " + "No options given to canvas, at least a Renderer is required." + " )")));
+	}
+	if(this.options.rendering == null) {
+		throw new js__$Boot_HaxeError(mint_core_DebugError.null_assertion("options.rendering was null" + (" ( " + "No Rendering given to Canvas, cannot create a canvas without one." + " )")));
+	}
+	if(this.options.name == null) {
+		this.options.name = "canvas";
+	}
+	if(this.options.w == null) {
+		this.options.w = 800;
+	}
+	if(this.options.h == null) {
+		this.options.h = 600;
+	}
+	if(this.options.mouse_input == null) {
+		this.options.mouse_input = true;
+	}
+	mint_Control.call(this,this.options);
+	this.canvas = this;
+	if(this.options.scale == null) {
+		this.options.scale = 1;
+	}
+	this.set_scale(this.options.scale);
+	this.set_captured(null);
+	this.set_focused(null);
+	this.set_marked(null);
+	this.renderer = this.rendering.get(mint_Canvas,this);
+	var _idx = 0;
+	var _count = this.oncreate.listeners.length;
+	while(_idx < _count) {
+		if(this.oncreate != null) {
+			var fn = this.oncreate.listeners[_idx];
+			if(fn != null) {
+				fn();
+			}
+		}
+		++_idx;
+	}
+	if(this.oncreate != null) {
+		while(_count > 0) {
+			var fn1 = this.oncreate.listeners[_count - 1];
+			if(fn1 == null) {
+				this.oncreate.listeners.splice(_count - 1,1);
+			}
+			--_count;
+		}
+	}
+};
+$hxClasses["mint.Canvas"] = mint_Canvas;
+mint_Canvas.__name__ = ["mint","Canvas"];
+mint_Canvas.__super__ = mint_Control;
+mint_Canvas.prototype = $extend(mint_Control.prototype,{
+	bring_to_front: function(control) {
+		this.canvas.add(control);
+		this.sync_depth();
+	}
+	,topmost_at_point: function(_x,_y) {
+		var _control = this.topmost_child_at_point(_x,_y);
+		if(_control != this) {
+			return _control;
+		}
+		return null;
+	}
+	,apply_depth: function(control) {
+		control.set_depth(this.depth_idx + control.depth_offset);
+		this.depth_idx++;
+		var _g = 0;
+		var _g1 = control.children;
+		while(_g < _g1.length) {
+			var child = _g1[_g];
+			++_g;
+			this.apply_depth(child);
+		}
+	}
+	,sync_depth: function() {
+		this.depth_idx = 0;
+		this.apply_depth(this);
+	}
+	,mouseup: function(e) {
+		this._mouse_down = false;
+		var _idx = 0;
+		var _count = this.onmouseup.listeners.length;
+		while(_idx < _count) {
+			if(this.onmouseup != null) {
+				var fn = this.onmouseup.listeners[_idx];
+				if(fn != null) {
+					fn(e,this);
+				}
+			}
+			++_idx;
+		}
+		if(this.onmouseup != null) {
+			while(_count > 0) {
+				var fn1 = this.onmouseup.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onmouseup.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+	}
+	,mousedown: function(e) {
+		this._mouse_down = true;
+		var _idx = 0;
+		var _count = this.onmousedown.listeners.length;
+		while(_idx < _count) {
+			if(this.onmousedown != null) {
+				var fn = this.onmousedown.listeners[_idx];
+				if(fn != null) {
+					fn(e,this);
+				}
+			}
+			++_idx;
+		}
+		if(this.onmousedown != null) {
+			while(_count > 0) {
+				var fn1 = this.onmousedown.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onmousedown.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+	}
+	,mousemove: function(e) {
+		var _inside = mint_types_Helper.in_rect(e.x,e.y,this.x,this.y,this.w,this.h);
+		if(this.ishovered && !_inside) {
+			this.mouseleave(e);
+			if(this._mouse_down) {
+				this.mouseup(e);
+			}
+		} else if(!this.ishovered && _inside) {
+			this.mouseenter(e);
+		}
+		var _idx = 0;
+		var _count = this.onmousemove.listeners.length;
+		while(_idx < _count) {
+			if(this.onmousemove != null) {
+				var fn = this.onmousemove.listeners[_idx];
+				if(fn != null) {
+					fn(e,this);
+				}
+			}
+			++_idx;
+		}
+		if(this.onmousemove != null) {
+			while(_count > 0) {
+				var fn1 = this.onmousemove.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onmousemove.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+	}
+	,mousewheel: function(e) {
+		var _idx = 0;
+		var _count = this.onmousewheel.listeners.length;
+		while(_idx < _count) {
+			if(this.onmousewheel != null) {
+				var fn = this.onmousewheel.listeners[_idx];
+				if(fn != null) {
+					fn(e,this);
+				}
+			}
+			++_idx;
+		}
+		if(this.onmousewheel != null) {
+			while(_count > 0) {
+				var fn1 = this.onmousewheel.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onmousewheel.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+	}
+	,keyup: function(e) {
+		var _idx = 0;
+		var _count = this.onkeyup.listeners.length;
+		while(_idx < _count) {
+			if(this.onkeyup != null) {
+				var fn = this.onkeyup.listeners[_idx];
+				if(fn != null) {
+					fn(e,this);
+				}
+			}
+			++_idx;
+		}
+		if(this.onkeyup != null) {
+			while(_count > 0) {
+				var fn1 = this.onkeyup.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onkeyup.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+	}
+	,keydown: function(e) {
+		var _idx = 0;
+		var _count = this.onkeydown.listeners.length;
+		while(_idx < _count) {
+			if(this.onkeydown != null) {
+				var fn = this.onkeydown.listeners[_idx];
+				if(fn != null) {
+					fn(e,this);
+				}
+			}
+			++_idx;
+		}
+		if(this.onkeydown != null) {
+			while(_count > 0) {
+				var fn1 = this.onkeydown.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onkeydown.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+	}
+	,textinput: function(e) {
+		var _idx = 0;
+		var _count = this.ontextinput.listeners.length;
+		while(_idx < _count) {
+			if(this.ontextinput != null) {
+				var fn = this.ontextinput.listeners[_idx];
+				if(fn != null) {
+					fn(e,this);
+				}
+			}
+			++_idx;
+		}
+		if(this.ontextinput != null) {
+			while(_count > 0) {
+				var fn1 = this.ontextinput.listeners[_count - 1];
+				if(fn1 == null) {
+					this.ontextinput.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+	}
+	,update: function(dt) {
+		var _g = 0;
+		var _g1 = this.children;
+		while(_g < _g1.length) {
+			var control = _g1[_g];
+			++_g;
+			control.update(dt);
+		}
+	}
+	,destroy: function() {
+		mint_Control.prototype.destroy.call(this);
+		var _this = this.onfocusedchange;
+		_this.listeners = null;
+		_this.listeners = [];
+		var _this1 = this.onmarkedchange;
+		_this1.listeners = null;
+		_this1.listeners = [];
+		var _this2 = this.oncapturedchange;
+		_this2.listeners = null;
+		_this2.listeners = [];
+		var _this3 = this.onscalechange;
+		_this3.listeners = null;
+		_this3.listeners = [];
+		this.onfocusedchange = null;
+		this.onmarkedchange = null;
+		this.oncapturedchange = null;
+		this.onscalechange = null;
+	}
+	,set_scale: function(_scale) {
+		var _prev = this.scale;
+		this.scale = _scale;
+		if(_scale != _prev) {
+			this.refresh_bounds();
+		}
+		var _idx = 0;
+		var _count = this.onscalechange.listeners.length;
+		while(_idx < _count) {
+			if(this.onscalechange != null) {
+				var fn = this.onscalechange.listeners[_idx];
+				if(fn != null) {
+					fn(_scale,_prev);
+				}
+			}
+			++_idx;
+		}
+		if(this.onscalechange != null) {
+			while(_count > 0) {
+				var fn1 = this.onscalechange.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onscalechange.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+		return this.scale;
+	}
+	,get_focused: function() {
+		return this.focused;
+	}
+	,set_focused: function(_control) {
+		if(this.get_focused() != null) {
+			this.get_focused().isfocused = false;
+		}
+		this.focused = _control;
+		var _idx = 0;
+		var _count = this.onfocusedchange.listeners.length;
+		while(_idx < _count) {
+			if(this.onfocusedchange != null) {
+				var fn = this.onfocusedchange.listeners[_idx];
+				if(fn != null) {
+					fn(this.get_focused());
+				}
+			}
+			++_idx;
+		}
+		if(this.onfocusedchange != null) {
+			while(_count > 0) {
+				var fn1 = this.onfocusedchange.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onfocusedchange.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+		if(this.get_focused() != null) {
+			this.get_focused().isfocused = true;
+		}
+		return this.get_focused();
+	}
+	,get_captured: function() {
+		return this.captured;
+	}
+	,set_captured: function(_control) {
+		if(this.get_captured() != null) {
+			this.get_captured().iscaptured = false;
+		}
+		this.captured = _control;
+		var _idx = 0;
+		var _count = this.oncapturedchange.listeners.length;
+		while(_idx < _count) {
+			if(this.oncapturedchange != null) {
+				var fn = this.oncapturedchange.listeners[_idx];
+				if(fn != null) {
+					fn(this.get_captured());
+				}
+			}
+			++_idx;
+		}
+		if(this.oncapturedchange != null) {
+			while(_count > 0) {
+				var fn1 = this.oncapturedchange.listeners[_count - 1];
+				if(fn1 == null) {
+					this.oncapturedchange.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+		if(this.get_captured() != null) {
+			this.get_captured().iscaptured = true;
+		}
+		return this.get_captured();
+	}
+	,get_marked: function() {
+		return this.marked;
+	}
+	,set_marked: function(_control) {
+		if(this.get_marked() != null) {
+			this.get_marked().ismarked = false;
+		}
+		this.marked = _control;
+		var _idx = 0;
+		var _count = this.onmarkedchange.listeners.length;
+		while(_idx < _count) {
+			if(this.onmarkedchange != null) {
+				var fn = this.onmarkedchange.listeners[_idx];
+				if(fn != null) {
+					fn(this.get_captured());
+				}
+			}
+			++_idx;
+		}
+		if(this.onmarkedchange != null) {
+			while(_count > 0) {
+				var fn1 = this.onmarkedchange.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onmarkedchange.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+		if(this.get_marked() != null) {
+			this.get_marked().ismarked = true;
+		}
+		return this.get_marked();
+	}
+	,__class__: mint_Canvas
+	,__properties__: $extend(mint_Control.prototype.__properties__,{set_scale:"set_scale",set_captured:"set_captured",get_captured:"get_captured",set_marked:"set_marked",get_marked:"get_marked",set_focused:"set_focused",get_focused:"get_focused"})
+});
+var AutoCanvas = function(_view,_options) {
+	this.view = _view;
+	mint_Canvas.call(this,_options);
+};
+$hxClasses["AutoCanvas"] = AutoCanvas;
+AutoCanvas.__name__ = ["AutoCanvas"];
+AutoCanvas.__super__ = mint_Canvas;
+AutoCanvas.prototype = $extend(mint_Canvas.prototype,{
+	auto_listen: function() {
+		Luxe.on(10,$bind(this,this.conv_render));
+		Luxe.on(6,$bind(this,this.conv_update));
+		Luxe.on(20,$bind(this,this.conv_mousewheel));
+		Luxe.on(17,$bind(this,this.conv_mousedown));
+		Luxe.on(18,$bind(this,this.conv_mouseup));
+		Luxe.on(19,$bind(this,this.conv_mousemove));
+		Luxe.on(13,$bind(this,this.conv_keyup));
+		Luxe.on(12,$bind(this,this.conv_keydown));
+		Luxe.on(14,$bind(this,this.conv_textinput));
+		this.ondestroy.listen($bind(this,this.auto_unlisten));
+	}
+	,auto_unlisten: function() {
+		Luxe.off(10,$bind(this,this.conv_render));
+		Luxe.off(6,$bind(this,this.conv_update));
+		Luxe.off(20,$bind(this,this.conv_mousewheel));
+		Luxe.off(17,$bind(this,this.conv_mousedown));
+		Luxe.off(18,$bind(this,this.conv_mouseup));
+		Luxe.off(19,$bind(this,this.conv_mousemove));
+		Luxe.off(13,$bind(this,this.conv_keyup));
+		Luxe.off(12,$bind(this,this.conv_keydown));
+		Luxe.off(14,$bind(this,this.conv_textinput));
+		this.ondestroy.remove($bind(this,this.auto_unlisten));
+	}
+	,conv_update: function(dt) {
+		this.update(dt);
+	}
+	,conv_render: function(_) {
+		this.render();
+	}
+	,conv_mousewheel: function(e) {
+		this.mousewheel(mint_render_luxe_Convert.mouse_event(e,this.scale,this.view));
+	}
+	,conv_mousedown: function(e) {
+		this.mousedown(mint_render_luxe_Convert.mouse_event(e,this.scale,this.view));
+	}
+	,conv_mouseup: function(e) {
+		this.mouseup(mint_render_luxe_Convert.mouse_event(e,this.scale,this.view));
+	}
+	,conv_mousemove: function(e) {
+		this.mousemove(mint_render_luxe_Convert.mouse_event(e,this.scale,this.view));
+	}
+	,conv_keyup: function(e) {
+		this.keyup(mint_render_luxe_Convert.key_event(e));
+	}
+	,conv_keydown: function(e) {
+		this.keydown(mint_render_luxe_Convert.key_event(e));
+	}
+	,conv_textinput: function(e) {
+		this.textinput(mint_render_luxe_Convert.text_event(e));
+	}
+	,__class__: AutoCanvas
+});
 var EReg = function(r,opt) {
 	this.r = new RegExp(r,opt.split("u").join(""));
 };
@@ -402,19 +2329,20 @@ Main.prototype = $extend(luxe_Game.prototype,{
 		return config;
 	}
 	,ready: function() {
-		var parcel = new luxe_Parcel({ "textures" : [{ "id" : "assets/ui/bubble.png"}], "texts" : [{ "id" : "assets/ui/bubble.svg"}]});
+		var parcel = new luxe_Parcel({ "textures" : [{ "id" : "assets/ui/bubble.png"}]});
 		new luxe_ParcelProgress({ parcel : parcel, background : new phoenix_Color().rgb(16337668), oncomplete : $bind(this,this.assets_loaded)});
 		parcel.load();
 	}
 	,assets_loaded: function(_) {
-		var bubbleMenu = new entities_BubbleMenu({ name : "Toolbar", pos : new phoenix_Vector(32,32)});
-		bubbleMenu.startup([{ name : "Profile", icon : Luxe.resources.cache.get("assets/ui/bubble.png"), clicked : function(event) {
-			haxe_Log.trace("Profile clicked",{ fileName : "Main.hx", lineNumber : 54, className : "Main", methodName : "assets_loaded"});
-		}},{ name : "Map", icon : Luxe.resources.cache.get("assets/ui/bubble.png"), clicked : function(event1) {
-			haxe_Log.trace("Map clicked",{ fileName : "Main.hx", lineNumber : 59, className : "Main", methodName : "assets_loaded"});
-		}},{ name : "LogOut", icon : Luxe.resources.cache.get("assets/ui/bubble.png"), clicked : function(event2) {
-			haxe_Log.trace("LogOut clicked",{ fileName : "Main.hx", lineNumber : 64, className : "Main", methodName : "assets_loaded"});
-		}}]);
+		Luxe.renderer.clear_color.rgb(1184281);
+		Main.rendering = new mint_render_luxe_LuxeMintRender();
+		var autocanvas = new AutoCanvas(Luxe.camera.view,{ name : "canvas", rendering : Main.rendering, options : { color : new phoenix_Color(1,1,1,0.0)}, scale : 1, x : 0, y : 0, w : Luxe.core.screen.get_w(), h : Luxe.core.screen.get_h()});
+		autocanvas.auto_listen();
+		Main.canvas = autocanvas;
+		Main.focus = new mint_focus_Focus(Main.canvas);
+		this.profileBubble = new entities_Bubble({ parent : Main.canvas, name : "Profile", x : 10, y : 10, onclicked : function(_1,_2) {
+			haxe_Log.trace("profile clicked!",{ fileName : "Main.hx", lineNumber : 76, className : "Main", methodName : "assets_loaded"});
+		}});
 	}
 	,onkeyup: function(event) {
 		if(event.keycode == 27) {
@@ -716,2157 +2644,120 @@ Type["typeof"] = function(v) {
 		return ValueType.TUnknown;
 	}
 };
-var luxe_Emitter = function() {
-	this._checking = false;
-	this._to_remove = new List();
-	this.connected = new List();
-	this.bindings = new haxe_ds_IntMap();
-};
-$hxClasses["luxe.Emitter"] = luxe_Emitter;
-luxe_Emitter.__name__ = ["luxe","Emitter"];
-luxe_Emitter.prototype = {
-	_emitter_destroy: function() {
-		while(this._to_remove.length > 0) {
-			var _node = this._to_remove.pop();
-			_node.event = null;
-			_node.handler = null;
-			_node = null;
-		}
-		while(this.connected.length > 0) {
-			var _node1 = this.connected.pop();
-			_node1.event = null;
-			_node1.handler = null;
-			_node1 = null;
-		}
-		this._to_remove = null;
-		this.connected = null;
-		this.bindings = null;
-	}
-	,emit: function(event,data) {
-		if(this.bindings == null) {
-			return;
-		}
-		this._check();
-		this._checking = true;
-		var _list = this.bindings.h[event];
-		if(_list != null && _list.length > 0) {
-			var _g = 0;
-			while(_g < _list.length) {
-				var handler = _list[_g];
-				++_g;
-				handler(data);
-			}
-		}
-		this._checking = false;
-		this._check();
-	}
-	,on: function(event,handler) {
-		if(this.bindings == null) {
-			return;
-		}
-		this._check();
-		if(!this.bindings.h.hasOwnProperty(event)) {
-			this.bindings.h[event] = [handler];
-			this.connected.push({ handler : handler, event : event});
-		} else {
-			var _list = this.bindings.h[event];
-			if(_list.indexOf(handler) == -1) {
-				_list.push(handler);
-				this.connected.push({ handler : handler, event : event});
-			}
-		}
-	}
-	,off: function(event,handler) {
-		if(this.bindings == null) {
-			return false;
-		}
-		this._check();
-		var _success = false;
-		if(this.bindings.h.hasOwnProperty(event)) {
-			this._to_remove.push({ event : event, handler : handler});
-			var _g_head = this.connected.h;
-			while(_g_head != null) {
-				var val = _g_head.item;
-				_g_head = _g_head.next;
-				var _info = val;
-				if(_info.event == event && _info.handler == handler) {
-					this.connected.remove(_info);
-				}
-			}
-			_success = true;
-		}
-		return _success;
-	}
-	,connections: function(handler) {
-		if(this.connected == null) {
-			return null;
-		}
-		var _list = [];
-		var _g_head = this.connected.h;
-		while(_g_head != null) {
-			var val = _g_head.item;
-			_g_head = _g_head.next;
-			var _info = val;
-			if(_info.handler == handler) {
-				_list.push(_info);
-			}
-		}
-		return _list;
-	}
-	,_check: function() {
-		if(this._checking || this._to_remove == null) {
-			return;
-		}
-		this._checking = true;
-		if(this._to_remove.length > 0) {
-			var _g_head = this._to_remove.h;
-			while(_g_head != null) {
-				var val = _g_head.item;
-				_g_head = _g_head.next;
-				var _node = val;
-				var _list = this.bindings.h[_node.event];
-				if(_list != null) {
-					HxOverrides.remove(_list,_node.handler);
-					if(_list.length == 0) {
-						this.bindings.remove(_node.event);
-					}
-				}
-			}
-			this._to_remove = null;
-			this._to_remove = new List();
-		}
-		this._checking = false;
-	}
-	,__class__: luxe_Emitter
-};
-var luxe_Objects = function(_name,_id) {
-	if(_id == null) {
-		_id = "";
-	}
-	if(_name == null) {
-		_name = "";
-	}
-	this.name = "";
-	this.id = "";
-	luxe_Emitter.call(this);
-	this.set_name(_name);
-	this.set_id(_id == "" ? Luxe.utils.uniqueid() : _id);
-};
-$hxClasses["luxe.Objects"] = luxe_Objects;
-luxe_Objects.__name__ = ["luxe","Objects"];
-luxe_Objects.__super__ = luxe_Emitter;
-luxe_Objects.prototype = $extend(luxe_Emitter.prototype,{
-	set_name: function(_name) {
-		return this.name = _name;
-	}
-	,set_id: function(_id) {
-		return this.id = _id;
-	}
-	,get_name: function() {
-		return this.name;
-	}
-	,get_id: function() {
-		return this.id;
-	}
-	,__class__: luxe_Objects
-	,__properties__: {set_name:"set_name",get_name:"get_name",set_id:"set_id",get_id:"get_id"}
-});
-var luxe_Entity = function(_options) {
-	this.component_count = 0;
-	this.active = true;
-	this.fixed_rate = 0;
-	this.started = false;
-	this.inited = false;
-	this.destroyed = false;
-	luxe_Objects.call(this,"entity");
-	var _g = this;
-	_g.set_name(_g.get_name() + ("." + this.get_id()));
+var mint_Image = function(_options) {
 	this.options = _options;
-	this._components = new luxe_components_Components(this);
-	this.children = [];
-	this.events = new luxe_Events();
-	if(this.options != null && this.options.transform != null) {
-		this.set_transform(this.options.transform);
-	} else {
-		this.set_transform(new phoenix_Transform());
+	if(this.options.name == null) {
+		var tmp = mint_types_Helper.uniqueid();
+		this.options.name = "image." + tmp;
 	}
-	var _this = this.get_transform();
-	if(_this._pos_handlers == null) {
-		_this._pos_handlers = [];
+	mint_Control.call(this,_options);
+	this.onchange = new mint_core_Signal();
+	if(this.options.path == null) {
+		this.options.path = "";
 	}
-	_this._pos_handlers.push($bind(this,this.set_pos_from_transform));
-	var _this1 = this.get_transform();
-	if(_this1._scale_handlers == null) {
-		_this1._scale_handlers = [];
-	}
-	_this1._scale_handlers.push($bind(this,this.set_scale_from_transform));
-	var _this2 = this.get_transform();
-	if(_this2._origin_handlers == null) {
-		_this2._origin_handlers = [];
-	}
-	_this2._origin_handlers.push($bind(this,this.set_origin_from_transform));
-	var _this3 = this.get_transform();
-	if(_this3._parent_handlers == null) {
-		_this3._parent_handlers = [];
-	}
-	_this3._parent_handlers.push($bind(this,this.set_parent_from_transform));
-	var _this4 = this.get_transform();
-	if(_this4._rotation_handlers == null) {
-		_this4._rotation_handlers = [];
-	}
-	_this4._rotation_handlers.push($bind(this,this.set_rotation_from_transform));
-	if(this.options != null) {
-		if(this.options.name_unique == null) {
-			this.options.name_unique = false;
-		}
-		if(this.options.name != null) {
-			this.set_name(this.options.name);
-			if(this.options.name_unique) {
-				var _g1 = this;
-				_g1.set_name(_g1.get_name() + ("." + this.get_id()));
+	this.set_path(this.options.path);
+	this.renderer = this.rendering.get(mint_Image,this);
+	var _idx = 0;
+	var _count = this.oncreate.listeners.length;
+	while(_idx < _count) {
+		if(this.oncreate != null) {
+			var fn = this.oncreate.listeners[_idx];
+			if(fn != null) {
+				fn();
 			}
 		}
-		if(this.options.pos != null) {
-			var _op = this.options.pos;
-			this.set_pos(new phoenix_Vector(_op.x,_op.y,_op.z,_op.w));
-		}
-		if(this.options.scale != null) {
-			var _os = this.options.scale;
-			this.set_scale(new phoenix_Vector(_os.x,_os.y,_os.z,_os.w));
-		}
-		var _should_add = true;
-		if(this.options.no_scene != null) {
-			if(this.options.no_scene == true) {
-				_should_add = false;
-			}
-		}
-		if(this.options.parent != null) {
-			_should_add = false;
-			this.set_parent(this.options.parent);
-		}
-		if(_should_add) {
-			if(this.options.scene != null) {
-				this.set_scene(this.options.scene);
-			} else {
-				this.set_scene(Luxe.scene);
-			}
-		}
-	} else {
-		this.set_scene(Luxe.scene);
+		++_idx;
 	}
-	if(this.get_scene() != null) {
-		this.get_scene().add(this);
+	if(this.oncreate != null) {
+		while(_count > 0) {
+			var fn1 = this.oncreate.listeners[_count - 1];
+			if(fn1 == null) {
+				this.oncreate.listeners.splice(_count - 1,1);
+			}
+			--_count;
+		}
 	}
 };
-$hxClasses["luxe.Entity"] = luxe_Entity;
-luxe_Entity.__name__ = ["luxe","Entity"];
-luxe_Entity.__super__ = luxe_Objects;
-luxe_Entity.prototype = $extend(luxe_Objects.prototype,{
-	init: function() {
-	}
-	,update: function(dt) {
-	}
-	,onfixedupdate: function(rate) {
-	}
-	,onreset: function() {
-	}
-	,ondestroy: function() {
-	}
-	,onkeyup: function(event) {
-	}
-	,onkeydown: function(event) {
-	}
-	,ontextinput: function(event) {
-	}
-	,oninputdown: function(event) {
-	}
-	,oninputup: function(event) {
-	}
-	,onmousedown: function(event) {
-	}
-	,onmouseup: function(event) {
-	}
-	,onmousemove: function(event) {
-	}
-	,onmousewheel: function(event) {
-	}
-	,ontouchdown: function(event) {
-	}
-	,ontouchup: function(event) {
-	}
-	,ontouchmove: function(event) {
-	}
-	,ongamepadup: function(event) {
-	}
-	,ongamepaddown: function(event) {
-	}
-	,ongamepadaxis: function(event) {
-	}
-	,ongamepaddevice: function(event) {
-	}
-	,onwindowmoved: function(event) {
-	}
-	,onwindowresized: function(event) {
-	}
-	,onwindowsized: function(event) {
-	}
-	,onwindowminimized: function(event) {
-	}
-	,onwindowrestored: function(event) {
-	}
-	,add: function(_component) {
-		this.component_count++;
-		return this._components.add(_component);
-	}
-	,remove: function(_name) {
-		this.component_count--;
-		return this._components.remove(_name);
-	}
-	,get: function(_name,_in_children) {
-		if(_in_children == null) {
-			_in_children = false;
-		}
-		return this._components.get(_name,_in_children);
-	}
-	,get_any: function(_name,_in_children,_first_only) {
-		if(_first_only == null) {
-			_first_only = true;
-		}
-		if(_in_children == null) {
-			_in_children = false;
-		}
-		return this._components.get_any(_name,_in_children,_first_only);
-	}
-	,has: function(_name) {
-		return this._components.has(_name);
-	}
-	,_init: function() {
-		this.init();
-		this.emit(2);
-		if(this.component_count > 0) {
-			var _g_map;
-			var _g_index = 0;
-			_g_map = this._components.components;
-			while(_g_index < _g_map._keys.length) {
-				var _component = _g_map.map.get(_g_map._keys[_g_index++]);
-				_component.init();
-			}
-		}
-		if(this.children.length > 0) {
-			var _g = 0;
-			var _g1 = this.children;
-			while(_g < _g1.length) {
-				var _child = _g1[_g];
-				++_g;
-				_child._init();
-			}
-		}
-		this.inited = true;
-	}
-	,_reset: function(_) {
-		this.onreset();
-		this.emit(3);
-		if(this.component_count > 0) {
-			var _g_map;
-			var _g_index = 0;
-			_g_map = this._components.components;
-			while(_g_index < _g_map._keys.length) {
-				var _component = _g_map.map.get(_g_map._keys[_g_index++]);
-				_component.onreset();
-			}
-		}
-		if(this.children.length > 0) {
-			var _g = 0;
-			var _g1 = this.children;
-			while(_g < _g1.length) {
-				var _child = _g1[_g];
-				++_g;
-				_child._reset(_);
-			}
-		}
-		var _rate = this.fixed_rate;
-		if(this.fixed_rate_timer != null) {
-			this.fixed_rate_timer.stop();
-			this.fixed_rate_timer = null;
-		}
-		if(_rate != 0 && this.get_parent() == null && !this.destroyed) {
-			this.fixed_rate_timer = new snow_api_Timer(_rate);
-			this.fixed_rate_timer.run = $bind(this,this._fixed_update);
-		}
-		this.started = true;
-	}
-	,destroy: function(_from_parent) {
-		if(_from_parent == null) {
-			_from_parent = false;
-		}
-		if(this.destroyed != false) {
-			throw new js__$Boot_HaxeError(luxe_DebugError.assertion("destroyed == false" + (" ( " + ("entity / destroying repeatedly " + this.get_name()) + " )")));
-		}
-		if(this.children.length > 0) {
-			var _g = 0;
-			var _g1 = this.children;
-			while(_g < _g1.length) {
-				var _child = _g1[_g];
-				++_g;
-				_child.destroy(true);
-				_child = null;
-			}
-		}
-		if(this.component_count > 0) {
-			var _g_map;
-			var _g_index = 0;
-			_g_map = this._components.components;
-			while(_g_index < _g_map._keys.length) {
-				var _component = _g_map.map.get(_g_map._keys[_g_index++]);
-				_component.onremoved();
-				_component.ondestroy();
-				_component = null;
-			}
-		}
-		this.children = null;
-		this._components.destroy();
-		this._components = null;
-		this.component_count = 0;
-		this.emit(8);
-		this.ondestroy();
-		if(this.get_parent() != null && !_from_parent) {
-			this.get_parent()._remove_child(this);
-		}
-		if(this.fixed_rate_timer != null) {
-			this.fixed_rate_timer.stop();
-			this.fixed_rate_timer = null;
-		}
-		this.destroyed = true;
-		this.inited = false;
-		this.started = false;
-		if(this.get_scene() != null) {
-			this.get_scene().remove(this);
-		}
-		if(this.events != null) {
-			this.events.destroy();
-			this.events = null;
-		}
-		if(this.get_transform() != null) {
-			this.get_transform().destroy();
-			this.set_transform(null);
-		}
-		this._emitter_destroy();
-		this.set_id(null);
-	}
-	,_update: function(dt) {
-		if(this.destroyed) {
-			return;
-		}
-		if(!this.get_active() || !this.inited || !this.started) {
-			return;
-		}
-		var _this = this.get_transform();
-		if(_this.parent != null && _this.parent.dirty) {
-			_this.parent.clean_check();
-		}
-		if(_this.dirty && !_this._cleaning && !_this.manual_update) {
-			_this.clean();
-		}
-		this.update(dt);
-		if(this.events != null) {
-			this.events.process();
-		}
-		if(this.component_count > 0) {
-			var _g_map;
-			var _g_index = 0;
-			_g_map = this._components.components;
-			while(_g_index < _g_map._keys.length) {
-				var _component = _g_map.map.get(_g_map._keys[_g_index++]);
-				_component.update(dt);
-			}
-		}
-		if(this.children != null && this.children.length > 0) {
-			var _g = 0;
-			var _g1 = this.children;
-			while(_g < _g1.length) {
-				var _child = _g1[_g];
-				++_g;
-				_child._update(dt);
-			}
-		}
-	}
-	,_fixed_update: function() {
-		if(this.destroyed) {
-			return;
-		}
-		if(!this.get_active() || !this.inited || !this.started) {
-			return;
-		}
-		this.emit(7);
-		this.onfixedupdate(this.fixed_rate);
-		if(this.component_count > 0) {
-			var _g_map;
-			var _g_index = 0;
-			_g_map = this._components.components;
-			while(_g_index < _g_map._keys.length) {
-				var _component = _g_map.map.get(_g_map._keys[_g_index++]);
-				_component.onfixedupdate(this.fixed_rate);
-			}
-		}
-		if(this.children.length > 0) {
-			var _g = 0;
-			var _g1 = this.children;
-			while(_g < _g1.length) {
-				var _child = _g1[_g];
-				++_g;
-				_child._fixed_update();
-			}
-		}
-	}
-	,_find_emit_source: function(_from_unlisten) {
-		if(_from_unlisten == null) {
-			_from_unlisten = false;
-		}
-		var _source = null;
-		if(this.get_scene() != null) {
-			_source = this.get_scene();
-		} else if(this.get_parent() != null) {
-			var _looking = true;
-			var _parent = this.get_parent();
-			while(_looking) if(_parent.get_scene() == null) {
-				if(_parent.get_parent() == null) {
-					if(!_from_unlisten) {
-						haxe_Log.trace("   i / entity / " + "entity has no parent or scene, currently no core events will reach it.",{ fileName : "Entity.hx", lineNumber : 518, className : "luxe.Entity", methodName : "_find_emit_source"});
-					}
-					_looking = false;
-					break;
-				} else {
-					_parent = _parent.get_parent();
-				}
-			} else {
-				_source = _parent.get_scene();
-				_looking = false;
-				break;
-			}
-		} else if(!_from_unlisten) {
-			haxe_Log.trace("   i / entity / " + "entity has no parent or scene, currently no core events will reach it.",{ fileName : "Entity.hx", lineNumber : 540, className : "luxe.Entity", methodName : "_find_emit_source"});
-		}
-		return _source;
-	}
-	,_listen: function(_event,_handler,_self) {
-		if(_self == null) {
-			_self = false;
-		}
-		if(!_self) {
-			this.on(_event,_handler);
-		}
-		var _source = null;
-		if(this.get_scene() != null) {
-			_source = this.get_scene();
-		} else if(this.get_parent() != null) {
-			var _looking = true;
-			var _parent = this.get_parent();
-			while(_looking) if(_parent.get_scene() == null) {
-				if(_parent.get_parent() == null) {
-					haxe_Log.trace("   i / entity / " + "entity has no parent or scene, currently no core events will reach it.",{ fileName : "Entity.hx", lineNumber : 518, className : "luxe.Entity", methodName : "_find_emit_source"});
-					_looking = false;
-					break;
-				} else {
-					_parent = _parent.get_parent();
-				}
-			} else {
-				_source = _parent.get_scene();
-				_looking = false;
-				break;
-			}
-		} else {
-			haxe_Log.trace("   i / entity / " + "entity has no parent or scene, currently no core events will reach it.",{ fileName : "Entity.hx", lineNumber : 540, className : "luxe.Entity", methodName : "_find_emit_source"});
-		}
-		var _source1 = _source;
-		if(_source1 != null) {
-			switch(_event) {
-			case 12:
-				_source1.on(_event,$bind(this,this._keydown));
-				break;
-			case 13:
-				_source1.on(_event,$bind(this,this._keyup));
-				break;
-			case 14:
-				_source1.on(_event,$bind(this,this._textinput));
-				break;
-			case 15:
-				_source1.on(_event,$bind(this,this._inputdown));
-				break;
-			case 16:
-				_source1.on(_event,$bind(this,this._inputup));
-				break;
-			case 17:
-				_source1.on(_event,$bind(this,this._mousedown));
-				break;
-			case 18:
-				_source1.on(_event,$bind(this,this._mouseup));
-				break;
-			case 19:
-				_source1.on(_event,$bind(this,this._mousemove));
-				break;
-			case 20:
-				_source1.on(_event,$bind(this,this._mousewheel));
-				break;
-			case 21:
-				_source1.on(_event,$bind(this,this._touchdown));
-				break;
-			case 22:
-				_source1.on(_event,$bind(this,this._touchup));
-				break;
-			case 23:
-				_source1.on(_event,$bind(this,this._touchmove));
-				break;
-			case 24:
-				_source1.on(_event,$bind(this,this._gamepadaxis));
-				break;
-			case 25:
-				_source1.on(_event,$bind(this,this._gamepaddown));
-				break;
-			case 26:
-				_source1.on(_event,$bind(this,this._gamepadup));
-				break;
-			case 27:
-				_source1.on(_event,$bind(this,this._gamepaddevice));
-				break;
-			case 29:
-				_source1.on(_event,$bind(this,this._windowmoved));
-				break;
-			case 30:
-				_source1.on(_event,$bind(this,this._windowresized));
-				break;
-			case 31:
-				_source1.on(_event,$bind(this,this._windowsized));
-				break;
-			case 32:
-				_source1.on(_event,$bind(this,this._windowminimized));
-				break;
-			case 33:
-				_source1.on(_event,$bind(this,this._windowrestored));
-				break;
-			}
-		}
-	}
-	,_unlisten: function(_event,_handler,_self) {
-		if(_self == null) {
-			_self = false;
-		}
-		var _source = null;
-		if(this.get_scene() != null) {
-			_source = this.get_scene();
-		} else if(this.get_parent() != null) {
-			var _looking = true;
-			var _parent = this.get_parent();
-			while(_looking) if(_parent.get_scene() == null) {
-				if(_parent.get_parent() == null) {
-					_looking = false;
-					break;
-				} else {
-					_parent = _parent.get_parent();
-				}
-			} else {
-				_source = _parent.get_scene();
-				_looking = false;
-				break;
-			}
-		}
-		var _source1 = _source;
-		if(!_self) {
-			this.off(_event,_handler);
-		}
-		if(_source1 != null) {
-			switch(_event) {
-			case 12:
-				_source1.off(_event,$bind(this,this._keydown));
-				break;
-			case 13:
-				_source1.off(_event,$bind(this,this._keyup));
-				break;
-			case 14:
-				_source1.off(_event,$bind(this,this._textinput));
-				break;
-			case 15:
-				_source1.off(_event,$bind(this,this._inputdown));
-				break;
-			case 16:
-				_source1.off(_event,$bind(this,this._inputup));
-				break;
-			case 17:
-				_source1.off(_event,$bind(this,this._mousedown));
-				break;
-			case 18:
-				_source1.off(_event,$bind(this,this._mouseup));
-				break;
-			case 19:
-				_source1.off(_event,$bind(this,this._mousemove));
-				break;
-			case 20:
-				_source1.off(_event,$bind(this,this._mousewheel));
-				break;
-			case 21:
-				_source1.off(_event,$bind(this,this._touchdown));
-				break;
-			case 22:
-				_source1.off(_event,$bind(this,this._touchup));
-				break;
-			case 23:
-				_source1.off(_event,$bind(this,this._touchmove));
-				break;
-			case 24:
-				_source1.off(_event,$bind(this,this._gamepadaxis));
-				break;
-			case 25:
-				_source1.off(_event,$bind(this,this._gamepaddown));
-				break;
-			case 26:
-				_source1.off(_event,$bind(this,this._gamepadup));
-				break;
-			case 27:
-				_source1.off(_event,$bind(this,this._gamepaddevice));
-				break;
-			case 29:
-				_source1.off(_event,$bind(this,this._windowmoved));
-				break;
-			case 30:
-				_source1.off(_event,$bind(this,this._windowresized));
-				break;
-			case 31:
-				_source1.off(_event,$bind(this,this._windowsized));
-				break;
-			case 32:
-				_source1.off(_event,$bind(this,this._windowminimized));
-				break;
-			case 33:
-				_source1.off(_event,$bind(this,this._windowrestored));
-				break;
-			}
-		}
-	}
-	,_detach_scene: function() {
-		if(this.get_scene() != null) {
-			this.get_scene().off(3,$bind(this,this._reset));
-			this.get_scene().off(8,$bind(this,this.destroy));
-			this.get_scene().off(13,$bind(this,this._keyup));
-			this.get_scene().off(12,$bind(this,this._keydown));
-			this.get_scene().off(14,$bind(this,this._textinput));
-			this.get_scene().off(17,$bind(this,this._mousedown));
-			this.get_scene().off(18,$bind(this,this._mouseup));
-			this.get_scene().off(19,$bind(this,this._mousemove));
-			this.get_scene().off(20,$bind(this,this._mousewheel));
-			this.get_scene().off(21,$bind(this,this._touchdown));
-			this.get_scene().off(22,$bind(this,this._touchup));
-			this.get_scene().off(23,$bind(this,this._touchmove));
-			this.get_scene().off(16,$bind(this,this._inputup));
-			this.get_scene().off(15,$bind(this,this._inputdown));
-			this.get_scene().off(25,$bind(this,this._gamepaddown));
-			this.get_scene().off(26,$bind(this,this._gamepadup));
-			this.get_scene().off(24,$bind(this,this._gamepadaxis));
-			this.get_scene().off(27,$bind(this,this._gamepaddevice));
-			this.get_scene().off(29,$bind(this,this._windowmoved));
-			this.get_scene().off(30,$bind(this,this._windowresized));
-			this.get_scene().off(31,$bind(this,this._windowsized));
-			this.get_scene().off(32,$bind(this,this._windowminimized));
-			this.get_scene().off(33,$bind(this,this._windowrestored));
-		}
-	}
-	,_attach_scene: function() {
-		if(this.get_scene() != null) {
-			this.get_scene().on(3,$bind(this,this._reset));
-			this.get_scene().on(8,$bind(this,this.destroy));
-		}
-	}
-	,_keyup: function(_event) {
-		if(!this.get_active() || !this.inited || !this.started) {
-			return;
-		}
-		this.onkeyup(_event);
-		this.emit(13,_event);
-	}
-	,_keydown: function(_event) {
-		if(!this.get_active() || !this.inited || !this.started) {
-			return;
-		}
-		this.onkeydown(_event);
-		this.emit(12,_event);
-	}
-	,_textinput: function(_event) {
-		if(!this.get_active() || !this.inited || !this.started) {
-			return;
-		}
-		this.ontextinput(_event);
-		this.emit(14,_event);
-	}
-	,_mousedown: function(_event) {
-		if(!this.get_active() || !this.inited || !this.started) {
-			return;
-		}
-		this.onmousedown(_event);
-		this.emit(17,_event);
-	}
-	,_mouseup: function(_event) {
-		if(!this.get_active() || !this.inited || !this.started) {
-			return;
-		}
-		this.onmouseup(_event);
-		this.emit(18,_event);
-	}
-	,_mousewheel: function(_event) {
-		if(!this.get_active() || !this.inited || !this.started) {
-			return;
-		}
-		this.onmousewheel(_event);
-		this.emit(20,_event);
-	}
-	,_mousemove: function(_event) {
-		if(!this.get_active() || !this.inited || !this.started) {
-			return;
-		}
-		this.onmousemove(_event);
-		this.emit(19,_event);
-	}
-	,_touchdown: function(_event) {
-		if(!this.get_active() || !this.inited || !this.started) {
-			return;
-		}
-		this.ontouchdown(_event);
-		this.emit(21,_event);
-	}
-	,_touchup: function(_event) {
-		if(!this.get_active() || !this.inited || !this.started) {
-			return;
-		}
-		this.ontouchup(_event);
-		this.emit(22,_event);
-	}
-	,_touchmove: function(_event) {
-		if(!this.get_active() || !this.inited || !this.started) {
-			return;
-		}
-		this.ontouchmove(_event);
-		this.emit(23,_event);
-	}
-	,_gamepadaxis: function(_event) {
-		if(!this.get_active() || !this.inited || !this.started) {
-			return;
-		}
-		this.ongamepadaxis(_event);
-		this.emit(24,_event);
-	}
-	,_gamepaddown: function(_event) {
-		if(!this.get_active() || !this.inited || !this.started) {
-			return;
-		}
-		this.ongamepaddown(_event);
-		this.emit(25,_event);
-	}
-	,_gamepadup: function(_event) {
-		if(!this.get_active() || !this.inited || !this.started) {
-			return;
-		}
-		this.ongamepadup(_event);
-		this.emit(26,_event);
-	}
-	,_gamepaddevice: function(_event) {
-		if(!this.get_active() || !this.inited || !this.started) {
-			return;
-		}
-		this.ongamepaddevice(_event);
-		this.emit(27,_event);
-	}
-	,_windowmoved: function(_event) {
-		if(!this.get_active() || !this.inited || !this.started) {
-			return;
-		}
-		this.onwindowmoved(_event);
-		this.emit(29,_event);
-	}
-	,_windowresized: function(_event) {
-		if(!this.get_active() || !this.inited || !this.started) {
-			return;
-		}
-		this.onwindowresized(_event);
-		this.emit(30,_event);
-	}
-	,_windowsized: function(_event) {
-		if(!this.get_active() || !this.inited || !this.started) {
-			return;
-		}
-		this.onwindowsized(_event);
-		this.emit(31,_event);
-	}
-	,_windowminimized: function(_event) {
-		if(!this.get_active() || !this.inited || !this.started) {
-			return;
-		}
-		this.onwindowminimized(_event);
-		this.emit(32,_event);
-	}
-	,_windowrestored: function(_event) {
-		if(!this.get_active() || !this.inited || !this.started) {
-			return;
-		}
-		this.onwindowrestored(_event);
-		this.emit(33,_event);
-	}
-	,_inputdown: function(_event) {
-		if(!this.get_active() || !this.inited || !this.started) {
-			return;
-		}
-		this.oninputdown(_event);
-		this.emit(15,_event);
-	}
-	,_inputup: function(_event) {
-		if(!this.get_active() || !this.inited || !this.started) {
-			return;
-		}
-		this.oninputup(_event);
-		this.emit(16,_event);
-	}
-	,get_fixed_rate: function() {
-		return this.fixed_rate;
-	}
-	,set_fixed_rate: function(_rate) {
-		this.fixed_rate = _rate;
-		if(this.started) {
-			if(this.fixed_rate_timer != null) {
-				this.fixed_rate_timer.stop();
-				this.fixed_rate_timer = null;
-			}
-			if(_rate != 0 && this.get_parent() == null && !this.destroyed) {
-				this.fixed_rate_timer = new snow_api_Timer(_rate);
-				this.fixed_rate_timer.run = $bind(this,this._fixed_update);
-			}
-		}
-		return this.fixed_rate;
-	}
-	,_stop_fixed_rate_timer: function() {
-		if(this.fixed_rate_timer != null) {
-			this.fixed_rate_timer.stop();
-			this.fixed_rate_timer = null;
-		}
-	}
-	,_set_fixed_rate_timer: function(_rate) {
-		if(this.fixed_rate_timer != null) {
-			this.fixed_rate_timer.stop();
-			this.fixed_rate_timer = null;
-		}
-		if(_rate != 0 && this.get_parent() == null && !this.destroyed) {
-			this.fixed_rate_timer = new snow_api_Timer(_rate);
-			this.fixed_rate_timer.run = $bind(this,this._fixed_update);
-		}
-	}
-	,get_components: function() {
-		return this._components.components;
-	}
-	,_add_child: function(child) {
-		this.children.push(child);
-		child.set_scene_root(this.scene_root);
-		if(child.get_scene() != null) {
-			var _removed = child.get_scene().remove(child);
-		} else {
-			if(this.inited && !child.inited) {
-				this.scene_root._delayed_init_entities.push(child);
-			}
-			if(this.started && !child.started) {
-				this.scene_root._delayed_reset_entities.push(child);
-			}
-		}
-	}
-	,_remove_child: function(child) {
-		HxOverrides.remove(this.children,child);
-	}
-	,set_pos_from_transform: function(_pos) {
-		if(this.component_count > 0) {
-			var _g_map;
-			var _g_index = 0;
-			_g_map = this._components.components;
-			while(_g_index < _g_map._keys.length) {
-				var _component = _g_map.map.get(_g_map._keys[_g_index++]);
-				_component.entity_pos_change(_pos);
-			}
-		}
-	}
-	,set_rotation_from_transform: function(_rotation) {
-		if(this.component_count > 0) {
-			var _g_map;
-			var _g_index = 0;
-			_g_map = this._components.components;
-			while(_g_index < _g_map._keys.length) {
-				var _component = _g_map.map.get(_g_map._keys[_g_index++]);
-				_component.entity_rotation_change(_rotation);
-			}
-		}
-	}
-	,set_scale_from_transform: function(_scale) {
-		if(this.component_count > 0) {
-			var _g_map;
-			var _g_index = 0;
-			_g_map = this._components.components;
-			while(_g_index < _g_map._keys.length) {
-				var _component = _g_map.map.get(_g_map._keys[_g_index++]);
-				_component.entity_scale_change(_scale);
-			}
-		}
-	}
-	,set_origin_from_transform: function(_origin) {
-		if(this.component_count > 0) {
-			var _g_map;
-			var _g_index = 0;
-			_g_map = this._components.components;
-			while(_g_index < _g_map._keys.length) {
-				var _component = _g_map.map.get(_g_map._keys[_g_index++]);
-				_component.entity_origin_change(_origin);
-			}
-		}
-	}
-	,set_parent_from_transform: function(_parent) {
-		if(this.component_count > 0) {
-			var _g_map;
-			var _g_index = 0;
-			_g_map = this._components.components;
-			while(_g_index < _g_map._keys.length) {
-				var _component = _g_map.map.get(_g_map._keys[_g_index++]);
-				_component.entity_parent_change(_parent);
-			}
-		}
-	}
-	,set_pos: function(_p) {
-		var _this = this.get_transform().local;
-		_this.pos = _p;
-		if(_p != null) {
-			var _v = _this.pos;
-			var listener = $bind(_this,_this._pos_change);
-			_v.listen_x = listener;
-			_v.listen_y = listener;
-			_v.listen_z = listener;
-			if(_this.pos_changed != null && !_this.ignore_listeners) {
-				_this.pos_changed(_this.pos);
-			}
-		}
-		return _this.pos;
-	}
-	,get_pos: function() {
-		return this.get_transform().local.pos;
-	}
-	,set_rotation: function(_r) {
-		var _this = this.get_transform().local;
-		_this.rotation = _r;
-		if(_r != null) {
-			var _q = _this.rotation;
-			var listener = $bind(_this,_this._rotation_change);
-			_q.listen_x = listener;
-			_q.listen_y = listener;
-			_q.listen_z = listener;
-			_q.listen_w = listener;
-			if(_this.rotation_changed != null && !_this.ignore_listeners) {
-				_this.rotation_changed(_this.rotation);
-			}
-		}
-		return _this.rotation;
-	}
-	,get_rotation: function() {
-		return this.get_transform().local.rotation;
-	}
-	,set_scale: function(_s) {
-		var _this = this.get_transform().local;
-		_this.scale = _s;
-		if(_s != null) {
-			var _v = _this.scale;
-			var listener = $bind(_this,_this._scale_change);
-			_v.listen_x = listener;
-			_v.listen_y = listener;
-			_v.listen_z = listener;
-			if(_this.scale_changed != null && !_this.ignore_listeners) {
-				_this.scale_changed(_this.scale);
-			}
-		}
-		return _this.scale;
-	}
-	,get_scale: function() {
-		return this.get_transform().local.scale;
-	}
-	,set_origin: function(_origin) {
-		var _this = this.get_transform();
-		_this.dirty = true;
-		if(_this.dirty && !_this._setup && _this._dirty_handlers != null && _this._dirty_handlers.length > 0) {
-			var _g = 0;
-			var _g1 = _this._dirty_handlers;
-			while(_g < _g1.length) {
-				var _handler = _g1[_g];
-				++_g;
-				if(_handler != null) {
-					_handler(_this);
+$hxClasses["mint.Image"] = mint_Image;
+mint_Image.__name__ = ["mint","Image"];
+mint_Image.__super__ = mint_Control;
+mint_Image.prototype = $extend(mint_Control.prototype,{
+	destroy: function() {
+		mint_Control.prototype.destroy.call(this);
+		var _this = this.onchange;
+		_this.listeners = null;
+		_this.listeners = [];
+		this.onchange = null;
+	}
+	,set_path: function(_p) {
+		if(this.path == null) {
+			return this.path = _p;
+		}
+		this.path = _p;
+		var _idx = 0;
+		var _count = this.onchange.listeners.length;
+		while(_idx < _count) {
+			if(this.onchange != null) {
+				var fn = this.onchange.listeners[_idx];
+				if(fn != null) {
+					fn(this.path);
 				}
 			}
+			++_idx;
 		}
-		_this.origin = _origin;
-		if(_this._origin_handlers != null && _this._origin_handlers.length > 0) {
-			var _origin1 = _this.origin;
-			var _g2 = 0;
-			var _g11 = _this._origin_handlers;
-			while(_g2 < _g11.length) {
-				var _handler1 = _g11[_g2];
-				++_g2;
-				if(_handler1 != null) {
-					_handler1(_origin1);
+		if(this.onchange != null) {
+			while(_count > 0) {
+				var fn1 = this.onchange.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onchange.listeners.splice(_count - 1,1);
 				}
+				--_count;
 			}
 		}
-		return _this.origin;
+		return this.path;
 	}
-	,get_origin: function() {
-		return this.get_transform().origin;
-	}
-	,set_transform: function(_transform) {
-		return this.transform = _transform;
-	}
-	,get_transform: function() {
-		return this.transform;
-	}
-	,set_parent: function(other) {
-		if(other == this) {
-			throw new js__$Boot_HaxeError(luxe_DebugError.assertion("other != this" + (" ( " + "Entity setting itself as parent makes no sense" + " )")));
-		}
-		if(this.get_parent() != null) {
-			this.get_parent()._remove_child(this);
-		}
-		this.parent = other;
-		if(this.get_parent() != null) {
-			this.get_parent()._add_child(this);
-			var _this = this.get_transform();
-			var _p = this.get_parent().get_transform();
-			_this.dirty = true;
-			if(_this.dirty && !_this._setup && _this._dirty_handlers != null && _this._dirty_handlers.length > 0) {
-				var _g = 0;
-				var _g1 = _this._dirty_handlers;
-				while(_g < _g1.length) {
-					var _handler = _g1[_g];
-					++_g;
-					if(_handler != null) {
-						_handler(_this);
-					}
-				}
-			}
-			if(_this.parent != null) {
-				var _this1 = _this.parent;
-				if(_this1._clean_handlers != null) {
-					HxOverrides.remove(_this1._clean_handlers,$bind(_this,_this.on_parent_cleaned));
-				}
-			}
-			_this.parent = _p;
-			if(_this._parent_handlers != null && _this._parent_handlers.length > 0) {
-				var _parent = _this.parent;
-				var _g2 = 0;
-				var _g11 = _this._parent_handlers;
-				while(_g2 < _g11.length) {
-					var _handler1 = _g11[_g2];
-					++_g2;
-					if(_handler1 != null) {
-						_handler1(_parent);
-					}
-				}
-			}
-			if(_this.parent != null) {
-				var _this2 = _this.parent;
-				if(_this2._clean_handlers == null) {
-					_this2._clean_handlers = [];
-				}
-				_this2._clean_handlers.push($bind(_this,_this.on_parent_cleaned));
-			}
-		} else {
-			var _this3 = this.get_transform();
-			_this3.dirty = true;
-			if(_this3.dirty && !_this3._setup && _this3._dirty_handlers != null && _this3._dirty_handlers.length > 0) {
-				var _g3 = 0;
-				var _g12 = _this3._dirty_handlers;
-				while(_g3 < _g12.length) {
-					var _handler2 = _g12[_g3];
-					++_g3;
-					if(_handler2 != null) {
-						_handler2(_this3);
-					}
-				}
-			}
-			if(_this3.parent != null) {
-				var _this4 = _this3.parent;
-				if(_this4._clean_handlers != null) {
-					HxOverrides.remove(_this4._clean_handlers,$bind(_this3,_this3.on_parent_cleaned));
-				}
-			}
-			_this3.parent = null;
-			if(_this3._parent_handlers != null && _this3._parent_handlers.length > 0) {
-				var _parent1 = _this3.parent;
-				var _g4 = 0;
-				var _g13 = _this3._parent_handlers;
-				while(_g4 < _g13.length) {
-					var _handler3 = _g13[_g4];
-					++_g4;
-					if(_handler3 != null) {
-						_handler3(_parent1);
-					}
-				}
-			}
-			if(_this3.parent != null) {
-				var _this5 = _this3.parent;
-				if(_this5._clean_handlers == null) {
-					_this5._clean_handlers = [];
-				}
-				_this5._clean_handlers.push($bind(_this3,_this3.on_parent_cleaned));
-			}
-			this.scene_root.add(this);
-		}
-		return this.get_parent();
-	}
-	,get_parent: function() {
-		return this.parent;
-	}
-	,set_scene: function(_scene) {
-		this._detach_scene();
-		this.scene = _scene;
-		this._attach_scene();
-		return this.get_scene();
-	}
-	,get_scene: function() {
-		return this.scene;
-	}
-	,set_scene_root: function(_scene) {
-		this.scene_root = _scene;
-		var _g = 0;
-		var _g1 = this.children;
-		while(_g < _g1.length) {
-			var _child = _g1[_g];
-			++_g;
-			_child.set_scene_root(_scene);
-		}
-		return this.scene_root;
-	}
-	,set_name: function(_name) {
-		var _scene = this.get_scene();
-		if(_scene != null && this.get_name() != null) {
-			_scene.entities.remove(this.get_name());
-			if(_scene.entities.exists(_name)) {
-				haxe_Log.trace("    i / scene / " + ("" + _scene.get_name() + " / adding a second entity named " + _name + "!\r\n                This will replace the existing one, possibly leaving the previous one in limbo."),{ fileName : "Scene.hx", lineNumber : 96, className : "luxe.Scene", methodName : "handle_duplicate_warning"});
-			}
-			var _this = _scene.entities;
-			if(__map_reserved[_name] != null) {
-				_this.setReserved(_name,this);
-			} else {
-				_this.h[_name] = this;
-			}
-			_scene._has_changed = true;
-		}
-		return this.name = _name;
-	}
-	,set_active: function(_active) {
-		return this.active = _active;
-	}
-	,get_active: function() {
-		return this.active;
-	}
-	,toString: function() {
-		if(this.destroyed) {
-			return "luxe Entity: " + this.get_name() + " / DESTROYED / id: " + this.get_id();
-		}
-		var _list = [];
-		var _c = HxOverrides.iter(this._components.components._keys);
-		while(_c.hasNext()) {
-			var _c1 = _c.next();
-			_list.push(_c1);
-		}
-		return "luxe Entity: " + this.get_name() + " / " + Lambda.count(this._components.components) + " components:[" + _list.join(", ") + "] / id: " + this.get_id();
-	}
-	,__class__: luxe_Entity
-	,__properties__: $extend(luxe_Objects.prototype.__properties__,{set_scene_root:"set_scene_root",set_origin:"set_origin",get_origin:"get_origin",set_scale:"set_scale",get_scale:"get_scale",set_rotation:"set_rotation",get_rotation:"get_rotation",set_pos:"set_pos",get_pos:"get_pos",set_transform:"set_transform",get_transform:"get_transform",set_active:"set_active",get_active:"get_active",set_scene:"set_scene",get_scene:"get_scene",set_parent:"set_parent",get_parent:"get_parent",set_fixed_rate:"set_fixed_rate",get_fixed_rate:"get_fixed_rate",get_components:"get_components"})
-});
-var luxe_Visual = function(_options) {
-	this.ignore_texture_on_geometry_change = false;
-	this._creating_geometry = false;
-	this._has_custom_origin = false;
-	this.radians = 0.0;
-	this.depth = 0.0;
-	this.visible = true;
-	this.locked = false;
-	if(_options == null) {
-		throw new js__$Boot_HaxeError(luxe_DebugError.null_assertion("_options was null" + (" ( " + "Visual requires non-null options" + " )")));
-	}
-	this._rotation_euler = new phoenix_Vector();
-	this._rotation_quat = new phoenix_Quaternion();
-	luxe_Entity.call(this,_options);
-	this.set_color(new phoenix_Color());
-	this.set_size(new phoenix_Vector());
-	if(this.options.texture != null) {
-		this.set_texture(this.options.texture);
-	}
-	if(this.options.shader != null) {
-		this.set_shader(this.options.shader);
-	}
-	if(this.options.color != null) {
-		this.set_color(this.options.color);
-	}
-	if(this.options.depth != null) {
-		this.set_depth(this.options.depth);
-	}
-	if(this.options.visible != null) {
-		this.set_visible(this.options.visible);
-	}
-	if(this.options.size != null) {
-		this.set_size(this.options.size);
-		this._create_geometry();
-	} else if(this.texture != null) {
-		this.set_size(new phoenix_Vector(this.texture.width,this.texture.height));
-		this._create_geometry();
-	} else {
-		this.set_size(new phoenix_Vector(64,64));
-		this._create_geometry();
-	}
-};
-$hxClasses["luxe.Visual"] = luxe_Visual;
-luxe_Visual.__name__ = ["luxe","Visual"];
-luxe_Visual.__super__ = luxe_Entity;
-luxe_Visual.prototype = $extend(luxe_Entity.prototype,{
-	_create_geometry: function() {
-		if(this.options.geometry == null) {
-			if(this.options.no_geometry == null || this.options.no_geometry == false) {
-				this._creating_geometry = true;
-				var _batcher = null;
-				if(this.options.no_batcher_add == null || this.options.no_batcher_add == false) {
-					if(this.options.batcher != null) {
-						_batcher = this.options.batcher;
-					} else {
-						_batcher = Luxe.renderer.batcher;
-					}
-				}
-				var tmp = this.get_name() + ".visual";
-				var tmp1 = this.options.depth == null ? 0 : this.options.depth;
-				var tmp2 = this.options.visible == null ? this.visible : this.options.visible;
-				this.set_geometry(new phoenix_geometry_QuadGeometry({ id : tmp, x : 0, y : 0, w : this.size.x, h : this.size.y, scale : new phoenix_Vector(1,1,1), texture : this.texture, color : this.color, shader : this.shader, batcher : _batcher, depth : tmp1, visible : tmp2}));
-				this._creating_geometry = false;
-				this.on_geometry_created();
-			}
-		} else {
-			this.set_geometry(this.options.geometry);
-		}
-		if(this.geometry != null) {
-			var tmp3 = this.get_name();
-			this.geometry.id = tmp3 + ".visual";
-			var tmp4 = this.get_name();
-			this.geometry.transform.id = tmp4 + ".visual.transform";
-		}
-		if(this.options.origin != null) {
-			this._has_custom_origin = true;
-			this.set_origin(this.options.origin);
-		}
-		if(this.options.rotation_z != null) {
-			this.set_rotation_z(this.options.rotation_z);
-		}
-	}
-	,ondestroy: function() {
-		if(this.geometry != null && this.geometry.added) {
-			this.geometry.drop(true);
-		}
-		this.set_transform(null);
-		this.options = null;
-		this.set_geometry(null);
-		this.set_texture(null);
-		this.set_shader(null);
-		this.set_color(null);
-		this.set_size(null);
-		this.set_clip_rect(null);
-		this._rotation_euler = null;
-		this._rotation_quat = null;
-	}
-	,on_geometry_created: function() {
-	}
-	,set_visible: function(_v) {
-		this.visible = _v;
-		if(this.geometry != null) {
-			this.geometry.set_visible(this.visible);
-		}
-		return this.visible;
-	}
-	,set_depth: function(_v) {
-		if(this.geometry != null) {
-			this.geometry.set_depth(_v);
-		}
-		return this.depth = _v;
-	}
-	,set_color: function(_c) {
-		if(this.color != null && this.geometry != null) {
-			this.geometry.set_color(_c);
-		}
-		return this.color = _c;
-	}
-	,set_texture: function(_t) {
-		if(this.geometry != null && this.geometry.state.texture != _t) {
-			this.geometry.set_texture(_t);
-		}
-		return this.texture = _t;
-	}
-	,set_shader: function(_s) {
-		if(this.geometry != null && this.geometry.state.shader != _s) {
-			this.geometry.set_shader(_s);
-		}
-		return this.shader = _s;
-	}
-	,set_geometry: function(_g) {
-		if(this.geometry == _g) {
-			return this.geometry;
-		}
-		if(this.geometry != null) {
-			this.geometry.drop();
-		}
-		this.geometry = _g;
-		if(this.geometry != null) {
-			var _this = this.geometry.transform;
-			var _p = this.get_transform();
-			_this.dirty = true;
-			if(_this.dirty && !_this._setup && _this._dirty_handlers != null && _this._dirty_handlers.length > 0) {
-				var _g1 = 0;
-				var _g11 = _this._dirty_handlers;
-				while(_g1 < _g11.length) {
-					var _handler = _g11[_g1];
-					++_g1;
-					if(_handler != null) {
-						_handler(_this);
-					}
-				}
-			}
-			if(_this.parent != null) {
-				var _this1 = _this.parent;
-				if(_this1._clean_handlers != null) {
-					HxOverrides.remove(_this1._clean_handlers,$bind(_this,_this.on_parent_cleaned));
-				}
-			}
-			_this.parent = _p;
-			if(_this._parent_handlers != null && _this._parent_handlers.length > 0) {
-				var _parent = _this.parent;
-				var _g2 = 0;
-				var _g12 = _this._parent_handlers;
-				while(_g2 < _g12.length) {
-					var _handler1 = _g12[_g2];
-					++_g2;
-					if(_handler1 != null) {
-						_handler1(_parent);
-					}
-				}
-			}
-			if(_this.parent != null) {
-				var _this2 = _this.parent;
-				if(_this2._clean_handlers == null) {
-					_this2._clean_handlers = [];
-				}
-				_this2._clean_handlers.push($bind(_this,_this.on_parent_cleaned));
-			}
-			if(this._creating_geometry == false) {
-				this.geometry.set_color(this.color);
-				this.geometry.set_depth(this.depth);
-				this.geometry.set_visible(this.visible);
-				var tmp = !this.ignore_texture_on_geometry_change;
-			}
-		}
-		return this.geometry;
-	}
-	,set_parent_from_transform: function(_parent) {
-		luxe_Entity.prototype.set_parent_from_transform.call(this,_parent);
-		if(this.geometry != null) {
-			var _this = this.geometry.transform;
-			var _p = this.get_transform();
-			_this.dirty = true;
-			if(_this.dirty && !_this._setup && _this._dirty_handlers != null && _this._dirty_handlers.length > 0) {
-				var _g = 0;
-				var _g1 = _this._dirty_handlers;
-				while(_g < _g1.length) {
-					var _handler = _g1[_g];
-					++_g;
-					if(_handler != null) {
-						_handler(_this);
-					}
-				}
-			}
-			if(_this.parent != null) {
-				var _this1 = _this.parent;
-				if(_this1._clean_handlers != null) {
-					HxOverrides.remove(_this1._clean_handlers,$bind(_this,_this.on_parent_cleaned));
-				}
-			}
-			_this.parent = _p;
-			if(_this._parent_handlers != null && _this._parent_handlers.length > 0) {
-				var _parent1 = _this.parent;
-				var _g2 = 0;
-				var _g11 = _this._parent_handlers;
-				while(_g2 < _g11.length) {
-					var _handler1 = _g11[_g2];
-					++_g2;
-					if(_handler1 != null) {
-						_handler1(_parent1);
-					}
-				}
-			}
-			if(_this.parent != null) {
-				var _this2 = _this.parent;
-				if(_this2._clean_handlers == null) {
-					_this2._clean_handlers = [];
-				}
-				_this2._clean_handlers.push($bind(_this,_this.on_parent_cleaned));
-			}
-		}
-	}
-	,set_rotation_from_transform: function(_rotation) {
-		luxe_Entity.prototype.set_rotation_from_transform.call(this,_rotation);
-		var _this = this._rotation_euler;
-		var sqx = _rotation.x * _rotation.x;
-		var sqy = _rotation.y * _rotation.y;
-		var sqz = _rotation.z * _rotation.z;
-		var sqw = _rotation.w * _rotation.w;
-		var _x = _this.x;
-		var _y = _this.y;
-		var _z = _this.z;
-		if(0 == 0) {
-			_x = Math.atan2(2 * (_rotation.x * _rotation.w - _rotation.y * _rotation.z),sqw - sqx - sqy + sqz);
-			var value = 2 * (_rotation.x * _rotation.z + _rotation.y * _rotation.w);
-			_y = Math.asin(value < -1 ? -1 : value > 1 ? 1 : value);
-			_z = Math.atan2(2 * (_rotation.z * _rotation.w - _rotation.x * _rotation.y),sqw + sqx - sqy - sqz);
-		} else if(0 == 1) {
-			var value1 = 2 * (_rotation.x * _rotation.w - _rotation.y * _rotation.z);
-			_x = Math.asin(value1 < -1 ? -1 : value1 > 1 ? 1 : value1);
-			_y = Math.atan2(2 * (_rotation.x * _rotation.z + _rotation.y * _rotation.w),sqw - sqx - sqy + sqz);
-			_z = Math.atan2(2 * (_rotation.x * _rotation.y + _rotation.z * _rotation.w),sqw - sqx + sqy - sqz);
-		} else if(0 == 2) {
-			var value2 = 2 * (_rotation.x * _rotation.w + _rotation.y * _rotation.z);
-			_x = Math.asin(value2 < -1 ? -1 : value2 > 1 ? 1 : value2);
-			_y = Math.atan2(2 * (_rotation.y * _rotation.w - _rotation.z * _rotation.x),sqw - sqx - sqy + sqz);
-			_z = Math.atan2(2 * (_rotation.z * _rotation.w - _rotation.x * _rotation.y),sqw - sqx + sqy - sqz);
-		} else if(0 == 3) {
-			_x = Math.atan2(2 * (_rotation.x * _rotation.w + _rotation.z * _rotation.y),sqw - sqx - sqy + sqz);
-			var value3 = 2 * (_rotation.y * _rotation.w - _rotation.x * _rotation.z);
-			_y = Math.asin(value3 < -1 ? -1 : value3 > 1 ? 1 : value3);
-			_z = Math.atan2(2 * (_rotation.x * _rotation.y + _rotation.z * _rotation.w),sqw + sqx - sqy - sqz);
-		} else if(0 == 4) {
-			_x = Math.atan2(2 * (_rotation.x * _rotation.w - _rotation.z * _rotation.y),sqw - sqx + sqy - sqz);
-			_y = Math.atan2(2 * (_rotation.y * _rotation.w - _rotation.x * _rotation.z),sqw + sqx - sqy - sqz);
-			var value4 = 2 * (_rotation.x * _rotation.y + _rotation.z * _rotation.w);
-			_z = Math.asin(value4 < -1 ? -1 : value4 > 1 ? 1 : value4);
-		} else if(0 == 5) {
-			_x = Math.atan2(2 * (_rotation.x * _rotation.w + _rotation.y * _rotation.z),sqw - sqx + sqy - sqz);
-			_y = Math.atan2(2 * (_rotation.x * _rotation.z + _rotation.y * _rotation.w),sqw + sqx - sqy - sqz);
-			var value5 = 2 * (_rotation.z * _rotation.w - _rotation.x * _rotation.y);
-			_z = Math.asin(value5 < -1 ? -1 : value5 > 1 ? 1 : value5);
-		}
-		var prev = _this.ignore_listeners;
-		_this.ignore_listeners = true;
-		_this.x = _x;
-		if(!_this._construct) {
-			if(_this.listen_x != null && !_this.ignore_listeners) {
-				_this.listen_x(_x);
-			}
-		}
-		_this.y = _y;
-		if(!_this._construct) {
-			if(_this.listen_y != null && !_this.ignore_listeners) {
-				_this.listen_y(_y);
-			}
-		}
-		_this.z = _z;
-		if(!_this._construct) {
-			if(_this.listen_z != null && !_this.ignore_listeners) {
-				_this.listen_z(_z);
-			}
-		}
-		_this.ignore_listeners = prev;
-		if(_this.listen_x != null && !_this.ignore_listeners) {
-			_this.listen_x(_this.x);
-		}
-		if(_this.listen_y != null && !_this.ignore_listeners) {
-			_this.listen_y(_this.y);
-		}
-		if(_this.listen_z != null && !_this.ignore_listeners) {
-			_this.listen_z(_this.z);
-		}
-		this._rotation_quat.copy(_rotation);
-	}
-	,set_size: function(_v) {
-		this.size = _v;
-		if(this.size != null) {
-			var _v1 = this.size;
-			var listener = $bind(this,this._size_change);
-			_v1.listen_x = listener;
-			_v1.listen_y = listener;
-			_v1.listen_z = listener;
-		}
-		return this.size;
-	}
-	,get_blend_src: function() {
-		return this.geometry.state.blend_src_alpha;
-	}
-	,get_blend_dest: function() {
-		return this.geometry.state.blend_dest_alpha;
-	}
-	,get_blend_src_alpha: function() {
-		return this.geometry.state.blend_src_alpha;
-	}
-	,get_blend_src_rgb: function() {
-		return this.geometry.state.blend_src_rgb;
-	}
-	,get_blend_dest_alpha: function() {
-		return this.geometry.state.blend_dest_alpha;
-	}
-	,get_blend_dest_rgb: function() {
-		return this.geometry.state.blend_dest_rgb;
-	}
-	,set_blend_src: function(val) {
-		this.geometry.set_blend_src_alpha(val);
-		this.geometry.set_blend_src_rgb(val);
-		return val;
-	}
-	,set_blend_dest: function(val) {
-		this.geometry.set_blend_dest_alpha(val);
-		this.geometry.set_blend_dest_rgb(val);
-		return val;
-	}
-	,set_blend_src_alpha: function(val) {
-		this.geometry.set_blend_src_alpha(val);
-		return val;
-	}
-	,set_blend_src_rgb: function(val) {
-		this.geometry.set_blend_src_rgb(val);
-		return val;
-	}
-	,set_blend_dest_alpha: function(val) {
-		this.geometry.set_blend_dest_alpha(val);
-		return val;
-	}
-	,set_blend_dest_rgb: function(val) {
-		this.geometry.set_blend_dest_rgb(val);
-		return val;
-	}
-	,get_rotation_z: function() {
-		return this.get_radians() * 57.29577951308238;
-	}
-	,set_rotation_z: function(_degrees) {
-		this.set_radians(_degrees * 0.017453292519943278);
-		return _degrees;
-	}
-	,set_radians: function(_r) {
-		var _this = this._rotation_euler;
-		_this.z = _r;
-		if(!_this._construct) {
-			if(_this.listen_z != null && !_this.ignore_listeners) {
-				_this.listen_z(_r);
-			}
-		}
-		this._rotation_quat.setFromEuler(this._rotation_euler);
-		this.set_rotation(this._rotation_quat.clone());
-		return this.radians = _r;
-	}
-	,get_radians: function() {
-		return this.radians;
-	}
-	,set_locked: function(_l) {
-		if(this.geometry != null) {
-			this.geometry.set_locked(_l);
-		}
-		return this.locked = _l;
-	}
-	,set_clip_rect: function(_val) {
-		if(this.geometry != null) {
-			this.geometry.set_clip_rect(_val);
-		}
-		return this.clip_rect = _val;
-	}
-	,_size_change: function(_v) {
-		this.set_size(this.size);
-	}
-	,init: function() {
-		luxe_Entity.prototype.init.call(this);
-	}
-	,__class__: luxe_Visual
-	,__properties__: $extend(luxe_Entity.prototype.__properties__,{set_blend_dest_rgb:"set_blend_dest_rgb",get_blend_dest_rgb:"get_blend_dest_rgb",set_blend_dest_alpha:"set_blend_dest_alpha",get_blend_dest_alpha:"get_blend_dest_alpha",set_blend_src_rgb:"set_blend_src_rgb",get_blend_src_rgb:"get_blend_src_rgb",set_blend_src_alpha:"set_blend_src_alpha",get_blend_src_alpha:"get_blend_src_alpha",set_blend_dest:"set_blend_dest",get_blend_dest:"get_blend_dest",set_blend_src:"set_blend_src",get_blend_src:"get_blend_src",set_rotation_z:"set_rotation_z",get_rotation_z:"get_rotation_z",set_radians:"set_radians",get_radians:"get_radians",set_clip_rect:"set_clip_rect",set_depth:"set_depth",set_visible:"set_visible",set_color:"set_color",set_shader:"set_shader",set_texture:"set_texture",set_locked:"set_locked",set_geometry:"set_geometry",set_size:"set_size"})
-});
-var luxe_Sprite = function(options) {
-	this.flipy = false;
-	this.flipx = false;
-	this.centered = true;
-	this.set_uv(new phoenix_Rectangle());
-	if(options == null) {
-		throw new js__$Boot_HaxeError(luxe_DebugError.null_assertion("options was null" + (" ( " + "Sprite requires non-null options" + " )")));
-	}
-	if(options.centered != null) {
-		this.set_centered(options.centered);
-	}
-	if(options.flipx != null) {
-		this.set_flipx(options.flipx);
-	}
-	if(options.flipy != null) {
-		this.set_flipy(options.flipy);
-	}
-	luxe_Visual.call(this,options);
-};
-$hxClasses["luxe.Sprite"] = luxe_Sprite;
-luxe_Sprite.__name__ = ["luxe","Sprite"];
-luxe_Sprite.__super__ = luxe_Visual;
-luxe_Sprite.prototype = $extend(luxe_Visual.prototype,{
-	on_geometry_created: function() {
-		luxe_Visual.prototype.on_geometry_created.call(this);
-		if(this.texture != null) {
-			if(this.options.uv == null) {
-				this.options.uv = new phoenix_Rectangle(0,0,this.texture.width,this.texture.height);
-			}
-			this.set_uv(this.options.uv);
-			if(this.texture.resource_type == 5) {
-				this.set_flipy(true);
-			}
-		}
-		this.set_centered(!(!this.centered));
-		this.set_flipx(!(!this.flipx));
-		this.set_flipy(!(!this.flipy));
-	}
-	,set_geometry: function(_g) {
-		this.geometry_quad = _g;
-		return luxe_Visual.prototype.set_geometry.call(this,_g);
-	}
-	,ondestroy: function() {
-		this.set_uv(null);
-		this.geometry_quad = null;
-		luxe_Visual.prototype.ondestroy.call(this);
-	}
-	,point_inside: function(_p) {
-		if(this.geometry == null) {
-			return false;
-		}
-		return Luxe.utils.geometry.point_in_geometry(_p,this.geometry);
-	}
-	,point_inside_AABB: function(_p) {
-		if(this.get_pos() == null) {
-			return false;
-		}
-		if(this.size == null) {
-			return false;
-		}
-		var _s_x = this.size.x * this.get_scale().x;
-		var _s_y = this.size.y * this.get_scale().y;
-		if(this.centered) {
-			var _hx = _s_x / 2;
-			var _hy = _s_y / 2;
-			if(_p.x < this.get_pos().x - _hx) {
-				return false;
-			}
-			if(_p.y < this.get_pos().y - _hy) {
-				return false;
-			}
-			if(_p.x > this.get_pos().x + _s_x - _hx) {
-				return false;
-			}
-			if(_p.y > this.get_pos().y + _s_y - _hy) {
-				return false;
-			}
-		} else {
-			if(_p.x < this.get_pos().x) {
-				return false;
-			}
-			if(_p.y < this.get_pos().y) {
-				return false;
-			}
-			if(_p.x > this.get_pos().x + _s_x) {
-				return false;
-			}
-			if(_p.y > this.get_pos().y + _s_y) {
-				return false;
-			}
-		}
-		return true;
-	}
-	,set_uv: function(_uv) {
-		if(_uv == null) {
-			return this.uv = _uv;
-		}
-		if(this.geometry_quad != null) {
-			var _this = this.geometry_quad;
-			if(_this.state.texture == null) {
-				throw new js__$Boot_HaxeError(luxe_DebugError.null_assertion("texture was null" + (" ( " + "QuadGeometry; Calling UV on a geometry with null texture." + " )")));
-			}
-			var tlx = _uv.x / _this.state.texture.width_actual;
-			var tly = _uv.y / _this.state.texture.height_actual;
-			var szx = _uv.w / _this.state.texture.width_actual;
-			var szy = _uv.h / _this.state.texture.height_actual;
-			if(_this.vertices.length != 0) {
-				var sz_x = szx;
-				var sz_y = szy;
-				var tl_x = tlx;
-				var tl_y = tly;
-				_this._uv_x = tl_x;
-				_this._uv_y = tl_y;
-				_this._uv_w = sz_x;
-				_this._uv_h = sz_y;
-				var tr_x = tl_x + sz_x;
-				var tr_y = tl_y;
-				var br_x = tl_x + sz_x;
-				var br_y = tl_y + sz_y;
-				var bl_x = tl_x;
-				var bl_y = tl_y + sz_y;
-				var tmp_x = 0.0;
-				var tmp_y = 0.0;
-				var rotations = _this.uv_angle / 90 | 0;
-				rotations -= 4 * Math.floor(rotations / 4);
-				var _g1 = 0;
-				var _g = rotations;
-				while(_g1 < _g) {
-					var r = _g1++;
-					tmp_x = tl_x;
-					tl_x = bl_x;
-					bl_x = br_x;
-					br_x = tr_x;
-					tr_x = tmp_x;
-					tmp_y = tl_y;
-					tl_y = bl_y;
-					bl_y = br_y;
-					br_y = tr_y;
-					tr_y = tmp_y;
-				}
-				if(_this.flipy) {
-					tmp_y = bl_y;
-					bl_y = tl_y;
-					tl_y = tmp_y;
-					tmp_x = bl_x;
-					bl_x = tl_x;
-					tl_x = tmp_x;
-					tmp_y = br_y;
-					br_y = tr_y;
-					tr_y = tmp_y;
-					tmp_x = br_x;
-					br_x = tr_x;
-					tr_x = tmp_x;
-				}
-				if(_this.flipx) {
-					tmp_x = tr_x;
-					tr_x = tl_x;
-					tl_x = tmp_x;
-					tmp_y = tr_y;
-					tr_y = tl_y;
-					tl_y = tmp_y;
-					tmp_x = br_x;
-					br_x = bl_x;
-					bl_x = tmp_x;
-					tmp_y = br_y;
-					br_y = bl_y;
-					bl_y = tmp_y;
-				}
-				var _this1 = _this.vertices[0].uv.uv0;
-				_this1.u = tl_x;
-				_this1.v = tl_y;
-				var _this2 = _this.vertices[1].uv.uv0;
-				_this2.u = tr_x;
-				_this2.v = tr_y;
-				var _this3 = _this.vertices[2].uv.uv0;
-				_this3.u = br_x;
-				_this3.v = br_y;
-				var _this4 = _this.vertices[3].uv.uv0;
-				_this4.u = bl_x;
-				_this4.v = bl_y;
-				var _this5 = _this.vertices[4].uv.uv0;
-				_this5.u = tl_x;
-				_this5.v = tl_y;
-				var _this6 = _this.vertices[5].uv.uv0;
-				_this6.u = br_x;
-				_this6.v = br_y;
-				_this.set_dirty(true);
-			}
-		}
-		this.uv = _uv;
-		phoenix_Rectangle.listen(this.uv,$bind(this,this._uv_change));
-		return this.uv;
-	}
-	,set_flipy: function(_v) {
-		if(_v == this.flipy) {
-			return this.flipy;
-		}
-		if(this.geometry_quad != null) {
-			this.geometry_quad.set_flipy(_v);
-		}
-		return this.flipy = _v;
-	}
-	,set_flipx: function(_v) {
-		if(_v == this.flipx) {
-			return this.flipx;
-		}
-		if(this.geometry_quad != null) {
-			this.geometry_quad.set_flipx(_v);
-		}
-		return this.flipx = _v;
-	}
-	,set_size: function(_v) {
-		if(this.geometry_quad != null) {
-			var _this = this.geometry_quad;
-			var quad_z;
-			var quad_y;
-			var quad_x;
-			var quad_w;
-			var quad_listen_z;
-			var quad_listen_y;
-			var quad_listen_x;
-			var quad_ignore_listeners;
-			var quad__construct;
-			var _x = _v.x;
-			var _y = _v.y;
-			quad_x = 0;
-			quad_y = 0;
-			quad_z = 0;
-			quad_w = 0;
-			quad_ignore_listeners = false;
-			quad__construct = false;
-			quad__construct = true;
-			quad_x = _x;
-			if(!quad__construct) {
-				if(quad_listen_x != null && !quad_ignore_listeners) {
-					quad_listen_x(_x);
-				}
-			}
-			quad_y = _y;
-			if(!quad__construct) {
-				if(quad_listen_y != null && !quad_ignore_listeners) {
-					quad_listen_y(_y);
-				}
-			}
-			quad_z = 0;
-			if(!quad__construct) {
-				if(quad_listen_z != null && !quad_ignore_listeners) {
-					quad_listen_z(0);
-				}
-			}
-			quad_w = 0;
-			quad__construct = false;
-			_this.resize_xy(quad_x,quad_y);
-			if(!this._has_custom_origin) {
-				if(this.centered) {
-					var _this1 = new phoenix_Vector(_v.x,_v.y,_v.z,_v.w);
-					var _x1 = _this1.x / 2;
-					var _y1 = _this1.y / 2;
-					var _z = _this1.z / 2;
-					var prev = _this1.ignore_listeners;
-					_this1.ignore_listeners = true;
-					_this1.x = _x1;
-					if(!_this1._construct) {
-						if(_this1.listen_x != null && !_this1.ignore_listeners) {
-							_this1.listen_x(_x1);
-						}
-					}
-					_this1.y = _y1;
-					if(!_this1._construct) {
-						if(_this1.listen_y != null && !_this1.ignore_listeners) {
-							_this1.listen_y(_y1);
-						}
-					}
-					_this1.z = _z;
-					if(!_this1._construct) {
-						if(_this1.listen_z != null && !_this1.ignore_listeners) {
-							_this1.listen_z(_z);
-						}
-					}
-					_this1.ignore_listeners = prev;
-					if(_this1.listen_x != null && !_this1.ignore_listeners) {
-						_this1.listen_x(_this1.x);
-					}
-					if(_this1.listen_y != null && !_this1.ignore_listeners) {
-						_this1.listen_y(_this1.y);
-					}
-					if(_this1.listen_z != null && !_this1.ignore_listeners) {
-						_this1.listen_z(_this1.z);
-					}
-					this.set_origin(_this1);
-				}
-			}
-		}
-		return luxe_Visual.prototype.set_size.call(this,_v);
-	}
-	,set_centered: function(_c) {
-		if(this.size != null) {
-			if(_c) {
-				this.set_origin(new phoenix_Vector(this.size.x / 2,this.size.y / 2));
-			} else {
-				this.set_origin(new phoenix_Vector());
-			}
-		}
-		return this.centered = _c;
-	}
-	,_uv_change: function(_v) {
-		this.set_uv(this.uv);
-	}
-	,init: function() {
-		luxe_Visual.prototype.init.call(this);
-	}
-	,__class__: luxe_Sprite
-	,__properties__: $extend(luxe_Visual.prototype.__properties__,{set_uv:"set_uv",set_flipy:"set_flipy",set_flipx:"set_flipx",set_centered:"set_centered"})
+	,__class__: mint_Image
+	,__properties__: $extend(mint_Control.prototype.__properties__,{set_path:"set_path"})
 });
 var entities_Bubble = function(options) {
-	luxe_Sprite.call(this,options);
+	var _gthis = this;
+	options.path = "assets/ui/bubble.png";
+	options.w = options.h = 48;
+	options.options = { color : new phoenix_Color(1,1,1,0.85)};
+	mint_Image.call(this,options);
+	this.mouse_input = true;
+	this.onclicked = options.onclicked;
+	var visual = (js_Boot.__cast(this.renderer , mint_render_luxe_Image)).visual;
+	var pressed = false;
+	this.onmousedown.listen(function(_,_1) {
+		visual.color.tween(0.2,{ a : 1});
+		pressed = true;
+	});
+	this.onmouseup.listen(function(a,b) {
+		if(pressed) {
+			visual.color.tween(0.2,{ a : 0.85});
+			_gthis.onclicked(a,b);
+			pressed = false;
+		}
+	});
+	this.onmouseenter.listen(function(_2,_3) {
+		var tmp = _gthis.set_h(58);
+		_gthis.set_w(tmp);
+	});
+	this.onmouseleave.listen(function(_4,_5) {
+		if(pressed) {
+			visual.color.tween(0.2,{ a : 0.85});
+			pressed = false;
+		}
+		var tmp1 = _gthis.set_h(48);
+		_gthis.set_w(tmp1);
+	});
 };
 $hxClasses["entities.Bubble"] = entities_Bubble;
 entities_Bubble.__name__ = ["entities","Bubble"];
-entities_Bubble.__super__ = luxe_Sprite;
-entities_Bubble.prototype = $extend(luxe_Sprite.prototype,{
-	init: function() {
-		this.set_texture(Luxe.resources.cache.get("assets/ui/bubble.png"));
-		this.set_size(new phoenix_Vector(48,48));
-		this.set_color(new phoenix_Color(1,1,1,0.75));
-		this._listen(19,$bind(this,this.onmousemove),true);
-		this._listen(17,$bind(this,this.onmousedown),true);
-		this._listen(18,$bind(this,this.onmouseup),true);
-	}
-	,startup: function(options) {
-		this.onclicked = options.clicked;
-	}
-	,update: function(dt) {
-	}
-	,onmousemove: function(event) {
-		var difference_z;
-		var difference_y;
-		var difference_x;
-		var difference_w;
-		var difference_listen_z;
-		var difference_listen_y;
-		var difference_listen_x;
-		var difference_ignore_listeners;
-		var difference__construct;
-		var a = this.get_pos();
-		var b = event.pos;
-		var _x = a.x - b.x;
-		var _y = a.y - b.y;
-		var _z = a.z - b.z;
-		difference_x = 0;
-		difference_y = 0;
-		difference_z = 0;
-		difference_w = 0;
-		difference_ignore_listeners = false;
-		difference__construct = false;
-		difference__construct = true;
-		difference_x = _x;
-		if(!difference__construct) {
-			if(difference_listen_x != null && !difference_ignore_listeners) {
-				difference_listen_x(_x);
-			}
-		}
-		difference_y = _y;
-		if(!difference__construct) {
-			if(difference_listen_y != null && !difference_ignore_listeners) {
-				difference_listen_y(_y);
-			}
-		}
-		difference_z = _z;
-		if(!difference__construct) {
-			if(difference_listen_z != null && !difference_ignore_listeners) {
-				difference_listen_z(_z);
-			}
-		}
-		difference_w = 0;
-		difference__construct = false;
-		var distance = Math.sqrt(difference_x * difference_x + difference_y * difference_y);
-		var _this = this.size;
-		var _this1 = this.size;
-		var _y1 = 48 + Math.max(10 - distance / 4,0);
-		_this1.y = _y1;
-		var _x1;
-		if(_this1._construct) {
-			_x1 = _this1.y;
-		} else {
-			if(_this1.listen_y != null && !_this1.ignore_listeners) {
-				_this1.listen_y(_y1);
-			}
-			_x1 = _this1.y;
-		}
-		_this.x = _x1;
-		if(!_this._construct) {
-			if(_this.listen_x != null && !_this.ignore_listeners) {
-				_this.listen_x(_x1);
-			}
-		}
-	}
-	,onmousedown: function(event) {
-		var difference_z;
-		var difference_y;
-		var difference_x;
-		var difference_w;
-		var difference_listen_z;
-		var difference_listen_y;
-		var difference_listen_x;
-		var difference_ignore_listeners;
-		var difference__construct;
-		var a = this.get_pos();
-		var b = event.pos;
-		var _x = a.x - b.x;
-		var _y = a.y - b.y;
-		var _z = a.z - b.z;
-		difference_x = 0;
-		difference_y = 0;
-		difference_z = 0;
-		difference_w = 0;
-		difference_ignore_listeners = false;
-		difference__construct = false;
-		difference__construct = true;
-		difference_x = _x;
-		if(!difference__construct) {
-			if(difference_listen_x != null && !difference_ignore_listeners) {
-				difference_listen_x(_x);
-			}
-		}
-		difference_y = _y;
-		if(!difference__construct) {
-			if(difference_listen_y != null && !difference_ignore_listeners) {
-				difference_listen_y(_y);
-			}
-		}
-		difference_z = _z;
-		if(!difference__construct) {
-			if(difference_listen_z != null && !difference_ignore_listeners) {
-				difference_listen_z(_z);
-			}
-		}
-		difference_w = 0;
-		difference__construct = false;
-		var distance = Math.sqrt(difference_x * difference_x + difference_y * difference_y);
-		if(distance < 20) {
-			this.pressed = true;
-			this.color.tween(0.2,{ a : 1});
-		}
-	}
-	,onmouseup: function(event) {
-		if(this.pressed) {
-			this.onclicked(event);
-			this.color.tween(0.2,{ a : 0.75});
-			this.pressed = false;
-		}
-	}
-	,ondestroy: function() {
-		luxe_Sprite.prototype.ondestroy.call(this);
-		this._unlisten(19,$bind(this,this.onmousemove),true);
-		this._unlisten(17,$bind(this,this.onmousedown),true);
-		this._unlisten(18,$bind(this,this.onmouseup),true);
-	}
-	,__class__: entities_Bubble
-});
-var entities_BubbleMenu = function(_options) {
-	luxe_Entity.call(this,_options);
-};
-$hxClasses["entities.BubbleMenu"] = entities_BubbleMenu;
-entities_BubbleMenu.__name__ = ["entities","BubbleMenu"];
-entities_BubbleMenu.__super__ = luxe_Entity;
-entities_BubbleMenu.prototype = $extend(luxe_Entity.prototype,{
-	init: function() {
-	}
-	,startup: function(bubblesOp) {
-		this.bubbles = [];
-		var _g = 0;
-		while(_g < bubblesOp.length) {
-			var bubbleOp = bubblesOp[_g];
-			++_g;
-			var bubble = new entities_Bubble({ name : bubbleOp.name, pos : new phoenix_Vector(this.get_pos().x,this.get_pos().y + 60 * this.bubbles.length)});
-			bubble.startup(bubbleOp);
-			this.bubbles.push(bubble);
-		}
-	}
-	,update: function(dt) {
-	}
-	,ondestroy: function() {
-		luxe_Entity.prototype.ondestroy.call(this);
-	}
-	,__class__: entities_BubbleMenu
+entities_Bubble.__super__ = mint_Image;
+entities_Bubble.prototype = $extend(mint_Image.prototype,{
+	__class__: entities_Bubble
 });
 var haxe_StackItem = $hxClasses["haxe.StackItem"] = { __ename__ : ["haxe","StackItem"], __constructs__ : ["CFunction","Module","FilePos","Method","LocalFunction"] };
 haxe_StackItem.CFunction = ["CFunction",0];
@@ -4954,6 +4845,1267 @@ luxe_SizeMode.cover.__enum__ = luxe_SizeMode;
 luxe_SizeMode.contain = ["contain",2];
 luxe_SizeMode.contain.toString = $estr;
 luxe_SizeMode.contain.__enum__ = luxe_SizeMode;
+var luxe_Emitter = function() {
+	this._checking = false;
+	this._to_remove = new List();
+	this.connected = new List();
+	this.bindings = new haxe_ds_IntMap();
+};
+$hxClasses["luxe.Emitter"] = luxe_Emitter;
+luxe_Emitter.__name__ = ["luxe","Emitter"];
+luxe_Emitter.prototype = {
+	_emitter_destroy: function() {
+		while(this._to_remove.length > 0) {
+			var _node = this._to_remove.pop();
+			_node.event = null;
+			_node.handler = null;
+			_node = null;
+		}
+		while(this.connected.length > 0) {
+			var _node1 = this.connected.pop();
+			_node1.event = null;
+			_node1.handler = null;
+			_node1 = null;
+		}
+		this._to_remove = null;
+		this.connected = null;
+		this.bindings = null;
+	}
+	,emit: function(event,data) {
+		if(this.bindings == null) {
+			return;
+		}
+		this._check();
+		this._checking = true;
+		var _list = this.bindings.h[event];
+		if(_list != null && _list.length > 0) {
+			var _g = 0;
+			while(_g < _list.length) {
+				var handler = _list[_g];
+				++_g;
+				handler(data);
+			}
+		}
+		this._checking = false;
+		this._check();
+	}
+	,on: function(event,handler) {
+		if(this.bindings == null) {
+			return;
+		}
+		this._check();
+		if(!this.bindings.h.hasOwnProperty(event)) {
+			this.bindings.h[event] = [handler];
+			this.connected.push({ handler : handler, event : event});
+		} else {
+			var _list = this.bindings.h[event];
+			if(_list.indexOf(handler) == -1) {
+				_list.push(handler);
+				this.connected.push({ handler : handler, event : event});
+			}
+		}
+	}
+	,off: function(event,handler) {
+		if(this.bindings == null) {
+			return false;
+		}
+		this._check();
+		var _success = false;
+		if(this.bindings.h.hasOwnProperty(event)) {
+			this._to_remove.push({ event : event, handler : handler});
+			var _g_head = this.connected.h;
+			while(_g_head != null) {
+				var val = _g_head.item;
+				_g_head = _g_head.next;
+				var _info = val;
+				if(_info.event == event && _info.handler == handler) {
+					this.connected.remove(_info);
+				}
+			}
+			_success = true;
+		}
+		return _success;
+	}
+	,connections: function(handler) {
+		if(this.connected == null) {
+			return null;
+		}
+		var _list = [];
+		var _g_head = this.connected.h;
+		while(_g_head != null) {
+			var val = _g_head.item;
+			_g_head = _g_head.next;
+			var _info = val;
+			if(_info.handler == handler) {
+				_list.push(_info);
+			}
+		}
+		return _list;
+	}
+	,_check: function() {
+		if(this._checking || this._to_remove == null) {
+			return;
+		}
+		this._checking = true;
+		if(this._to_remove.length > 0) {
+			var _g_head = this._to_remove.h;
+			while(_g_head != null) {
+				var val = _g_head.item;
+				_g_head = _g_head.next;
+				var _node = val;
+				var _list = this.bindings.h[_node.event];
+				if(_list != null) {
+					HxOverrides.remove(_list,_node.handler);
+					if(_list.length == 0) {
+						this.bindings.remove(_node.event);
+					}
+				}
+			}
+			this._to_remove = null;
+			this._to_remove = new List();
+		}
+		this._checking = false;
+	}
+	,__class__: luxe_Emitter
+};
+var luxe_Objects = function(_name,_id) {
+	if(_id == null) {
+		_id = "";
+	}
+	if(_name == null) {
+		_name = "";
+	}
+	this.name = "";
+	this.id = "";
+	luxe_Emitter.call(this);
+	this.set_name(_name);
+	this.set_id(_id == "" ? Luxe.utils.uniqueid() : _id);
+};
+$hxClasses["luxe.Objects"] = luxe_Objects;
+luxe_Objects.__name__ = ["luxe","Objects"];
+luxe_Objects.__super__ = luxe_Emitter;
+luxe_Objects.prototype = $extend(luxe_Emitter.prototype,{
+	set_name: function(_name) {
+		return this.name = _name;
+	}
+	,set_id: function(_id) {
+		return this.id = _id;
+	}
+	,get_name: function() {
+		return this.name;
+	}
+	,get_id: function() {
+		return this.id;
+	}
+	,__class__: luxe_Objects
+	,__properties__: {set_name:"set_name",get_name:"get_name",set_id:"set_id",get_id:"get_id"}
+});
+var luxe_Entity = function(_options) {
+	this.component_count = 0;
+	this.active = true;
+	this.fixed_rate = 0;
+	this.started = false;
+	this.inited = false;
+	this.destroyed = false;
+	luxe_Objects.call(this,"entity");
+	var _g = this;
+	_g.set_name(_g.get_name() + ("." + this.get_id()));
+	this.options = _options;
+	this._components = new luxe_components_Components(this);
+	this.children = [];
+	this.events = new luxe_Events();
+	if(this.options != null && this.options.transform != null) {
+		this.set_transform(this.options.transform);
+	} else {
+		this.set_transform(new phoenix_Transform());
+	}
+	var _this = this.get_transform();
+	if(_this._pos_handlers == null) {
+		_this._pos_handlers = [];
+	}
+	_this._pos_handlers.push($bind(this,this.set_pos_from_transform));
+	var _this1 = this.get_transform();
+	if(_this1._scale_handlers == null) {
+		_this1._scale_handlers = [];
+	}
+	_this1._scale_handlers.push($bind(this,this.set_scale_from_transform));
+	var _this2 = this.get_transform();
+	if(_this2._origin_handlers == null) {
+		_this2._origin_handlers = [];
+	}
+	_this2._origin_handlers.push($bind(this,this.set_origin_from_transform));
+	var _this3 = this.get_transform();
+	if(_this3._parent_handlers == null) {
+		_this3._parent_handlers = [];
+	}
+	_this3._parent_handlers.push($bind(this,this.set_parent_from_transform));
+	var _this4 = this.get_transform();
+	if(_this4._rotation_handlers == null) {
+		_this4._rotation_handlers = [];
+	}
+	_this4._rotation_handlers.push($bind(this,this.set_rotation_from_transform));
+	if(this.options != null) {
+		if(this.options.name_unique == null) {
+			this.options.name_unique = false;
+		}
+		if(this.options.name != null) {
+			this.set_name(this.options.name);
+			if(this.options.name_unique) {
+				var _g1 = this;
+				_g1.set_name(_g1.get_name() + ("." + this.get_id()));
+			}
+		}
+		if(this.options.pos != null) {
+			var _op = this.options.pos;
+			this.set_pos(new phoenix_Vector(_op.x,_op.y,_op.z,_op.w));
+		}
+		if(this.options.scale != null) {
+			var _os = this.options.scale;
+			this.set_scale(new phoenix_Vector(_os.x,_os.y,_os.z,_os.w));
+		}
+		var _should_add = true;
+		if(this.options.no_scene != null) {
+			if(this.options.no_scene == true) {
+				_should_add = false;
+			}
+		}
+		if(this.options.parent != null) {
+			_should_add = false;
+			this.set_parent(this.options.parent);
+		}
+		if(_should_add) {
+			if(this.options.scene != null) {
+				this.set_scene(this.options.scene);
+			} else {
+				this.set_scene(Luxe.scene);
+			}
+		}
+	} else {
+		this.set_scene(Luxe.scene);
+	}
+	if(this.get_scene() != null) {
+		this.get_scene().add(this);
+	}
+};
+$hxClasses["luxe.Entity"] = luxe_Entity;
+luxe_Entity.__name__ = ["luxe","Entity"];
+luxe_Entity.__super__ = luxe_Objects;
+luxe_Entity.prototype = $extend(luxe_Objects.prototype,{
+	init: function() {
+	}
+	,update: function(dt) {
+	}
+	,onfixedupdate: function(rate) {
+	}
+	,onreset: function() {
+	}
+	,ondestroy: function() {
+	}
+	,onkeyup: function(event) {
+	}
+	,onkeydown: function(event) {
+	}
+	,ontextinput: function(event) {
+	}
+	,oninputdown: function(event) {
+	}
+	,oninputup: function(event) {
+	}
+	,onmousedown: function(event) {
+	}
+	,onmouseup: function(event) {
+	}
+	,onmousemove: function(event) {
+	}
+	,onmousewheel: function(event) {
+	}
+	,ontouchdown: function(event) {
+	}
+	,ontouchup: function(event) {
+	}
+	,ontouchmove: function(event) {
+	}
+	,ongamepadup: function(event) {
+	}
+	,ongamepaddown: function(event) {
+	}
+	,ongamepadaxis: function(event) {
+	}
+	,ongamepaddevice: function(event) {
+	}
+	,onwindowmoved: function(event) {
+	}
+	,onwindowresized: function(event) {
+	}
+	,onwindowsized: function(event) {
+	}
+	,onwindowminimized: function(event) {
+	}
+	,onwindowrestored: function(event) {
+	}
+	,add: function(_component) {
+		this.component_count++;
+		return this._components.add(_component);
+	}
+	,remove: function(_name) {
+		this.component_count--;
+		return this._components.remove(_name);
+	}
+	,get: function(_name,_in_children) {
+		if(_in_children == null) {
+			_in_children = false;
+		}
+		return this._components.get(_name,_in_children);
+	}
+	,get_any: function(_name,_in_children,_first_only) {
+		if(_first_only == null) {
+			_first_only = true;
+		}
+		if(_in_children == null) {
+			_in_children = false;
+		}
+		return this._components.get_any(_name,_in_children,_first_only);
+	}
+	,has: function(_name) {
+		return this._components.has(_name);
+	}
+	,_init: function() {
+		this.init();
+		this.emit(2);
+		if(this.component_count > 0) {
+			var _g_map;
+			var _g_index = 0;
+			_g_map = this._components.components;
+			while(_g_index < _g_map._keys.length) {
+				var _component = _g_map.map.get(_g_map._keys[_g_index++]);
+				_component.init();
+			}
+		}
+		if(this.children.length > 0) {
+			var _g = 0;
+			var _g1 = this.children;
+			while(_g < _g1.length) {
+				var _child = _g1[_g];
+				++_g;
+				_child._init();
+			}
+		}
+		this.inited = true;
+	}
+	,_reset: function(_) {
+		this.onreset();
+		this.emit(3);
+		if(this.component_count > 0) {
+			var _g_map;
+			var _g_index = 0;
+			_g_map = this._components.components;
+			while(_g_index < _g_map._keys.length) {
+				var _component = _g_map.map.get(_g_map._keys[_g_index++]);
+				_component.onreset();
+			}
+		}
+		if(this.children.length > 0) {
+			var _g = 0;
+			var _g1 = this.children;
+			while(_g < _g1.length) {
+				var _child = _g1[_g];
+				++_g;
+				_child._reset(_);
+			}
+		}
+		var _rate = this.fixed_rate;
+		if(this.fixed_rate_timer != null) {
+			this.fixed_rate_timer.stop();
+			this.fixed_rate_timer = null;
+		}
+		if(_rate != 0 && this.get_parent() == null && !this.destroyed) {
+			this.fixed_rate_timer = new snow_api_Timer(_rate);
+			this.fixed_rate_timer.run = $bind(this,this._fixed_update);
+		}
+		this.started = true;
+	}
+	,destroy: function(_from_parent) {
+		if(_from_parent == null) {
+			_from_parent = false;
+		}
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(luxe_DebugError.assertion("destroyed == false" + (" ( " + ("entity / destroying repeatedly " + this.get_name()) + " )")));
+		}
+		if(this.children.length > 0) {
+			var _g = 0;
+			var _g1 = this.children;
+			while(_g < _g1.length) {
+				var _child = _g1[_g];
+				++_g;
+				_child.destroy(true);
+				_child = null;
+			}
+		}
+		if(this.component_count > 0) {
+			var _g_map;
+			var _g_index = 0;
+			_g_map = this._components.components;
+			while(_g_index < _g_map._keys.length) {
+				var _component = _g_map.map.get(_g_map._keys[_g_index++]);
+				_component.onremoved();
+				_component.ondestroy();
+				_component = null;
+			}
+		}
+		this.children = null;
+		this._components.destroy();
+		this._components = null;
+		this.component_count = 0;
+		this.emit(8);
+		this.ondestroy();
+		if(this.get_parent() != null && !_from_parent) {
+			this.get_parent()._remove_child(this);
+		}
+		if(this.fixed_rate_timer != null) {
+			this.fixed_rate_timer.stop();
+			this.fixed_rate_timer = null;
+		}
+		this.destroyed = true;
+		this.inited = false;
+		this.started = false;
+		if(this.get_scene() != null) {
+			this.get_scene().remove(this);
+		}
+		if(this.events != null) {
+			this.events.destroy();
+			this.events = null;
+		}
+		if(this.get_transform() != null) {
+			this.get_transform().destroy();
+			this.set_transform(null);
+		}
+		this._emitter_destroy();
+		this.set_id(null);
+	}
+	,_update: function(dt) {
+		if(this.destroyed) {
+			return;
+		}
+		if(!this.get_active() || !this.inited || !this.started) {
+			return;
+		}
+		var _this = this.get_transform();
+		if(_this.parent != null && _this.parent.dirty) {
+			_this.parent.clean_check();
+		}
+		if(_this.dirty && !_this._cleaning && !_this.manual_update) {
+			_this.clean();
+		}
+		this.update(dt);
+		if(this.events != null) {
+			this.events.process();
+		}
+		if(this.component_count > 0) {
+			var _g_map;
+			var _g_index = 0;
+			_g_map = this._components.components;
+			while(_g_index < _g_map._keys.length) {
+				var _component = _g_map.map.get(_g_map._keys[_g_index++]);
+				_component.update(dt);
+			}
+		}
+		if(this.children != null && this.children.length > 0) {
+			var _g = 0;
+			var _g1 = this.children;
+			while(_g < _g1.length) {
+				var _child = _g1[_g];
+				++_g;
+				_child._update(dt);
+			}
+		}
+	}
+	,_fixed_update: function() {
+		if(this.destroyed) {
+			return;
+		}
+		if(!this.get_active() || !this.inited || !this.started) {
+			return;
+		}
+		this.emit(7);
+		this.onfixedupdate(this.fixed_rate);
+		if(this.component_count > 0) {
+			var _g_map;
+			var _g_index = 0;
+			_g_map = this._components.components;
+			while(_g_index < _g_map._keys.length) {
+				var _component = _g_map.map.get(_g_map._keys[_g_index++]);
+				_component.onfixedupdate(this.fixed_rate);
+			}
+		}
+		if(this.children.length > 0) {
+			var _g = 0;
+			var _g1 = this.children;
+			while(_g < _g1.length) {
+				var _child = _g1[_g];
+				++_g;
+				_child._fixed_update();
+			}
+		}
+	}
+	,_find_emit_source: function(_from_unlisten) {
+		if(_from_unlisten == null) {
+			_from_unlisten = false;
+		}
+		var _source = null;
+		if(this.get_scene() != null) {
+			_source = this.get_scene();
+		} else if(this.get_parent() != null) {
+			var _looking = true;
+			var _parent = this.get_parent();
+			while(_looking) if(_parent.get_scene() == null) {
+				if(_parent.get_parent() == null) {
+					if(!_from_unlisten) {
+						haxe_Log.trace("   i / entity / " + "entity has no parent or scene, currently no core events will reach it.",{ fileName : "Entity.hx", lineNumber : 518, className : "luxe.Entity", methodName : "_find_emit_source"});
+					}
+					_looking = false;
+					break;
+				} else {
+					_parent = _parent.get_parent();
+				}
+			} else {
+				_source = _parent.get_scene();
+				_looking = false;
+				break;
+			}
+		} else if(!_from_unlisten) {
+			haxe_Log.trace("   i / entity / " + "entity has no parent or scene, currently no core events will reach it.",{ fileName : "Entity.hx", lineNumber : 540, className : "luxe.Entity", methodName : "_find_emit_source"});
+		}
+		return _source;
+	}
+	,_listen: function(_event,_handler,_self) {
+		if(_self == null) {
+			_self = false;
+		}
+		if(!_self) {
+			this.on(_event,_handler);
+		}
+		var _source = null;
+		if(this.get_scene() != null) {
+			_source = this.get_scene();
+		} else if(this.get_parent() != null) {
+			var _looking = true;
+			var _parent = this.get_parent();
+			while(_looking) if(_parent.get_scene() == null) {
+				if(_parent.get_parent() == null) {
+					haxe_Log.trace("   i / entity / " + "entity has no parent or scene, currently no core events will reach it.",{ fileName : "Entity.hx", lineNumber : 518, className : "luxe.Entity", methodName : "_find_emit_source"});
+					_looking = false;
+					break;
+				} else {
+					_parent = _parent.get_parent();
+				}
+			} else {
+				_source = _parent.get_scene();
+				_looking = false;
+				break;
+			}
+		} else {
+			haxe_Log.trace("   i / entity / " + "entity has no parent or scene, currently no core events will reach it.",{ fileName : "Entity.hx", lineNumber : 540, className : "luxe.Entity", methodName : "_find_emit_source"});
+		}
+		var _source1 = _source;
+		if(_source1 != null) {
+			switch(_event) {
+			case 12:
+				_source1.on(_event,$bind(this,this._keydown));
+				break;
+			case 13:
+				_source1.on(_event,$bind(this,this._keyup));
+				break;
+			case 14:
+				_source1.on(_event,$bind(this,this._textinput));
+				break;
+			case 15:
+				_source1.on(_event,$bind(this,this._inputdown));
+				break;
+			case 16:
+				_source1.on(_event,$bind(this,this._inputup));
+				break;
+			case 17:
+				_source1.on(_event,$bind(this,this._mousedown));
+				break;
+			case 18:
+				_source1.on(_event,$bind(this,this._mouseup));
+				break;
+			case 19:
+				_source1.on(_event,$bind(this,this._mousemove));
+				break;
+			case 20:
+				_source1.on(_event,$bind(this,this._mousewheel));
+				break;
+			case 21:
+				_source1.on(_event,$bind(this,this._touchdown));
+				break;
+			case 22:
+				_source1.on(_event,$bind(this,this._touchup));
+				break;
+			case 23:
+				_source1.on(_event,$bind(this,this._touchmove));
+				break;
+			case 24:
+				_source1.on(_event,$bind(this,this._gamepadaxis));
+				break;
+			case 25:
+				_source1.on(_event,$bind(this,this._gamepaddown));
+				break;
+			case 26:
+				_source1.on(_event,$bind(this,this._gamepadup));
+				break;
+			case 27:
+				_source1.on(_event,$bind(this,this._gamepaddevice));
+				break;
+			case 29:
+				_source1.on(_event,$bind(this,this._windowmoved));
+				break;
+			case 30:
+				_source1.on(_event,$bind(this,this._windowresized));
+				break;
+			case 31:
+				_source1.on(_event,$bind(this,this._windowsized));
+				break;
+			case 32:
+				_source1.on(_event,$bind(this,this._windowminimized));
+				break;
+			case 33:
+				_source1.on(_event,$bind(this,this._windowrestored));
+				break;
+			}
+		}
+	}
+	,_unlisten: function(_event,_handler,_self) {
+		if(_self == null) {
+			_self = false;
+		}
+		var _source = null;
+		if(this.get_scene() != null) {
+			_source = this.get_scene();
+		} else if(this.get_parent() != null) {
+			var _looking = true;
+			var _parent = this.get_parent();
+			while(_looking) if(_parent.get_scene() == null) {
+				if(_parent.get_parent() == null) {
+					_looking = false;
+					break;
+				} else {
+					_parent = _parent.get_parent();
+				}
+			} else {
+				_source = _parent.get_scene();
+				_looking = false;
+				break;
+			}
+		}
+		var _source1 = _source;
+		if(!_self) {
+			this.off(_event,_handler);
+		}
+		if(_source1 != null) {
+			switch(_event) {
+			case 12:
+				_source1.off(_event,$bind(this,this._keydown));
+				break;
+			case 13:
+				_source1.off(_event,$bind(this,this._keyup));
+				break;
+			case 14:
+				_source1.off(_event,$bind(this,this._textinput));
+				break;
+			case 15:
+				_source1.off(_event,$bind(this,this._inputdown));
+				break;
+			case 16:
+				_source1.off(_event,$bind(this,this._inputup));
+				break;
+			case 17:
+				_source1.off(_event,$bind(this,this._mousedown));
+				break;
+			case 18:
+				_source1.off(_event,$bind(this,this._mouseup));
+				break;
+			case 19:
+				_source1.off(_event,$bind(this,this._mousemove));
+				break;
+			case 20:
+				_source1.off(_event,$bind(this,this._mousewheel));
+				break;
+			case 21:
+				_source1.off(_event,$bind(this,this._touchdown));
+				break;
+			case 22:
+				_source1.off(_event,$bind(this,this._touchup));
+				break;
+			case 23:
+				_source1.off(_event,$bind(this,this._touchmove));
+				break;
+			case 24:
+				_source1.off(_event,$bind(this,this._gamepadaxis));
+				break;
+			case 25:
+				_source1.off(_event,$bind(this,this._gamepaddown));
+				break;
+			case 26:
+				_source1.off(_event,$bind(this,this._gamepadup));
+				break;
+			case 27:
+				_source1.off(_event,$bind(this,this._gamepaddevice));
+				break;
+			case 29:
+				_source1.off(_event,$bind(this,this._windowmoved));
+				break;
+			case 30:
+				_source1.off(_event,$bind(this,this._windowresized));
+				break;
+			case 31:
+				_source1.off(_event,$bind(this,this._windowsized));
+				break;
+			case 32:
+				_source1.off(_event,$bind(this,this._windowminimized));
+				break;
+			case 33:
+				_source1.off(_event,$bind(this,this._windowrestored));
+				break;
+			}
+		}
+	}
+	,_detach_scene: function() {
+		if(this.get_scene() != null) {
+			this.get_scene().off(3,$bind(this,this._reset));
+			this.get_scene().off(8,$bind(this,this.destroy));
+			this.get_scene().off(13,$bind(this,this._keyup));
+			this.get_scene().off(12,$bind(this,this._keydown));
+			this.get_scene().off(14,$bind(this,this._textinput));
+			this.get_scene().off(17,$bind(this,this._mousedown));
+			this.get_scene().off(18,$bind(this,this._mouseup));
+			this.get_scene().off(19,$bind(this,this._mousemove));
+			this.get_scene().off(20,$bind(this,this._mousewheel));
+			this.get_scene().off(21,$bind(this,this._touchdown));
+			this.get_scene().off(22,$bind(this,this._touchup));
+			this.get_scene().off(23,$bind(this,this._touchmove));
+			this.get_scene().off(16,$bind(this,this._inputup));
+			this.get_scene().off(15,$bind(this,this._inputdown));
+			this.get_scene().off(25,$bind(this,this._gamepaddown));
+			this.get_scene().off(26,$bind(this,this._gamepadup));
+			this.get_scene().off(24,$bind(this,this._gamepadaxis));
+			this.get_scene().off(27,$bind(this,this._gamepaddevice));
+			this.get_scene().off(29,$bind(this,this._windowmoved));
+			this.get_scene().off(30,$bind(this,this._windowresized));
+			this.get_scene().off(31,$bind(this,this._windowsized));
+			this.get_scene().off(32,$bind(this,this._windowminimized));
+			this.get_scene().off(33,$bind(this,this._windowrestored));
+		}
+	}
+	,_attach_scene: function() {
+		if(this.get_scene() != null) {
+			this.get_scene().on(3,$bind(this,this._reset));
+			this.get_scene().on(8,$bind(this,this.destroy));
+		}
+	}
+	,_keyup: function(_event) {
+		if(!this.get_active() || !this.inited || !this.started) {
+			return;
+		}
+		this.onkeyup(_event);
+		this.emit(13,_event);
+	}
+	,_keydown: function(_event) {
+		if(!this.get_active() || !this.inited || !this.started) {
+			return;
+		}
+		this.onkeydown(_event);
+		this.emit(12,_event);
+	}
+	,_textinput: function(_event) {
+		if(!this.get_active() || !this.inited || !this.started) {
+			return;
+		}
+		this.ontextinput(_event);
+		this.emit(14,_event);
+	}
+	,_mousedown: function(_event) {
+		if(!this.get_active() || !this.inited || !this.started) {
+			return;
+		}
+		this.onmousedown(_event);
+		this.emit(17,_event);
+	}
+	,_mouseup: function(_event) {
+		if(!this.get_active() || !this.inited || !this.started) {
+			return;
+		}
+		this.onmouseup(_event);
+		this.emit(18,_event);
+	}
+	,_mousewheel: function(_event) {
+		if(!this.get_active() || !this.inited || !this.started) {
+			return;
+		}
+		this.onmousewheel(_event);
+		this.emit(20,_event);
+	}
+	,_mousemove: function(_event) {
+		if(!this.get_active() || !this.inited || !this.started) {
+			return;
+		}
+		this.onmousemove(_event);
+		this.emit(19,_event);
+	}
+	,_touchdown: function(_event) {
+		if(!this.get_active() || !this.inited || !this.started) {
+			return;
+		}
+		this.ontouchdown(_event);
+		this.emit(21,_event);
+	}
+	,_touchup: function(_event) {
+		if(!this.get_active() || !this.inited || !this.started) {
+			return;
+		}
+		this.ontouchup(_event);
+		this.emit(22,_event);
+	}
+	,_touchmove: function(_event) {
+		if(!this.get_active() || !this.inited || !this.started) {
+			return;
+		}
+		this.ontouchmove(_event);
+		this.emit(23,_event);
+	}
+	,_gamepadaxis: function(_event) {
+		if(!this.get_active() || !this.inited || !this.started) {
+			return;
+		}
+		this.ongamepadaxis(_event);
+		this.emit(24,_event);
+	}
+	,_gamepaddown: function(_event) {
+		if(!this.get_active() || !this.inited || !this.started) {
+			return;
+		}
+		this.ongamepaddown(_event);
+		this.emit(25,_event);
+	}
+	,_gamepadup: function(_event) {
+		if(!this.get_active() || !this.inited || !this.started) {
+			return;
+		}
+		this.ongamepadup(_event);
+		this.emit(26,_event);
+	}
+	,_gamepaddevice: function(_event) {
+		if(!this.get_active() || !this.inited || !this.started) {
+			return;
+		}
+		this.ongamepaddevice(_event);
+		this.emit(27,_event);
+	}
+	,_windowmoved: function(_event) {
+		if(!this.get_active() || !this.inited || !this.started) {
+			return;
+		}
+		this.onwindowmoved(_event);
+		this.emit(29,_event);
+	}
+	,_windowresized: function(_event) {
+		if(!this.get_active() || !this.inited || !this.started) {
+			return;
+		}
+		this.onwindowresized(_event);
+		this.emit(30,_event);
+	}
+	,_windowsized: function(_event) {
+		if(!this.get_active() || !this.inited || !this.started) {
+			return;
+		}
+		this.onwindowsized(_event);
+		this.emit(31,_event);
+	}
+	,_windowminimized: function(_event) {
+		if(!this.get_active() || !this.inited || !this.started) {
+			return;
+		}
+		this.onwindowminimized(_event);
+		this.emit(32,_event);
+	}
+	,_windowrestored: function(_event) {
+		if(!this.get_active() || !this.inited || !this.started) {
+			return;
+		}
+		this.onwindowrestored(_event);
+		this.emit(33,_event);
+	}
+	,_inputdown: function(_event) {
+		if(!this.get_active() || !this.inited || !this.started) {
+			return;
+		}
+		this.oninputdown(_event);
+		this.emit(15,_event);
+	}
+	,_inputup: function(_event) {
+		if(!this.get_active() || !this.inited || !this.started) {
+			return;
+		}
+		this.oninputup(_event);
+		this.emit(16,_event);
+	}
+	,get_fixed_rate: function() {
+		return this.fixed_rate;
+	}
+	,set_fixed_rate: function(_rate) {
+		this.fixed_rate = _rate;
+		if(this.started) {
+			if(this.fixed_rate_timer != null) {
+				this.fixed_rate_timer.stop();
+				this.fixed_rate_timer = null;
+			}
+			if(_rate != 0 && this.get_parent() == null && !this.destroyed) {
+				this.fixed_rate_timer = new snow_api_Timer(_rate);
+				this.fixed_rate_timer.run = $bind(this,this._fixed_update);
+			}
+		}
+		return this.fixed_rate;
+	}
+	,_stop_fixed_rate_timer: function() {
+		if(this.fixed_rate_timer != null) {
+			this.fixed_rate_timer.stop();
+			this.fixed_rate_timer = null;
+		}
+	}
+	,_set_fixed_rate_timer: function(_rate) {
+		if(this.fixed_rate_timer != null) {
+			this.fixed_rate_timer.stop();
+			this.fixed_rate_timer = null;
+		}
+		if(_rate != 0 && this.get_parent() == null && !this.destroyed) {
+			this.fixed_rate_timer = new snow_api_Timer(_rate);
+			this.fixed_rate_timer.run = $bind(this,this._fixed_update);
+		}
+	}
+	,get_components: function() {
+		return this._components.components;
+	}
+	,_add_child: function(child) {
+		this.children.push(child);
+		child.set_scene_root(this.scene_root);
+		if(child.get_scene() != null) {
+			var _removed = child.get_scene().remove(child);
+		} else {
+			if(this.inited && !child.inited) {
+				this.scene_root._delayed_init_entities.push(child);
+			}
+			if(this.started && !child.started) {
+				this.scene_root._delayed_reset_entities.push(child);
+			}
+		}
+	}
+	,_remove_child: function(child) {
+		HxOverrides.remove(this.children,child);
+	}
+	,set_pos_from_transform: function(_pos) {
+		if(this.component_count > 0) {
+			var _g_map;
+			var _g_index = 0;
+			_g_map = this._components.components;
+			while(_g_index < _g_map._keys.length) {
+				var _component = _g_map.map.get(_g_map._keys[_g_index++]);
+				_component.entity_pos_change(_pos);
+			}
+		}
+	}
+	,set_rotation_from_transform: function(_rotation) {
+		if(this.component_count > 0) {
+			var _g_map;
+			var _g_index = 0;
+			_g_map = this._components.components;
+			while(_g_index < _g_map._keys.length) {
+				var _component = _g_map.map.get(_g_map._keys[_g_index++]);
+				_component.entity_rotation_change(_rotation);
+			}
+		}
+	}
+	,set_scale_from_transform: function(_scale) {
+		if(this.component_count > 0) {
+			var _g_map;
+			var _g_index = 0;
+			_g_map = this._components.components;
+			while(_g_index < _g_map._keys.length) {
+				var _component = _g_map.map.get(_g_map._keys[_g_index++]);
+				_component.entity_scale_change(_scale);
+			}
+		}
+	}
+	,set_origin_from_transform: function(_origin) {
+		if(this.component_count > 0) {
+			var _g_map;
+			var _g_index = 0;
+			_g_map = this._components.components;
+			while(_g_index < _g_map._keys.length) {
+				var _component = _g_map.map.get(_g_map._keys[_g_index++]);
+				_component.entity_origin_change(_origin);
+			}
+		}
+	}
+	,set_parent_from_transform: function(_parent) {
+		if(this.component_count > 0) {
+			var _g_map;
+			var _g_index = 0;
+			_g_map = this._components.components;
+			while(_g_index < _g_map._keys.length) {
+				var _component = _g_map.map.get(_g_map._keys[_g_index++]);
+				_component.entity_parent_change(_parent);
+			}
+		}
+	}
+	,set_pos: function(_p) {
+		var _this = this.get_transform().local;
+		_this.pos = _p;
+		if(_p != null) {
+			var _v = _this.pos;
+			var listener = $bind(_this,_this._pos_change);
+			_v.listen_x = listener;
+			_v.listen_y = listener;
+			_v.listen_z = listener;
+			if(_this.pos_changed != null && !_this.ignore_listeners) {
+				_this.pos_changed(_this.pos);
+			}
+		}
+		return _this.pos;
+	}
+	,get_pos: function() {
+		return this.get_transform().local.pos;
+	}
+	,set_rotation: function(_r) {
+		var _this = this.get_transform().local;
+		_this.rotation = _r;
+		if(_r != null) {
+			var _q = _this.rotation;
+			var listener = $bind(_this,_this._rotation_change);
+			_q.listen_x = listener;
+			_q.listen_y = listener;
+			_q.listen_z = listener;
+			_q.listen_w = listener;
+			if(_this.rotation_changed != null && !_this.ignore_listeners) {
+				_this.rotation_changed(_this.rotation);
+			}
+		}
+		return _this.rotation;
+	}
+	,get_rotation: function() {
+		return this.get_transform().local.rotation;
+	}
+	,set_scale: function(_s) {
+		var _this = this.get_transform().local;
+		_this.scale = _s;
+		if(_s != null) {
+			var _v = _this.scale;
+			var listener = $bind(_this,_this._scale_change);
+			_v.listen_x = listener;
+			_v.listen_y = listener;
+			_v.listen_z = listener;
+			if(_this.scale_changed != null && !_this.ignore_listeners) {
+				_this.scale_changed(_this.scale);
+			}
+		}
+		return _this.scale;
+	}
+	,get_scale: function() {
+		return this.get_transform().local.scale;
+	}
+	,set_origin: function(_origin) {
+		var _this = this.get_transform();
+		_this.dirty = true;
+		if(_this.dirty && !_this._setup && _this._dirty_handlers != null && _this._dirty_handlers.length > 0) {
+			var _g = 0;
+			var _g1 = _this._dirty_handlers;
+			while(_g < _g1.length) {
+				var _handler = _g1[_g];
+				++_g;
+				if(_handler != null) {
+					_handler(_this);
+				}
+			}
+		}
+		_this.origin = _origin;
+		if(_this._origin_handlers != null && _this._origin_handlers.length > 0) {
+			var _origin1 = _this.origin;
+			var _g2 = 0;
+			var _g11 = _this._origin_handlers;
+			while(_g2 < _g11.length) {
+				var _handler1 = _g11[_g2];
+				++_g2;
+				if(_handler1 != null) {
+					_handler1(_origin1);
+				}
+			}
+		}
+		return _this.origin;
+	}
+	,get_origin: function() {
+		return this.get_transform().origin;
+	}
+	,set_transform: function(_transform) {
+		return this.transform = _transform;
+	}
+	,get_transform: function() {
+		return this.transform;
+	}
+	,set_parent: function(other) {
+		if(other == this) {
+			throw new js__$Boot_HaxeError(luxe_DebugError.assertion("other != this" + (" ( " + "Entity setting itself as parent makes no sense" + " )")));
+		}
+		if(this.get_parent() != null) {
+			this.get_parent()._remove_child(this);
+		}
+		this.parent = other;
+		if(this.get_parent() != null) {
+			this.get_parent()._add_child(this);
+			var _this = this.get_transform();
+			var _p = this.get_parent().get_transform();
+			_this.dirty = true;
+			if(_this.dirty && !_this._setup && _this._dirty_handlers != null && _this._dirty_handlers.length > 0) {
+				var _g = 0;
+				var _g1 = _this._dirty_handlers;
+				while(_g < _g1.length) {
+					var _handler = _g1[_g];
+					++_g;
+					if(_handler != null) {
+						_handler(_this);
+					}
+				}
+			}
+			if(_this.parent != null) {
+				var _this1 = _this.parent;
+				if(_this1._clean_handlers != null) {
+					HxOverrides.remove(_this1._clean_handlers,$bind(_this,_this.on_parent_cleaned));
+				}
+			}
+			_this.parent = _p;
+			if(_this._parent_handlers != null && _this._parent_handlers.length > 0) {
+				var _parent = _this.parent;
+				var _g2 = 0;
+				var _g11 = _this._parent_handlers;
+				while(_g2 < _g11.length) {
+					var _handler1 = _g11[_g2];
+					++_g2;
+					if(_handler1 != null) {
+						_handler1(_parent);
+					}
+				}
+			}
+			if(_this.parent != null) {
+				var _this2 = _this.parent;
+				if(_this2._clean_handlers == null) {
+					_this2._clean_handlers = [];
+				}
+				_this2._clean_handlers.push($bind(_this,_this.on_parent_cleaned));
+			}
+		} else {
+			var _this3 = this.get_transform();
+			_this3.dirty = true;
+			if(_this3.dirty && !_this3._setup && _this3._dirty_handlers != null && _this3._dirty_handlers.length > 0) {
+				var _g3 = 0;
+				var _g12 = _this3._dirty_handlers;
+				while(_g3 < _g12.length) {
+					var _handler2 = _g12[_g3];
+					++_g3;
+					if(_handler2 != null) {
+						_handler2(_this3);
+					}
+				}
+			}
+			if(_this3.parent != null) {
+				var _this4 = _this3.parent;
+				if(_this4._clean_handlers != null) {
+					HxOverrides.remove(_this4._clean_handlers,$bind(_this3,_this3.on_parent_cleaned));
+				}
+			}
+			_this3.parent = null;
+			if(_this3._parent_handlers != null && _this3._parent_handlers.length > 0) {
+				var _parent1 = _this3.parent;
+				var _g4 = 0;
+				var _g13 = _this3._parent_handlers;
+				while(_g4 < _g13.length) {
+					var _handler3 = _g13[_g4];
+					++_g4;
+					if(_handler3 != null) {
+						_handler3(_parent1);
+					}
+				}
+			}
+			if(_this3.parent != null) {
+				var _this5 = _this3.parent;
+				if(_this5._clean_handlers == null) {
+					_this5._clean_handlers = [];
+				}
+				_this5._clean_handlers.push($bind(_this3,_this3.on_parent_cleaned));
+			}
+			this.scene_root.add(this);
+		}
+		return this.get_parent();
+	}
+	,get_parent: function() {
+		return this.parent;
+	}
+	,set_scene: function(_scene) {
+		this._detach_scene();
+		this.scene = _scene;
+		this._attach_scene();
+		return this.get_scene();
+	}
+	,get_scene: function() {
+		return this.scene;
+	}
+	,set_scene_root: function(_scene) {
+		this.scene_root = _scene;
+		var _g = 0;
+		var _g1 = this.children;
+		while(_g < _g1.length) {
+			var _child = _g1[_g];
+			++_g;
+			_child.set_scene_root(_scene);
+		}
+		return this.scene_root;
+	}
+	,set_name: function(_name) {
+		var _scene = this.get_scene();
+		if(_scene != null && this.get_name() != null) {
+			_scene.entities.remove(this.get_name());
+			if(_scene.entities.exists(_name)) {
+				haxe_Log.trace("    i / scene / " + ("" + _scene.get_name() + " / adding a second entity named " + _name + "!\r\n                This will replace the existing one, possibly leaving the previous one in limbo."),{ fileName : "Scene.hx", lineNumber : 96, className : "luxe.Scene", methodName : "handle_duplicate_warning"});
+			}
+			var _this = _scene.entities;
+			if(__map_reserved[_name] != null) {
+				_this.setReserved(_name,this);
+			} else {
+				_this.h[_name] = this;
+			}
+			_scene._has_changed = true;
+		}
+		return this.name = _name;
+	}
+	,set_active: function(_active) {
+		return this.active = _active;
+	}
+	,get_active: function() {
+		return this.active;
+	}
+	,toString: function() {
+		if(this.destroyed) {
+			return "luxe Entity: " + this.get_name() + " / DESTROYED / id: " + this.get_id();
+		}
+		var _list = [];
+		var _c = HxOverrides.iter(this._components.components._keys);
+		while(_c.hasNext()) {
+			var _c1 = _c.next();
+			_list.push(_c1);
+		}
+		return "luxe Entity: " + this.get_name() + " / " + Lambda.count(this._components.components) + " components:[" + _list.join(", ") + "] / id: " + this.get_id();
+	}
+	,__class__: luxe_Entity
+	,__properties__: $extend(luxe_Objects.prototype.__properties__,{set_scene_root:"set_scene_root",set_origin:"set_origin",get_origin:"get_origin",set_scale:"set_scale",get_scale:"get_scale",set_rotation:"set_rotation",get_rotation:"get_rotation",set_pos:"set_pos",get_pos:"get_pos",set_transform:"set_transform",get_transform:"get_transform",set_active:"set_active",get_active:"get_active",set_scene:"set_scene",get_scene:"get_scene",set_parent:"set_parent",get_parent:"get_parent",set_fixed_rate:"set_fixed_rate",get_fixed_rate:"get_fixed_rate",get_components:"get_components"})
+});
 var luxe_Camera = function(_options) {
 	this._connected = false;
 	this.minimum_shake = 0.1;
@@ -7959,6 +9111,410 @@ luxe_Log._get_spacing = function(_file) {
 var luxe_DebugError = $hxClasses["luxe.DebugError"] = { __ename__ : ["luxe","DebugError"], __constructs__ : ["assertion","null_assertion"] };
 luxe_DebugError.assertion = function(expr) { var $x = ["assertion",0,expr]; $x.__enum__ = luxe_DebugError; $x.toString = $estr; return $x; };
 luxe_DebugError.null_assertion = function(expr) { var $x = ["null_assertion",1,expr]; $x.__enum__ = luxe_DebugError; $x.toString = $estr; return $x; };
+var luxe_Visual = function(_options) {
+	this.ignore_texture_on_geometry_change = false;
+	this._creating_geometry = false;
+	this._has_custom_origin = false;
+	this.radians = 0.0;
+	this.depth = 0.0;
+	this.visible = true;
+	this.locked = false;
+	if(_options == null) {
+		throw new js__$Boot_HaxeError(luxe_DebugError.null_assertion("_options was null" + (" ( " + "Visual requires non-null options" + " )")));
+	}
+	this._rotation_euler = new phoenix_Vector();
+	this._rotation_quat = new phoenix_Quaternion();
+	luxe_Entity.call(this,_options);
+	this.set_color(new phoenix_Color());
+	this.set_size(new phoenix_Vector());
+	if(this.options.texture != null) {
+		this.set_texture(this.options.texture);
+	}
+	if(this.options.shader != null) {
+		this.set_shader(this.options.shader);
+	}
+	if(this.options.color != null) {
+		this.set_color(this.options.color);
+	}
+	if(this.options.depth != null) {
+		this.set_depth(this.options.depth);
+	}
+	if(this.options.visible != null) {
+		this.set_visible(this.options.visible);
+	}
+	if(this.options.size != null) {
+		this.set_size(this.options.size);
+		this._create_geometry();
+	} else if(this.texture != null) {
+		this.set_size(new phoenix_Vector(this.texture.width,this.texture.height));
+		this._create_geometry();
+	} else {
+		this.set_size(new phoenix_Vector(64,64));
+		this._create_geometry();
+	}
+};
+$hxClasses["luxe.Visual"] = luxe_Visual;
+luxe_Visual.__name__ = ["luxe","Visual"];
+luxe_Visual.__super__ = luxe_Entity;
+luxe_Visual.prototype = $extend(luxe_Entity.prototype,{
+	_create_geometry: function() {
+		if(this.options.geometry == null) {
+			if(this.options.no_geometry == null || this.options.no_geometry == false) {
+				this._creating_geometry = true;
+				var _batcher = null;
+				if(this.options.no_batcher_add == null || this.options.no_batcher_add == false) {
+					if(this.options.batcher != null) {
+						_batcher = this.options.batcher;
+					} else {
+						_batcher = Luxe.renderer.batcher;
+					}
+				}
+				var tmp = this.get_name() + ".visual";
+				var tmp1 = this.options.depth == null ? 0 : this.options.depth;
+				var tmp2 = this.options.visible == null ? this.visible : this.options.visible;
+				this.set_geometry(new phoenix_geometry_QuadGeometry({ id : tmp, x : 0, y : 0, w : this.size.x, h : this.size.y, scale : new phoenix_Vector(1,1,1), texture : this.texture, color : this.color, shader : this.shader, batcher : _batcher, depth : tmp1, visible : tmp2}));
+				this._creating_geometry = false;
+				this.on_geometry_created();
+			}
+		} else {
+			this.set_geometry(this.options.geometry);
+		}
+		if(this.geometry != null) {
+			var tmp3 = this.get_name();
+			this.geometry.id = tmp3 + ".visual";
+			var tmp4 = this.get_name();
+			this.geometry.transform.id = tmp4 + ".visual.transform";
+		}
+		if(this.options.origin != null) {
+			this._has_custom_origin = true;
+			this.set_origin(this.options.origin);
+		}
+		if(this.options.rotation_z != null) {
+			this.set_rotation_z(this.options.rotation_z);
+		}
+	}
+	,ondestroy: function() {
+		if(this.geometry != null && this.geometry.added) {
+			this.geometry.drop(true);
+		}
+		this.set_transform(null);
+		this.options = null;
+		this.set_geometry(null);
+		this.set_texture(null);
+		this.set_shader(null);
+		this.set_color(null);
+		this.set_size(null);
+		this.set_clip_rect(null);
+		this._rotation_euler = null;
+		this._rotation_quat = null;
+	}
+	,on_geometry_created: function() {
+	}
+	,set_visible: function(_v) {
+		this.visible = _v;
+		if(this.geometry != null) {
+			this.geometry.set_visible(this.visible);
+		}
+		return this.visible;
+	}
+	,set_depth: function(_v) {
+		if(this.geometry != null) {
+			this.geometry.set_depth(_v);
+		}
+		return this.depth = _v;
+	}
+	,set_color: function(_c) {
+		if(this.color != null && this.geometry != null) {
+			this.geometry.set_color(_c);
+		}
+		return this.color = _c;
+	}
+	,set_texture: function(_t) {
+		if(this.geometry != null && this.geometry.state.texture != _t) {
+			this.geometry.set_texture(_t);
+		}
+		return this.texture = _t;
+	}
+	,set_shader: function(_s) {
+		if(this.geometry != null && this.geometry.state.shader != _s) {
+			this.geometry.set_shader(_s);
+		}
+		return this.shader = _s;
+	}
+	,set_geometry: function(_g) {
+		if(this.geometry == _g) {
+			return this.geometry;
+		}
+		if(this.geometry != null) {
+			this.geometry.drop();
+		}
+		this.geometry = _g;
+		if(this.geometry != null) {
+			var _this = this.geometry.transform;
+			var _p = this.get_transform();
+			_this.dirty = true;
+			if(_this.dirty && !_this._setup && _this._dirty_handlers != null && _this._dirty_handlers.length > 0) {
+				var _g1 = 0;
+				var _g11 = _this._dirty_handlers;
+				while(_g1 < _g11.length) {
+					var _handler = _g11[_g1];
+					++_g1;
+					if(_handler != null) {
+						_handler(_this);
+					}
+				}
+			}
+			if(_this.parent != null) {
+				var _this1 = _this.parent;
+				if(_this1._clean_handlers != null) {
+					HxOverrides.remove(_this1._clean_handlers,$bind(_this,_this.on_parent_cleaned));
+				}
+			}
+			_this.parent = _p;
+			if(_this._parent_handlers != null && _this._parent_handlers.length > 0) {
+				var _parent = _this.parent;
+				var _g2 = 0;
+				var _g12 = _this._parent_handlers;
+				while(_g2 < _g12.length) {
+					var _handler1 = _g12[_g2];
+					++_g2;
+					if(_handler1 != null) {
+						_handler1(_parent);
+					}
+				}
+			}
+			if(_this.parent != null) {
+				var _this2 = _this.parent;
+				if(_this2._clean_handlers == null) {
+					_this2._clean_handlers = [];
+				}
+				_this2._clean_handlers.push($bind(_this,_this.on_parent_cleaned));
+			}
+			if(this._creating_geometry == false) {
+				this.geometry.set_color(this.color);
+				this.geometry.set_depth(this.depth);
+				this.geometry.set_visible(this.visible);
+				var tmp = !this.ignore_texture_on_geometry_change;
+			}
+		}
+		return this.geometry;
+	}
+	,set_parent_from_transform: function(_parent) {
+		luxe_Entity.prototype.set_parent_from_transform.call(this,_parent);
+		if(this.geometry != null) {
+			var _this = this.geometry.transform;
+			var _p = this.get_transform();
+			_this.dirty = true;
+			if(_this.dirty && !_this._setup && _this._dirty_handlers != null && _this._dirty_handlers.length > 0) {
+				var _g = 0;
+				var _g1 = _this._dirty_handlers;
+				while(_g < _g1.length) {
+					var _handler = _g1[_g];
+					++_g;
+					if(_handler != null) {
+						_handler(_this);
+					}
+				}
+			}
+			if(_this.parent != null) {
+				var _this1 = _this.parent;
+				if(_this1._clean_handlers != null) {
+					HxOverrides.remove(_this1._clean_handlers,$bind(_this,_this.on_parent_cleaned));
+				}
+			}
+			_this.parent = _p;
+			if(_this._parent_handlers != null && _this._parent_handlers.length > 0) {
+				var _parent1 = _this.parent;
+				var _g2 = 0;
+				var _g11 = _this._parent_handlers;
+				while(_g2 < _g11.length) {
+					var _handler1 = _g11[_g2];
+					++_g2;
+					if(_handler1 != null) {
+						_handler1(_parent1);
+					}
+				}
+			}
+			if(_this.parent != null) {
+				var _this2 = _this.parent;
+				if(_this2._clean_handlers == null) {
+					_this2._clean_handlers = [];
+				}
+				_this2._clean_handlers.push($bind(_this,_this.on_parent_cleaned));
+			}
+		}
+	}
+	,set_rotation_from_transform: function(_rotation) {
+		luxe_Entity.prototype.set_rotation_from_transform.call(this,_rotation);
+		var _this = this._rotation_euler;
+		var sqx = _rotation.x * _rotation.x;
+		var sqy = _rotation.y * _rotation.y;
+		var sqz = _rotation.z * _rotation.z;
+		var sqw = _rotation.w * _rotation.w;
+		var _x = _this.x;
+		var _y = _this.y;
+		var _z = _this.z;
+		if(0 == 0) {
+			_x = Math.atan2(2 * (_rotation.x * _rotation.w - _rotation.y * _rotation.z),sqw - sqx - sqy + sqz);
+			var value = 2 * (_rotation.x * _rotation.z + _rotation.y * _rotation.w);
+			_y = Math.asin(value < -1 ? -1 : value > 1 ? 1 : value);
+			_z = Math.atan2(2 * (_rotation.z * _rotation.w - _rotation.x * _rotation.y),sqw + sqx - sqy - sqz);
+		} else if(0 == 1) {
+			var value1 = 2 * (_rotation.x * _rotation.w - _rotation.y * _rotation.z);
+			_x = Math.asin(value1 < -1 ? -1 : value1 > 1 ? 1 : value1);
+			_y = Math.atan2(2 * (_rotation.x * _rotation.z + _rotation.y * _rotation.w),sqw - sqx - sqy + sqz);
+			_z = Math.atan2(2 * (_rotation.x * _rotation.y + _rotation.z * _rotation.w),sqw - sqx + sqy - sqz);
+		} else if(0 == 2) {
+			var value2 = 2 * (_rotation.x * _rotation.w + _rotation.y * _rotation.z);
+			_x = Math.asin(value2 < -1 ? -1 : value2 > 1 ? 1 : value2);
+			_y = Math.atan2(2 * (_rotation.y * _rotation.w - _rotation.z * _rotation.x),sqw - sqx - sqy + sqz);
+			_z = Math.atan2(2 * (_rotation.z * _rotation.w - _rotation.x * _rotation.y),sqw - sqx + sqy - sqz);
+		} else if(0 == 3) {
+			_x = Math.atan2(2 * (_rotation.x * _rotation.w + _rotation.z * _rotation.y),sqw - sqx - sqy + sqz);
+			var value3 = 2 * (_rotation.y * _rotation.w - _rotation.x * _rotation.z);
+			_y = Math.asin(value3 < -1 ? -1 : value3 > 1 ? 1 : value3);
+			_z = Math.atan2(2 * (_rotation.x * _rotation.y + _rotation.z * _rotation.w),sqw + sqx - sqy - sqz);
+		} else if(0 == 4) {
+			_x = Math.atan2(2 * (_rotation.x * _rotation.w - _rotation.z * _rotation.y),sqw - sqx + sqy - sqz);
+			_y = Math.atan2(2 * (_rotation.y * _rotation.w - _rotation.x * _rotation.z),sqw + sqx - sqy - sqz);
+			var value4 = 2 * (_rotation.x * _rotation.y + _rotation.z * _rotation.w);
+			_z = Math.asin(value4 < -1 ? -1 : value4 > 1 ? 1 : value4);
+		} else if(0 == 5) {
+			_x = Math.atan2(2 * (_rotation.x * _rotation.w + _rotation.y * _rotation.z),sqw - sqx + sqy - sqz);
+			_y = Math.atan2(2 * (_rotation.x * _rotation.z + _rotation.y * _rotation.w),sqw + sqx - sqy - sqz);
+			var value5 = 2 * (_rotation.z * _rotation.w - _rotation.x * _rotation.y);
+			_z = Math.asin(value5 < -1 ? -1 : value5 > 1 ? 1 : value5);
+		}
+		var prev = _this.ignore_listeners;
+		_this.ignore_listeners = true;
+		_this.x = _x;
+		if(!_this._construct) {
+			if(_this.listen_x != null && !_this.ignore_listeners) {
+				_this.listen_x(_x);
+			}
+		}
+		_this.y = _y;
+		if(!_this._construct) {
+			if(_this.listen_y != null && !_this.ignore_listeners) {
+				_this.listen_y(_y);
+			}
+		}
+		_this.z = _z;
+		if(!_this._construct) {
+			if(_this.listen_z != null && !_this.ignore_listeners) {
+				_this.listen_z(_z);
+			}
+		}
+		_this.ignore_listeners = prev;
+		if(_this.listen_x != null && !_this.ignore_listeners) {
+			_this.listen_x(_this.x);
+		}
+		if(_this.listen_y != null && !_this.ignore_listeners) {
+			_this.listen_y(_this.y);
+		}
+		if(_this.listen_z != null && !_this.ignore_listeners) {
+			_this.listen_z(_this.z);
+		}
+		this._rotation_quat.copy(_rotation);
+	}
+	,set_size: function(_v) {
+		this.size = _v;
+		if(this.size != null) {
+			var _v1 = this.size;
+			var listener = $bind(this,this._size_change);
+			_v1.listen_x = listener;
+			_v1.listen_y = listener;
+			_v1.listen_z = listener;
+		}
+		return this.size;
+	}
+	,get_blend_src: function() {
+		return this.geometry.state.blend_src_alpha;
+	}
+	,get_blend_dest: function() {
+		return this.geometry.state.blend_dest_alpha;
+	}
+	,get_blend_src_alpha: function() {
+		return this.geometry.state.blend_src_alpha;
+	}
+	,get_blend_src_rgb: function() {
+		return this.geometry.state.blend_src_rgb;
+	}
+	,get_blend_dest_alpha: function() {
+		return this.geometry.state.blend_dest_alpha;
+	}
+	,get_blend_dest_rgb: function() {
+		return this.geometry.state.blend_dest_rgb;
+	}
+	,set_blend_src: function(val) {
+		this.geometry.set_blend_src_alpha(val);
+		this.geometry.set_blend_src_rgb(val);
+		return val;
+	}
+	,set_blend_dest: function(val) {
+		this.geometry.set_blend_dest_alpha(val);
+		this.geometry.set_blend_dest_rgb(val);
+		return val;
+	}
+	,set_blend_src_alpha: function(val) {
+		this.geometry.set_blend_src_alpha(val);
+		return val;
+	}
+	,set_blend_src_rgb: function(val) {
+		this.geometry.set_blend_src_rgb(val);
+		return val;
+	}
+	,set_blend_dest_alpha: function(val) {
+		this.geometry.set_blend_dest_alpha(val);
+		return val;
+	}
+	,set_blend_dest_rgb: function(val) {
+		this.geometry.set_blend_dest_rgb(val);
+		return val;
+	}
+	,get_rotation_z: function() {
+		return this.get_radians() * 57.29577951308238;
+	}
+	,set_rotation_z: function(_degrees) {
+		this.set_radians(_degrees * 0.017453292519943278);
+		return _degrees;
+	}
+	,set_radians: function(_r) {
+		var _this = this._rotation_euler;
+		_this.z = _r;
+		if(!_this._construct) {
+			if(_this.listen_z != null && !_this.ignore_listeners) {
+				_this.listen_z(_r);
+			}
+		}
+		this._rotation_quat.setFromEuler(this._rotation_euler);
+		this.set_rotation(this._rotation_quat.clone());
+		return this.radians = _r;
+	}
+	,get_radians: function() {
+		return this.radians;
+	}
+	,set_locked: function(_l) {
+		if(this.geometry != null) {
+			this.geometry.set_locked(_l);
+		}
+		return this.locked = _l;
+	}
+	,set_clip_rect: function(_val) {
+		if(this.geometry != null) {
+			this.geometry.set_clip_rect(_val);
+		}
+		return this.clip_rect = _val;
+	}
+	,_size_change: function(_v) {
+		this.set_size(this.size);
+	}
+	,init: function() {
+		luxe_Entity.prototype.init.call(this);
+	}
+	,__class__: luxe_Visual
+	,__properties__: $extend(luxe_Entity.prototype.__properties__,{set_blend_dest_rgb:"set_blend_dest_rgb",get_blend_dest_rgb:"get_blend_dest_rgb",set_blend_dest_alpha:"set_blend_dest_alpha",get_blend_dest_alpha:"get_blend_dest_alpha",set_blend_src_rgb:"set_blend_src_rgb",get_blend_src_rgb:"get_blend_src_rgb",set_blend_src_alpha:"set_blend_src_alpha",get_blend_src_alpha:"get_blend_src_alpha",set_blend_dest:"set_blend_dest",get_blend_dest:"get_blend_dest",set_blend_src:"set_blend_src",get_blend_src:"get_blend_src",set_rotation_z:"set_rotation_z",get_rotation_z:"get_rotation_z",set_radians:"set_radians",get_radians:"get_radians",set_clip_rect:"set_clip_rect",set_depth:"set_depth",set_visible:"set_visible",set_color:"set_color",set_shader:"set_shader",set_texture:"set_texture",set_locked:"set_locked",set_geometry:"set_geometry",set_size:"set_size"})
+});
 var luxe_NineSlice = function(_options) {
 	this.added = false;
 	this.midheight = 0.0;
@@ -10245,6 +11801,320 @@ luxe_Cursor.prototype = {
 	,__class__: luxe_Cursor
 	,__properties__: {get_pos:"get_pos",set_grab:"set_grab",get_grab:"get_grab"}
 };
+var luxe_Sprite = function(options) {
+	this.flipy = false;
+	this.flipx = false;
+	this.centered = true;
+	this.set_uv(new phoenix_Rectangle());
+	if(options == null) {
+		throw new js__$Boot_HaxeError(luxe_DebugError.null_assertion("options was null" + (" ( " + "Sprite requires non-null options" + " )")));
+	}
+	if(options.centered != null) {
+		this.set_centered(options.centered);
+	}
+	if(options.flipx != null) {
+		this.set_flipx(options.flipx);
+	}
+	if(options.flipy != null) {
+		this.set_flipy(options.flipy);
+	}
+	luxe_Visual.call(this,options);
+};
+$hxClasses["luxe.Sprite"] = luxe_Sprite;
+luxe_Sprite.__name__ = ["luxe","Sprite"];
+luxe_Sprite.__super__ = luxe_Visual;
+luxe_Sprite.prototype = $extend(luxe_Visual.prototype,{
+	on_geometry_created: function() {
+		luxe_Visual.prototype.on_geometry_created.call(this);
+		if(this.texture != null) {
+			if(this.options.uv == null) {
+				this.options.uv = new phoenix_Rectangle(0,0,this.texture.width,this.texture.height);
+			}
+			this.set_uv(this.options.uv);
+			if(this.texture.resource_type == 5) {
+				this.set_flipy(true);
+			}
+		}
+		this.set_centered(!(!this.centered));
+		this.set_flipx(!(!this.flipx));
+		this.set_flipy(!(!this.flipy));
+	}
+	,set_geometry: function(_g) {
+		this.geometry_quad = _g;
+		return luxe_Visual.prototype.set_geometry.call(this,_g);
+	}
+	,ondestroy: function() {
+		this.set_uv(null);
+		this.geometry_quad = null;
+		luxe_Visual.prototype.ondestroy.call(this);
+	}
+	,point_inside: function(_p) {
+		if(this.geometry == null) {
+			return false;
+		}
+		return Luxe.utils.geometry.point_in_geometry(_p,this.geometry);
+	}
+	,point_inside_AABB: function(_p) {
+		if(this.get_pos() == null) {
+			return false;
+		}
+		if(this.size == null) {
+			return false;
+		}
+		var _s_x = this.size.x * this.get_scale().x;
+		var _s_y = this.size.y * this.get_scale().y;
+		if(this.centered) {
+			var _hx = _s_x / 2;
+			var _hy = _s_y / 2;
+			if(_p.x < this.get_pos().x - _hx) {
+				return false;
+			}
+			if(_p.y < this.get_pos().y - _hy) {
+				return false;
+			}
+			if(_p.x > this.get_pos().x + _s_x - _hx) {
+				return false;
+			}
+			if(_p.y > this.get_pos().y + _s_y - _hy) {
+				return false;
+			}
+		} else {
+			if(_p.x < this.get_pos().x) {
+				return false;
+			}
+			if(_p.y < this.get_pos().y) {
+				return false;
+			}
+			if(_p.x > this.get_pos().x + _s_x) {
+				return false;
+			}
+			if(_p.y > this.get_pos().y + _s_y) {
+				return false;
+			}
+		}
+		return true;
+	}
+	,set_uv: function(_uv) {
+		if(_uv == null) {
+			return this.uv = _uv;
+		}
+		if(this.geometry_quad != null) {
+			var _this = this.geometry_quad;
+			if(_this.state.texture == null) {
+				throw new js__$Boot_HaxeError(luxe_DebugError.null_assertion("texture was null" + (" ( " + "QuadGeometry; Calling UV on a geometry with null texture." + " )")));
+			}
+			var tlx = _uv.x / _this.state.texture.width_actual;
+			var tly = _uv.y / _this.state.texture.height_actual;
+			var szx = _uv.w / _this.state.texture.width_actual;
+			var szy = _uv.h / _this.state.texture.height_actual;
+			if(_this.vertices.length != 0) {
+				var sz_x = szx;
+				var sz_y = szy;
+				var tl_x = tlx;
+				var tl_y = tly;
+				_this._uv_x = tl_x;
+				_this._uv_y = tl_y;
+				_this._uv_w = sz_x;
+				_this._uv_h = sz_y;
+				var tr_x = tl_x + sz_x;
+				var tr_y = tl_y;
+				var br_x = tl_x + sz_x;
+				var br_y = tl_y + sz_y;
+				var bl_x = tl_x;
+				var bl_y = tl_y + sz_y;
+				var tmp_x = 0.0;
+				var tmp_y = 0.0;
+				var rotations = _this.uv_angle / 90 | 0;
+				rotations -= 4 * Math.floor(rotations / 4);
+				var _g1 = 0;
+				var _g = rotations;
+				while(_g1 < _g) {
+					var r = _g1++;
+					tmp_x = tl_x;
+					tl_x = bl_x;
+					bl_x = br_x;
+					br_x = tr_x;
+					tr_x = tmp_x;
+					tmp_y = tl_y;
+					tl_y = bl_y;
+					bl_y = br_y;
+					br_y = tr_y;
+					tr_y = tmp_y;
+				}
+				if(_this.flipy) {
+					tmp_y = bl_y;
+					bl_y = tl_y;
+					tl_y = tmp_y;
+					tmp_x = bl_x;
+					bl_x = tl_x;
+					tl_x = tmp_x;
+					tmp_y = br_y;
+					br_y = tr_y;
+					tr_y = tmp_y;
+					tmp_x = br_x;
+					br_x = tr_x;
+					tr_x = tmp_x;
+				}
+				if(_this.flipx) {
+					tmp_x = tr_x;
+					tr_x = tl_x;
+					tl_x = tmp_x;
+					tmp_y = tr_y;
+					tr_y = tl_y;
+					tl_y = tmp_y;
+					tmp_x = br_x;
+					br_x = bl_x;
+					bl_x = tmp_x;
+					tmp_y = br_y;
+					br_y = bl_y;
+					bl_y = tmp_y;
+				}
+				var _this1 = _this.vertices[0].uv.uv0;
+				_this1.u = tl_x;
+				_this1.v = tl_y;
+				var _this2 = _this.vertices[1].uv.uv0;
+				_this2.u = tr_x;
+				_this2.v = tr_y;
+				var _this3 = _this.vertices[2].uv.uv0;
+				_this3.u = br_x;
+				_this3.v = br_y;
+				var _this4 = _this.vertices[3].uv.uv0;
+				_this4.u = bl_x;
+				_this4.v = bl_y;
+				var _this5 = _this.vertices[4].uv.uv0;
+				_this5.u = tl_x;
+				_this5.v = tl_y;
+				var _this6 = _this.vertices[5].uv.uv0;
+				_this6.u = br_x;
+				_this6.v = br_y;
+				_this.set_dirty(true);
+			}
+		}
+		this.uv = _uv;
+		phoenix_Rectangle.listen(this.uv,$bind(this,this._uv_change));
+		return this.uv;
+	}
+	,set_flipy: function(_v) {
+		if(_v == this.flipy) {
+			return this.flipy;
+		}
+		if(this.geometry_quad != null) {
+			this.geometry_quad.set_flipy(_v);
+		}
+		return this.flipy = _v;
+	}
+	,set_flipx: function(_v) {
+		if(_v == this.flipx) {
+			return this.flipx;
+		}
+		if(this.geometry_quad != null) {
+			this.geometry_quad.set_flipx(_v);
+		}
+		return this.flipx = _v;
+	}
+	,set_size: function(_v) {
+		if(this.geometry_quad != null) {
+			var _this = this.geometry_quad;
+			var quad_z;
+			var quad_y;
+			var quad_x;
+			var quad_w;
+			var quad_listen_z;
+			var quad_listen_y;
+			var quad_listen_x;
+			var quad_ignore_listeners;
+			var quad__construct;
+			var _x = _v.x;
+			var _y = _v.y;
+			quad_x = 0;
+			quad_y = 0;
+			quad_z = 0;
+			quad_w = 0;
+			quad_ignore_listeners = false;
+			quad__construct = false;
+			quad__construct = true;
+			quad_x = _x;
+			if(!quad__construct) {
+				if(quad_listen_x != null && !quad_ignore_listeners) {
+					quad_listen_x(_x);
+				}
+			}
+			quad_y = _y;
+			if(!quad__construct) {
+				if(quad_listen_y != null && !quad_ignore_listeners) {
+					quad_listen_y(_y);
+				}
+			}
+			quad_z = 0;
+			if(!quad__construct) {
+				if(quad_listen_z != null && !quad_ignore_listeners) {
+					quad_listen_z(0);
+				}
+			}
+			quad_w = 0;
+			quad__construct = false;
+			_this.resize_xy(quad_x,quad_y);
+			if(!this._has_custom_origin) {
+				if(this.centered) {
+					var _this1 = new phoenix_Vector(_v.x,_v.y,_v.z,_v.w);
+					var _x1 = _this1.x / 2;
+					var _y1 = _this1.y / 2;
+					var _z = _this1.z / 2;
+					var prev = _this1.ignore_listeners;
+					_this1.ignore_listeners = true;
+					_this1.x = _x1;
+					if(!_this1._construct) {
+						if(_this1.listen_x != null && !_this1.ignore_listeners) {
+							_this1.listen_x(_x1);
+						}
+					}
+					_this1.y = _y1;
+					if(!_this1._construct) {
+						if(_this1.listen_y != null && !_this1.ignore_listeners) {
+							_this1.listen_y(_y1);
+						}
+					}
+					_this1.z = _z;
+					if(!_this1._construct) {
+						if(_this1.listen_z != null && !_this1.ignore_listeners) {
+							_this1.listen_z(_z);
+						}
+					}
+					_this1.ignore_listeners = prev;
+					if(_this1.listen_x != null && !_this1.ignore_listeners) {
+						_this1.listen_x(_this1.x);
+					}
+					if(_this1.listen_y != null && !_this1.ignore_listeners) {
+						_this1.listen_y(_this1.y);
+					}
+					if(_this1.listen_z != null && !_this1.ignore_listeners) {
+						_this1.listen_z(_this1.z);
+					}
+					this.set_origin(_this1);
+				}
+			}
+		}
+		return luxe_Visual.prototype.set_size.call(this,_v);
+	}
+	,set_centered: function(_c) {
+		if(this.size != null) {
+			if(_c) {
+				this.set_origin(new phoenix_Vector(this.size.x / 2,this.size.y / 2));
+			} else {
+				this.set_origin(new phoenix_Vector());
+			}
+		}
+		return this.centered = _c;
+	}
+	,_uv_change: function(_v) {
+		this.set_uv(this.uv);
+	}
+	,init: function() {
+		luxe_Visual.prototype.init.call(this);
+	}
+	,__class__: luxe_Sprite
+	,__properties__: $extend(luxe_Visual.prototype.__properties__,{set_uv:"set_uv",set_flipy:"set_flipy",set_flipx:"set_flipx",set_centered:"set_centered"})
+});
 var luxe_Text = function(_options) {
 	this.text_options = _options;
 	this.text_bounds = new phoenix_Rectangle();
@@ -17667,6 +19537,8578 @@ luxe_utils_unifill__$Utf16_StringU16_$Impl_$._new = function(s) {
 };
 luxe_utils_unifill__$Utf16_StringU16_$Impl_$.get_length = function(this1) {
 	return this1.length;
+};
+var mint_Button = function(_options) {
+	this.options = _options;
+	if(this.options.name == null) {
+		var tmp = mint_types_Helper.uniqueid();
+		this.options.name = "button." + tmp;
+	}
+	if(this.options.mouse_input == null) {
+		this.options.mouse_input = true;
+	}
+	mint_Control.call(this,this.options);
+	if(this.options.align == null) {
+		this.options.align = 3;
+	}
+	if(this.options.align_vertical == null) {
+		this.options.align_vertical = 3;
+	}
+	if(this.options.text_size == null) {
+		this.options.text_size = 14;
+	}
+	this.label = new mint_Label({ parent : this, x : 0, y : 0, w : this.w, h : this.h, text : this.options.text, text_size : this.options.text_size, name : this.name + ".label", options : this.options.options.label, align : this.options.align, align_vertical : this.options.align_vertical, mouse_input : false, internal_visible : this.options.visible});
+	this.renderer = this.rendering.get(mint_Button,this);
+	if(this.options.onclick != null) {
+		this.onmouseup.listen(this.options.onclick);
+	}
+	var _idx = 0;
+	var _count = this.oncreate.listeners.length;
+	while(_idx < _count) {
+		if(this.oncreate != null) {
+			var fn = this.oncreate.listeners[_idx];
+			if(fn != null) {
+				fn();
+			}
+		}
+		++_idx;
+	}
+	if(this.oncreate != null) {
+		while(_count > 0) {
+			var fn1 = this.oncreate.listeners[_count - 1];
+			if(fn1 == null) {
+				this.oncreate.listeners.splice(_count - 1,1);
+			}
+			--_count;
+		}
+	}
+};
+$hxClasses["mint.Button"] = mint_Button;
+mint_Button.__name__ = ["mint","Button"];
+mint_Button.__super__ = mint_Control;
+mint_Button.prototype = $extend(mint_Control.prototype,{
+	__class__: mint_Button
+});
+var mint_Checkbox = function(_options) {
+	this.state = true;
+	this.options = _options;
+	if(this.options.name == null) {
+		var tmp = mint_types_Helper.uniqueid();
+		this.options.name = "checkbox." + tmp;
+	}
+	if(this.options.mouse_input == null) {
+		this.options.mouse_input = true;
+	}
+	mint_Control.call(this,_options);
+	this.onchange = new mint_core_Signal();
+	if(this.options.state != null) {
+		this.set_state(this.options.state);
+	}
+	this.renderer = this.rendering.get(mint_Checkbox,this);
+	if(this.options.onchange != null) {
+		this.onchange.listen(this.options.onchange);
+	}
+	this.onmouseup.listen($bind(this,this.onclick));
+	var _idx = 0;
+	var _count = this.oncreate.listeners.length;
+	while(_idx < _count) {
+		if(this.oncreate != null) {
+			var fn = this.oncreate.listeners[_idx];
+			if(fn != null) {
+				fn();
+			}
+		}
+		++_idx;
+	}
+	if(this.oncreate != null) {
+		while(_count > 0) {
+			var fn1 = this.oncreate.listeners[_count - 1];
+			if(fn1 == null) {
+				this.oncreate.listeners.splice(_count - 1,1);
+			}
+			--_count;
+		}
+	}
+};
+$hxClasses["mint.Checkbox"] = mint_Checkbox;
+mint_Checkbox.__name__ = ["mint","Checkbox"];
+mint_Checkbox.__super__ = mint_Control;
+mint_Checkbox.prototype = $extend(mint_Control.prototype,{
+	destroy: function() {
+		mint_Control.prototype.destroy.call(this);
+		var _this = this.onchange;
+		_this.listeners = null;
+		_this.listeners = [];
+		this.onchange = null;
+	}
+	,onclick: function(_,_1) {
+		this.set_state(!this.state);
+	}
+	,set_state: function(_b) {
+		var prev = this.state;
+		this.state = _b;
+		var _idx = 0;
+		var _count = this.onchange.listeners.length;
+		while(_idx < _count) {
+			if(this.onchange != null) {
+				var fn = this.onchange.listeners[_idx];
+				if(fn != null) {
+					fn(this.state,prev);
+				}
+			}
+			++_idx;
+		}
+		if(this.onchange != null) {
+			while(_count > 0) {
+				var fn1 = this.onchange.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onchange.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+		return this.state;
+	}
+	,__class__: mint_Checkbox
+	,__properties__: $extend(mint_Control.prototype.__properties__,{set_state:"set_state"})
+});
+var mint_Dropdown = function(_options) {
+	this.skip_mouse_up = false;
+	this._height = 110;
+	this.is_open = false;
+	this.options = _options;
+	if(this.options.name == null) {
+		var tmp = mint_types_Helper.uniqueid();
+		this.options.name = "dropdown." + tmp;
+	}
+	if(this.options.mouse_input == null) {
+		this.options.mouse_input = true;
+	}
+	mint_Control.call(this,this.options);
+	this.onselect = new mint_core_Signal();
+	if(this.options.align == null) {
+		this.options.align = 1;
+	}
+	if(this.options.align_vertical == null) {
+		this.options.align_vertical = 3;
+	}
+	if(this.options.text_size == null) {
+		this.options.text_size = 14;
+	}
+	this.list = new mint_List({ parent : this, name : this.name + ".list", x : 0, y : this.options.h + 1, w : this.w - 1, h : this._height, options : this.options.options.list, internal_visible : this.options.visible});
+	this.list.onselect.listen($bind(this,this.onselected));
+	this.list.onmousedown.listen($bind(this,this.ondeselect));
+	this.label = new mint_Label({ parent : this, x : 5, y : 0, w : this.w - 10, h : this.h, text : this.options.text, text_size : this.options.text_size, name : this.name + ".label", options : this.options.options.label, align : this.options.align, align_vertical : this.options.align_vertical, internal_visible : this.options.visible});
+	this.renderer = this.rendering.get(mint_Dropdown,this);
+	this.list.set_visible(false);
+	var _idx = 0;
+	var _count = this.oncreate.listeners.length;
+	while(_idx < _count) {
+		if(this.oncreate != null) {
+			var fn = this.oncreate.listeners[_idx];
+			if(fn != null) {
+				fn();
+			}
+		}
+		++_idx;
+	}
+	if(this.oncreate != null) {
+		while(_count > 0) {
+			var fn1 = this.oncreate.listeners[_count - 1];
+			if(fn1 == null) {
+				this.oncreate.listeners.splice(_count - 1,1);
+			}
+			--_count;
+		}
+	}
+};
+$hxClasses["mint.Dropdown"] = mint_Dropdown;
+mint_Dropdown.__name__ = ["mint","Dropdown"];
+mint_Dropdown.__super__ = mint_Control;
+mint_Dropdown.prototype = $extend(mint_Control.prototype,{
+	ondeselect: function(e,c) {
+		if(!this.list.contains(e.x,e.y)) {
+			this.close_list();
+		}
+	}
+	,onselected: function(idx,c,e) {
+		var _idx = 0;
+		var _count = this.onselect.listeners.length;
+		while(_idx < _count) {
+			if(this.onselect != null) {
+				var fn = this.onselect.listeners[_idx];
+				if(fn != null) {
+					fn(idx,c,e);
+				}
+			}
+			++_idx;
+		}
+		if(this.onselect != null) {
+			while(_count > 0) {
+				var fn1 = this.onselect.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onselect.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+		this.close_list();
+	}
+	,add_item: function(_item,offset_x,offset_y) {
+		if(offset_y == null) {
+			offset_y = 0.0;
+		}
+		if(offset_x == null) {
+			offset_x = 0.0;
+		}
+		this.list.add_item(_item,offset_x,offset_y);
+		this.list.set_visible(this.is_open);
+	}
+	,close_list: function() {
+		var _this = this.list;
+		if(_this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + _this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		if(_this.canvas != _this) {
+			if(_this.canvas.get_captured() == _this) {
+				_this.canvas.set_captured(null);
+				var _idx = 0;
+				var _count = _this.oncaptured.listeners.length;
+				while(_idx < _count) {
+					if(_this.oncaptured != null) {
+						var fn = _this.oncaptured.listeners[_idx];
+						if(fn != null) {
+							fn(false);
+						}
+					}
+					++_idx;
+				}
+				if(_this.oncaptured != null) {
+					while(_count > 0) {
+						var fn1 = _this.oncaptured.listeners[_count - 1];
+						if(fn1 == null) {
+							_this.oncaptured.listeners.splice(_count - 1,1);
+						}
+						--_count;
+					}
+				}
+			}
+		}
+		this.list.set_visible(false);
+		this.list.set_x(0);
+		this.list.set_y(this.h + 1);
+		this.add(this.list);
+		this.is_open = false;
+	}
+	,open_list: function() {
+		this.list.set_visible(true);
+		this.canvas.bring_to_front(this.list);
+		this.list.set_x(this.x);
+		this.list.set_y(this.y + this.h + 1);
+		var _this = this.list;
+		if(_this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + _this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		if(_this.canvas != _this) {
+			var _pre = _this.canvas.get_captured() == _this;
+			_this.canvas.set_captured(_this);
+			if(!_pre) {
+				var _idx = 0;
+				var _count = _this.oncaptured.listeners.length;
+				while(_idx < _count) {
+					if(_this.oncaptured != null) {
+						var fn = _this.oncaptured.listeners[_idx];
+						if(fn != null) {
+							fn(true);
+						}
+					}
+					++_idx;
+				}
+				if(_this.oncaptured != null) {
+					while(_count > 0) {
+						var fn1 = _this.oncaptured.listeners[_count - 1];
+						if(fn1 == null) {
+							_this.oncaptured.listeners.splice(_count - 1,1);
+						}
+						--_count;
+					}
+				}
+			}
+		}
+		this.is_open = true;
+	}
+	,destroy: function() {
+		mint_Control.prototype.destroy.call(this);
+		var _this = this.onselect;
+		_this.listeners = null;
+		_this.listeners = [];
+		this.onselect = null;
+	}
+	,mousedown: function(e) {
+		mint_Control.prototype.mousedown.call(this,e);
+		if(e.button == 0) {
+			var _inside = this.contains(e.x,e.y);
+			if(_inside) {
+				if(!this.is_open) {
+					this.open_list();
+					this.skip_mouse_up = true;
+				} else {
+					this.close_list();
+				}
+			}
+		}
+	}
+	,mouseup: function(e) {
+		mint_Control.prototype.mouseup.call(this,e);
+		if(e.button == 0) {
+			if(this.is_open && !this.skip_mouse_up) {
+				this.close_list();
+				return;
+			}
+			this.skip_mouse_up = false;
+		}
+	}
+	,bounds_changed: function(_dx,_dy,_dw,_dh) {
+		if(_dh == null) {
+			_dh = 0.0;
+		}
+		if(_dw == null) {
+			_dw = 0.0;
+		}
+		if(_dy == null) {
+			_dy = 0.0;
+		}
+		if(_dx == null) {
+			_dx = 0.0;
+		}
+		mint_Control.prototype.bounds_changed.call(this,_dx,_dy,_dw,_dh);
+		if(this.list != null) {
+			if(this.is_open) {
+				this.list.set_pos(this.x,this.y + this.h + 1);
+			}
+			this.list.set_size(this.w,this.list.h);
+		}
+		if(this.label != null) {
+			this.label.set_size(this.w - 1,this.h);
+		}
+	}
+	,__class__: mint_Dropdown
+});
+var mint_Label = function(_options) {
+	this.options = _options;
+	if(this.options.name == null) {
+		var tmp = mint_types_Helper.uniqueid();
+		this.options.name = "label." + tmp;
+	}
+	mint_Control.call(this,this.options);
+	this.onchange = new mint_core_Signal();
+	if(this.options.align == null) {
+		this.options.align = 3;
+	}
+	if(this.options.align_vertical == null) {
+		this.options.align_vertical = 3;
+	}
+	if(this.options.text_size == null) {
+		this.options.text_size = 14;
+	}
+	if(this.options.onclick != null) {
+		this.mouse_input = true;
+		this.onmouseup.listen(this.options.onclick);
+	}
+	this.set_text(this.options.text);
+	this.renderer = this.rendering.get(mint_Label,this);
+	var _idx = 0;
+	var _count = this.oncreate.listeners.length;
+	while(_idx < _count) {
+		if(this.oncreate != null) {
+			var fn = this.oncreate.listeners[_idx];
+			if(fn != null) {
+				fn();
+			}
+		}
+		++_idx;
+	}
+	if(this.oncreate != null) {
+		while(_count > 0) {
+			var fn1 = this.oncreate.listeners[_count - 1];
+			if(fn1 == null) {
+				this.oncreate.listeners.splice(_count - 1,1);
+			}
+			--_count;
+		}
+	}
+};
+$hxClasses["mint.Label"] = mint_Label;
+mint_Label.__name__ = ["mint","Label"];
+mint_Label.__super__ = mint_Control;
+mint_Label.prototype = $extend(mint_Control.prototype,{
+	destroy: function() {
+		mint_Control.prototype.destroy.call(this);
+		var _this = this.onchange;
+		_this.listeners = null;
+		_this.listeners = [];
+		this.onchange = null;
+	}
+	,set_text: function(_s) {
+		this.text = _s;
+		var _idx = 0;
+		var _count = this.onchange.listeners.length;
+		while(_idx < _count) {
+			if(this.onchange != null) {
+				var fn = this.onchange.listeners[_idx];
+				if(fn != null) {
+					fn(this.text);
+				}
+			}
+			++_idx;
+		}
+		if(this.onchange != null) {
+			while(_count > 0) {
+				var fn1 = this.onchange.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onchange.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+		return this.text;
+	}
+	,__class__: mint_Label
+	,__properties__: $extend(mint_Control.prototype.__properties__,{set_text:"set_text"})
+});
+var mint_List = function(_options) {
+	this.items = [];
+	this.options = _options;
+	if(this.options.name == null) {
+		var tmp = mint_types_Helper.uniqueid();
+		this.options.name = "list." + tmp;
+	}
+	if(this.options.mouse_input == null) {
+		this.options.mouse_input = true;
+	}
+	mint_Control.call(this,this.options);
+	this.onselect = new mint_core_Signal();
+	this.onitemleave = new mint_core_Signal();
+	this.onitementer = new mint_core_Signal();
+	this.view = new mint_Scroll({ parent : this, x : 0, y : 0, w : this.w, h : this.h, name : this.name + ".view", options : this.options.options.view, internal_visible : this.options.visible});
+	this.renderer = this.rendering.get(mint_List,this);
+	var _idx = 0;
+	var _count = this.oncreate.listeners.length;
+	while(_idx < _count) {
+		if(this.oncreate != null) {
+			var fn = this.oncreate.listeners[_idx];
+			if(fn != null) {
+				fn();
+			}
+		}
+		++_idx;
+	}
+	if(this.oncreate != null) {
+		while(_count > 0) {
+			var fn1 = this.oncreate.listeners[_count - 1];
+			if(fn1 == null) {
+				this.oncreate.listeners.splice(_count - 1,1);
+			}
+			--_count;
+		}
+	}
+};
+$hxClasses["mint.List"] = mint_List;
+mint_List.__name__ = ["mint","List"];
+mint_List.__super__ = mint_Control;
+mint_List.prototype = $extend(mint_Control.prototype,{
+	add_item: function(item,offset_x,offset_y) {
+		if(offset_y == null) {
+			offset_y = 0.0;
+		}
+		if(offset_x == null) {
+			offset_x = 0.0;
+		}
+		var _childbounds = this.view.container.get_children_bounds();
+		var _g = item;
+		_g.set_y_local(_g.get_y_local() + (_childbounds.y_local + _childbounds.h + offset_y));
+		var _g1 = item;
+		_g1.set_x_local(_g1.get_x_local() + offset_x);
+		this.view.add(item);
+		item.mouse_input = true;
+		this.items.push(item);
+		item.onmouseup.listen($bind(this,this.item_mouseup));
+		item.onmouseenter.listen($bind(this,this.item_mouseenter));
+		item.onmouseleave.listen($bind(this,this.item_mouseleave));
+	}
+	,item_mouseenter: function(event,ctrl) {
+		var idx = this.items.indexOf(ctrl);
+		var _idx = 0;
+		var _count = this.onitementer.listeners.length;
+		while(_idx < _count) {
+			if(this.onitementer != null) {
+				var fn = this.onitementer.listeners[_idx];
+				if(fn != null) {
+					fn(idx,ctrl,event);
+				}
+			}
+			++_idx;
+		}
+		if(this.onitementer != null) {
+			while(_count > 0) {
+				var fn1 = this.onitementer.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onitementer.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+	}
+	,item_mouseleave: function(event,ctrl) {
+		var idx = this.items.indexOf(ctrl);
+		var _idx = 0;
+		var _count = this.onitemleave.listeners.length;
+		while(_idx < _count) {
+			if(this.onitemleave != null) {
+				var fn = this.onitemleave.listeners[_idx];
+				if(fn != null) {
+					fn(idx,ctrl,event);
+				}
+			}
+			++_idx;
+		}
+		if(this.onitemleave != null) {
+			while(_count > 0) {
+				var fn1 = this.onitemleave.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onitemleave.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+	}
+	,item_mouseup: function(event,ctrl) {
+		var idx = this.items.indexOf(ctrl);
+		var _idx = 0;
+		var _count = this.onselect.listeners.length;
+		while(_idx < _count) {
+			if(this.onselect != null) {
+				var fn = this.onselect.listeners[_idx];
+				if(fn != null) {
+					fn(idx,ctrl,event);
+				}
+			}
+			++_idx;
+		}
+		if(this.onselect != null) {
+			while(_count > 0) {
+				var fn1 = this.onselect.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onselect.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+	}
+	,clear: function() {
+		var _g = 0;
+		var _g1 = this.items;
+		while(_g < _g1.length) {
+			var item = _g1[_g];
+			++_g;
+			item.destroy();
+			item = null;
+		}
+		this.items = null;
+		this.items = [];
+		this.view.refresh_scroll();
+		var _idx = 0;
+		var _count = this.onselect.listeners.length;
+		while(_idx < _count) {
+			if(this.onselect != null) {
+				var fn = this.onselect.listeners[_idx];
+				if(fn != null) {
+					fn(-1,null,null);
+				}
+			}
+			++_idx;
+		}
+		if(this.onselect != null) {
+			while(_count > 0) {
+				var fn1 = this.onselect.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onselect.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+	}
+	,destroy: function() {
+		mint_Control.prototype.destroy.call(this);
+		var _this = this.onselect;
+		_this.listeners = null;
+		_this.listeners = [];
+		this.onselect = null;
+		var _this1 = this.onitementer;
+		_this1.listeners = null;
+		_this1.listeners = [];
+		this.onitementer = null;
+		var _this2 = this.onitemleave;
+		_this2.listeners = null;
+		_this2.listeners = [];
+		this.onitemleave = null;
+	}
+	,bounds_changed: function(_dx,_dy,_dw,_dh) {
+		if(_dh == null) {
+			_dh = 0.0;
+		}
+		if(_dw == null) {
+			_dw = 0.0;
+		}
+		if(_dy == null) {
+			_dy = 0.0;
+		}
+		if(_dx == null) {
+			_dx = 0.0;
+		}
+		mint_Control.prototype.bounds_changed.call(this,_dx,_dy,_dw,_dh);
+		if(this.view != null) {
+			this.view.set_size(this.w,this.h);
+		}
+	}
+	,__class__: mint_List
+});
+var mint_Panel = function(_options) {
+	this.options = _options;
+	if(this.options.name == null) {
+		var tmp = mint_types_Helper.uniqueid();
+		this.options.name = "panel." + tmp;
+	}
+	mint_Control.call(this,this.options);
+	this.renderer = this.rendering.get(mint_Panel,this);
+	var _idx = 0;
+	var _count = this.oncreate.listeners.length;
+	while(_idx < _count) {
+		if(this.oncreate != null) {
+			var fn = this.oncreate.listeners[_idx];
+			if(fn != null) {
+				fn();
+			}
+		}
+		++_idx;
+	}
+	if(this.oncreate != null) {
+		while(_count > 0) {
+			var fn1 = this.oncreate.listeners[_count - 1];
+			if(fn1 == null) {
+				this.oncreate.listeners.splice(_count - 1,1);
+			}
+			--_count;
+		}
+	}
+};
+$hxClasses["mint.Panel"] = mint_Panel;
+mint_Panel.__name__ = ["mint","Panel"];
+mint_Panel.__super__ = mint_Control;
+mint_Panel.prototype = $extend(mint_Control.prototype,{
+	__class__: mint_Panel
+});
+var mint_Progress = function(_options) {
+	this.progress = 0.5;
+	this.options = _options;
+	if(this.options.name == null) {
+		var tmp = mint_types_Helper.uniqueid();
+		this.options.name = "progress." + tmp;
+	}
+	mint_Control.call(this,this.options);
+	this.onchange = new mint_core_Signal();
+	if(this.options.progress == null) {
+		this.options.progress = 0.5;
+	}
+	this.set_progress(this.options.progress);
+	this.renderer = this.rendering.get(mint_Progress,this);
+	var _idx = 0;
+	var _count = this.oncreate.listeners.length;
+	while(_idx < _count) {
+		if(this.oncreate != null) {
+			var fn = this.oncreate.listeners[_idx];
+			if(fn != null) {
+				fn();
+			}
+		}
+		++_idx;
+	}
+	if(this.oncreate != null) {
+		while(_count > 0) {
+			var fn1 = this.oncreate.listeners[_count - 1];
+			if(fn1 == null) {
+				this.oncreate.listeners.splice(_count - 1,1);
+			}
+			--_count;
+		}
+	}
+};
+$hxClasses["mint.Progress"] = mint_Progress;
+mint_Progress.__name__ = ["mint","Progress"];
+mint_Progress.__super__ = mint_Control;
+mint_Progress.prototype = $extend(mint_Control.prototype,{
+	destroy: function() {
+		mint_Control.prototype.destroy.call(this);
+		var _this = this.onchange;
+		_this.listeners = null;
+		_this.listeners = [];
+		this.onchange = null;
+	}
+	,set_progress: function(_value) {
+		var prev = this.progress;
+		if(_value < 0.0) {
+			_value = 0.0;
+		} else if(_value > 1.0) {
+			_value = 1.0;
+		} else {
+			_value = _value;
+		}
+		this.progress = _value;
+		var _idx = 0;
+		var _count = this.onchange.listeners.length;
+		while(_idx < _count) {
+			if(this.onchange != null) {
+				var fn = this.onchange.listeners[_idx];
+				if(fn != null) {
+					fn(this.progress,prev);
+				}
+			}
+			++_idx;
+		}
+		if(this.onchange != null) {
+			while(_count > 0) {
+				var fn1 = this.onchange.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onchange.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+		return this.progress;
+	}
+	,__class__: mint_Progress
+	,__properties__: $extend(mint_Control.prototype.__properties__,{set_progress:"set_progress"})
+});
+var mint_Scroll = function(_options) {
+	this.ready = false;
+	this.visible_h = false;
+	this.percent_h = 0.0;
+	this.drag_x = 0.0;
+	this.drag_h = false;
+	this.visible_v = false;
+	this.percent_v = 0.0;
+	this.drag_y = 0.0;
+	this.drag_v = false;
+	this.units_to_scroll_v = 16;
+	this.units_to_scroll_h = 16;
+	this.onchange = new mint_core_Signal();
+	this.onhandlevis = new mint_core_Signal();
+	this.options = _options;
+	if(this.options.name == null) {
+		var tmp = mint_types_Helper.uniqueid();
+		this.options.name = "scroll." + tmp;
+	}
+	if(this.options.mouse_input == null) {
+		this.options.mouse_input = true;
+	}
+	if(this.options.units_to_scroll_h == null) {
+		this.options.units_to_scroll_h = 16;
+	}
+	this.units_to_scroll_h = this.options.units_to_scroll_h;
+	if(this.options.units_to_scroll_v == null) {
+		this.options.units_to_scroll_v = 16;
+	}
+	this.units_to_scroll_v = this.options.units_to_scroll_v;
+	mint_Control.call(this,_options);
+	this.container = new mint_Control({ parent : this, name : "" + this.name + ".container", mouse_input : true, internal_visible : this.options.visible, x : 0, y : 0, w : this.w, h : this.h});
+	this.scrollv = new mint_Control({ parent : this, name : "" + this.name + ".scroll_v", mouse_input : true, internal_visible : this.options.visible, x : this.w - 8, y : 0, w : 8, h : 16});
+	this.scrollh = new mint_Control({ parent : this, name : "" + this.name + ".scroll_h", mouse_input : true, internal_visible : this.options.visible, x : 0, y : this.h - 8, w : 16, h : 8});
+	this.child_bounds = this.container.get_children_bounds();
+	this.container.set_clip_with(this);
+	this.scrollv.set_clip_with(this);
+	this.scrollh.set_clip_with(this);
+	this.ready = true;
+	this.scrollv.onmousedown.listen($bind(this,this.scrollvdown));
+	this.scrollv.onmouseup.listen($bind(this,this.scrollvup));
+	this.scrollv.onmousemove.listen($bind(this,this.scrollvmove));
+	this.scrollh.onmousedown.listen($bind(this,this.scrollhdown));
+	this.scrollh.onmouseup.listen($bind(this,this.scrollhup));
+	this.scrollh.onmousemove.listen($bind(this,this.scrollhmove));
+	this.renderer = this.rendering.get(mint_Scroll,this);
+	var _idx = 0;
+	var _count = this.oncreate.listeners.length;
+	while(_idx < _count) {
+		if(this.oncreate != null) {
+			var fn = this.oncreate.listeners[_idx];
+			if(fn != null) {
+				fn();
+			}
+		}
+		++_idx;
+	}
+	if(this.oncreate != null) {
+		while(_count > 0) {
+			var fn1 = this.oncreate.listeners[_count - 1];
+			if(fn1 == null) {
+				this.oncreate.listeners.splice(_count - 1,1);
+			}
+			--_count;
+		}
+	}
+};
+$hxClasses["mint.Scroll"] = mint_Scroll;
+mint_Scroll.__name__ = ["mint","Scroll"];
+mint_Scroll.__super__ = mint_Control;
+mint_Scroll.prototype = $extend(mint_Control.prototype,{
+	set_scroll_percent: function(_horizontal,_vertical) {
+		if(_vertical == null) {
+			_vertical = this.percent_v;
+		}
+		this.percent_v = _vertical;
+		if(_horizontal == null) {
+			_horizontal = this.percent_h;
+		}
+		this.percent_h = _horizontal;
+		var value = this.percent_v;
+		this.percent_v = value < 0 ? 0 : value > 1 ? 1 : value;
+		var value1 = this.percent_h;
+		this.percent_h = value1 < 0 ? 0 : value1 > 1 ? 1 : value1;
+		this.update_scroll();
+	}
+	,update_container: function() {
+		if(!this.ready) {
+			return;
+		}
+		this.child_bounds = this.container.get_children_bounds();
+		this.container.set_w(this.child_bounds.w);
+		this.container.set_h(this.child_bounds.h);
+	}
+	,scrollvdown: function(e,_) {
+		if(!this.visible_v) {
+			return;
+		}
+		this.drag_v = true;
+		this.drag_y = e.y - this.scrollv.y;
+		var _this = this.scrollv;
+		if(_this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + _this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		if(_this.canvas != _this) {
+			var _pre = _this.canvas.get_captured() == _this;
+			_this.canvas.set_captured(_this);
+			if(!_pre) {
+				var _idx = 0;
+				var _count = _this.oncaptured.listeners.length;
+				while(_idx < _count) {
+					if(_this.oncaptured != null) {
+						var fn = _this.oncaptured.listeners[_idx];
+						if(fn != null) {
+							fn(true);
+						}
+					}
+					++_idx;
+				}
+				if(_this.oncaptured != null) {
+					while(_count > 0) {
+						var fn1 = _this.oncaptured.listeners[_count - 1];
+						if(fn1 == null) {
+							_this.oncaptured.listeners.splice(_count - 1,1);
+						}
+						--_count;
+					}
+				}
+			}
+		}
+	}
+	,scrollvup: function(e,_) {
+		this.drag_v = false;
+		var _this = this.scrollv;
+		if(_this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + _this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		if(_this.canvas != _this) {
+			if(_this.canvas.get_captured() == _this) {
+				_this.canvas.set_captured(null);
+				var _idx = 0;
+				var _count = _this.oncaptured.listeners.length;
+				while(_idx < _count) {
+					if(_this.oncaptured != null) {
+						var fn = _this.oncaptured.listeners[_idx];
+						if(fn != null) {
+							fn(false);
+						}
+					}
+					++_idx;
+				}
+				if(_this.oncaptured != null) {
+					while(_count > 0) {
+						var fn1 = _this.oncaptured.listeners[_count - 1];
+						if(fn1 == null) {
+							_this.oncaptured.listeners.splice(_count - 1,1);
+						}
+						--_count;
+					}
+				}
+			}
+		}
+	}
+	,scrollvmove: function(e,_) {
+		if(this.drag_v && this.visible_v) {
+			var value = e.y - this.drag_y;
+			var a = this.y;
+			var b = this.y + this.h - this.scrollv.h;
+			var _dest = value < a ? a : value > b ? b : value;
+			this.percent_v = (_dest - this.y) / (this.h - this.scrollv.h);
+			this.update_scroll();
+		}
+	}
+	,scrollhdown: function(e,_) {
+		if(!this.visible_h) {
+			return;
+		}
+		this.drag_h = true;
+		this.drag_x = e.x - this.scrollh.x;
+		var _this = this.scrollh;
+		if(_this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + _this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		if(_this.canvas != _this) {
+			var _pre = _this.canvas.get_captured() == _this;
+			_this.canvas.set_captured(_this);
+			if(!_pre) {
+				var _idx = 0;
+				var _count = _this.oncaptured.listeners.length;
+				while(_idx < _count) {
+					if(_this.oncaptured != null) {
+						var fn = _this.oncaptured.listeners[_idx];
+						if(fn != null) {
+							fn(true);
+						}
+					}
+					++_idx;
+				}
+				if(_this.oncaptured != null) {
+					while(_count > 0) {
+						var fn1 = _this.oncaptured.listeners[_count - 1];
+						if(fn1 == null) {
+							_this.oncaptured.listeners.splice(_count - 1,1);
+						}
+						--_count;
+					}
+				}
+			}
+		}
+	}
+	,scrollhup: function(e,_) {
+		this.drag_h = false;
+		var _this = this.scrollh;
+		if(_this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + _this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		if(_this.canvas != _this) {
+			if(_this.canvas.get_captured() == _this) {
+				_this.canvas.set_captured(null);
+				var _idx = 0;
+				var _count = _this.oncaptured.listeners.length;
+				while(_idx < _count) {
+					if(_this.oncaptured != null) {
+						var fn = _this.oncaptured.listeners[_idx];
+						if(fn != null) {
+							fn(false);
+						}
+					}
+					++_idx;
+				}
+				if(_this.oncaptured != null) {
+					while(_count > 0) {
+						var fn1 = _this.oncaptured.listeners[_count - 1];
+						if(fn1 == null) {
+							_this.oncaptured.listeners.splice(_count - 1,1);
+						}
+						--_count;
+					}
+				}
+			}
+		}
+	}
+	,scrollhmove: function(e,_) {
+		if(this.drag_h && this.visible_h) {
+			var value = e.x - this.drag_x;
+			var a = this.x;
+			var b = this.x + this.w - this.scrollh.w;
+			var _dest = value < a ? a : value > b ? b : value;
+			this.percent_h = (_dest - this.x) / (this.w - this.scrollh.w);
+			this.update_scroll();
+		}
+	}
+	,update_scroll: function() {
+		if(!this.ready) {
+			return;
+		}
+		var _dy = this.h - this.container.h;
+		var _dx = this.w - this.container.w;
+		this.visible_h = _dx < 0;
+		this.visible_v = _dy < 0;
+		if(_dx >= 0) {
+			_dx = 0;
+		}
+		if(_dy >= 0) {
+			_dy = 0;
+		}
+		this.container.set_x(this.x + _dx * this.percent_h);
+		this.container.set_y(this.y + _dy * this.percent_v);
+		this.scrollh.set_x(this.x + this.percent_h * (this.w - this.scrollh.w));
+		this.scrollv.set_y(this.y + this.percent_v * (this.h - this.scrollv.h));
+		var _idx = 0;
+		var _count = this.onchange.listeners.length;
+		while(_idx < _count) {
+			if(this.onchange != null) {
+				var fn = this.onchange.listeners[_idx];
+				if(fn != null) {
+					fn();
+				}
+			}
+			++_idx;
+		}
+		if(this.onchange != null) {
+			while(_count > 0) {
+				var fn1 = this.onchange.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onchange.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+		var _idx1 = 0;
+		var _count1 = this.onhandlevis.listeners.length;
+		while(_idx1 < _count1) {
+			if(this.onhandlevis != null) {
+				var fn2 = this.onhandlevis.listeners[_idx1];
+				if(fn2 != null) {
+					fn2(this.visible_h,this.visible_v);
+				}
+			}
+			++_idx1;
+		}
+		if(this.onhandlevis != null) {
+			while(_count1 > 0) {
+				var fn3 = this.onhandlevis.listeners[_count1 - 1];
+				if(fn3 == null) {
+					this.onhandlevis.listeners.splice(_count1 - 1,1);
+				}
+				--_count1;
+			}
+		}
+	}
+	,get_step_h: function() {
+		return this.units_to_scroll_h / this.container.w;
+	}
+	,get_step_v: function() {
+		return this.units_to_scroll_v / this.container.h;
+	}
+	,destroy: function() {
+		this.ready = false;
+		mint_Control.prototype.destroy.call(this);
+		var _this = this.onchange;
+		_this.listeners = null;
+		_this.listeners = [];
+		this.onchange = null;
+		var _this1 = this.onhandlevis;
+		_this1.listeners = null;
+		_this1.listeners = [];
+		this.onhandlevis = null;
+	}
+	,add: function(child) {
+		if(!this.ready) {
+			mint_Control.prototype.add.call(this,child);
+		} else {
+			this.container.add(child);
+			this.refresh_scroll();
+			child.set_clip_with(this);
+		}
+	}
+	,refresh_scroll: function() {
+		this.update_container();
+		this.update_scroll();
+	}
+	,remove: function(child) {
+		mint_Control.prototype.remove.call(this,child);
+		this.refresh_scroll();
+	}
+	,mousewheel: function(e) {
+		mint_Control.prototype.mousewheel.call(this,e);
+		if(e.x != 0 && this.visible_h) {
+			var x = e.x;
+			var _dir = x < 0 ? -1 : x > 0 ? 1 : 0;
+			this.set_scroll_percent(this.percent_h + _dir * (this.units_to_scroll_h / this.container.w),this.percent_v);
+		}
+		if(e.y != 0 && this.visible_v) {
+			var x1 = e.y;
+			var _dir1 = x1 < 0 ? -1 : x1 > 0 ? 1 : 0;
+			this.set_scroll_percent(this.percent_h,this.percent_v + _dir1 * (this.units_to_scroll_v / this.container.h));
+		}
+	}
+	,bounds_changed: function(_dx,_dy,_dw,_dh) {
+		if(_dh == null) {
+			_dh = 0.0;
+		}
+		if(_dw == null) {
+			_dw = 0.0;
+		}
+		if(_dy == null) {
+			_dy = 0.0;
+		}
+		if(_dx == null) {
+			_dx = 0.0;
+		}
+		mint_Control.prototype.bounds_changed.call(this,_dx,_dy,_dw,_dh);
+		this.refresh_scroll();
+		if(this.scrollh != null) {
+			this.scrollh.set_y_local(this.h - 8);
+		}
+		if(this.scrollv != null) {
+			this.scrollv.set_x_local(this.w - 8);
+		}
+	}
+	,__class__: mint_Scroll
+});
+var mint_Slider = function(_options) {
+	this.ignore_set = true;
+	this.dragging = false;
+	this.bar_h = 0.0;
+	this.bar_w = 0.0;
+	this.bar_y = 2.0;
+	this.bar_x = 2.0;
+	this.invert = false;
+	this.vertical = false;
+	this.percent = 1;
+	this.value = 1;
+	this.max = 1;
+	this.min = 0;
+	this.options = _options;
+	if(this.options.name == null) {
+		var tmp = mint_types_Helper.uniqueid();
+		this.options.name = "slider." + tmp;
+	}
+	if(this.options.mouse_input == null) {
+		this.options.mouse_input = true;
+	}
+	if(this.options.max == null) {
+		this.options.max = 1;
+	}
+	this.max = this.options.max;
+	if(this.options.min == null) {
+		this.options.min = 0;
+	}
+	this.min = this.options.min;
+	if(this.options.value == null) {
+		this.options.value = this.max;
+	}
+	var _value = this.options.value;
+	if(this.ignore_set) {
+		this.value = _value;
+	} else {
+		var _value1 = _value;
+		var a = this.min;
+		var b = this.max;
+		if(_value1 < a) {
+			_value1 = a;
+		} else if(_value1 > b) {
+			_value1 = b;
+		} else {
+			_value1 = _value1;
+		}
+		if(this.step != null) {
+			_value1 = Math.round(_value1 / this.step) * this.step;
+		}
+		if(this.vertical) {
+			this.bar_w = this.w - 4;
+			this.bar_h = (this.h - 4) * (_value1 - this.min) / (this.max - this.min);
+			this.bar_y = !this.invert ? this.h - (this.h - 4) * (_value1 - this.min) / (this.max - this.min) - 2 : 2;
+			var value = this.bar_h;
+			var b1 = this.h - 4;
+			this.bar_h = value < 1 ? 1 : value > b1 ? b1 : value;
+		} else {
+			this.bar_w = (this.w - 4) * (_value1 - this.min) / (this.max - this.min);
+			var value1 = this.bar_w;
+			var b2 = this.w - 4;
+			this.bar_w = value1 < 1 ? 1 : value1 > b2 ? b2 : value1;
+			this.bar_h = this.h - 4;
+			this.bar_x = !this.invert ? 2 : this.w - (this.w - 4) * (_value1 - this.min) / (this.max - this.min) - 2;
+		}
+		this.percent = _value1 / (this.max - this.min);
+		this.ignore_set = true;
+		this.set_value(_value1);
+		this.ignore_set = false;
+		var _idx = 0;
+		var _count = this.onchange.listeners.length;
+		while(_idx < _count) {
+			if(this.onchange != null) {
+				var fn = this.onchange.listeners[_idx];
+				if(fn != null) {
+					fn(this.value,this.percent);
+				}
+			}
+			++_idx;
+		}
+		if(this.onchange != null) {
+			while(_count > 0) {
+				var fn1 = this.onchange.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onchange.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+	}
+	if(this.options.vertical == null) {
+		this.options.vertical = false;
+	}
+	this.vertical = this.options.vertical;
+	if(this.options.invert == null) {
+		this.options.invert = false;
+	}
+	this.invert = this.options.invert;
+	this.step = this.options.step;
+	mint_Control.call(this,this.options);
+	this.onchange = new mint_core_Signal();
+	this.renderer = this.rendering.get(mint_Slider,this);
+	var _idx1 = 0;
+	var _count1 = this.oncreate.listeners.length;
+	while(_idx1 < _count1) {
+		if(this.oncreate != null) {
+			var fn2 = this.oncreate.listeners[_idx1];
+			if(fn2 != null) {
+				fn2();
+			}
+		}
+		++_idx1;
+	}
+	if(this.oncreate != null) {
+		while(_count1 > 0) {
+			var fn3 = this.oncreate.listeners[_count1 - 1];
+			if(fn3 == null) {
+				this.oncreate.listeners.splice(_count1 - 1,1);
+			}
+			--_count1;
+		}
+	}
+	var _value2 = this.value;
+	var a1 = this.min;
+	var b3 = this.max;
+	if(_value2 < a1) {
+		_value2 = a1;
+	} else if(_value2 > b3) {
+		_value2 = b3;
+	} else {
+		_value2 = _value2;
+	}
+	if(this.step != null) {
+		_value2 = Math.round(_value2 / this.step) * this.step;
+	}
+	if(this.vertical) {
+		this.bar_w = this.w - 4;
+		this.bar_h = (this.h - 4) * (_value2 - this.min) / (this.max - this.min);
+		this.bar_y = !this.invert ? this.h - (this.h - 4) * (_value2 - this.min) / (this.max - this.min) - 2 : 2;
+		var value2 = this.bar_h;
+		var b4 = this.h - 4;
+		this.bar_h = value2 < 1 ? 1 : value2 > b4 ? b4 : value2;
+	} else {
+		this.bar_w = (this.w - 4) * (_value2 - this.min) / (this.max - this.min);
+		var value3 = this.bar_w;
+		var b5 = this.w - 4;
+		this.bar_w = value3 < 1 ? 1 : value3 > b5 ? b5 : value3;
+		this.bar_h = this.h - 4;
+		this.bar_x = !this.invert ? 2 : this.w - (this.w - 4) * (_value2 - this.min) / (this.max - this.min) - 2;
+	}
+	this.percent = _value2 / (this.max - this.min);
+	this.ignore_set = true;
+	this.set_value(_value2);
+	this.ignore_set = false;
+	var _idx2 = 0;
+	var _count2 = this.onchange.listeners.length;
+	while(_idx2 < _count2) {
+		if(this.onchange != null) {
+			var fn4 = this.onchange.listeners[_idx2];
+			if(fn4 != null) {
+				fn4(this.value,this.percent);
+			}
+		}
+		++_idx2;
+	}
+	if(this.onchange != null) {
+		while(_count2 > 0) {
+			var fn5 = this.onchange.listeners[_count2 - 1];
+			if(fn5 == null) {
+				this.onchange.listeners.splice(_count2 - 1,1);
+			}
+			--_count2;
+		}
+	}
+};
+$hxClasses["mint.Slider"] = mint_Slider;
+mint_Slider.__name__ = ["mint","Slider"];
+mint_Slider.__super__ = mint_Control;
+mint_Slider.prototype = $extend(mint_Control.prototype,{
+	destroy: function() {
+		mint_Control.prototype.destroy.call(this);
+		var _this = this.onchange;
+		_this.listeners = null;
+		_this.listeners = [];
+		this.onchange = null;
+	}
+	,mousedown: function(e) {
+		mint_Control.prototype.mousedown.call(this,e);
+		this.dragging = true;
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		if(this.canvas != this) {
+			var _pre = this.canvas.get_captured() == this;
+			this.canvas.set_captured(this);
+			if(!_pre) {
+				var _idx = 0;
+				var _count = this.oncaptured.listeners.length;
+				while(_idx < _count) {
+					if(this.oncaptured != null) {
+						var fn = this.oncaptured.listeners[_idx];
+						if(fn != null) {
+							fn(true);
+						}
+					}
+					++_idx;
+				}
+				if(this.oncaptured != null) {
+					while(_count > 0) {
+						var fn1 = this.oncaptured.listeners[_count - 1];
+						if(fn1 == null) {
+							this.oncaptured.listeners.splice(_count - 1,1);
+						}
+						--_count;
+					}
+				}
+			}
+		}
+		if(!this.vertical) {
+			var _dx = !this.invert ? e.x - this.x : this.w - (e.x - this.x);
+			if(_dx < 1) {
+				_dx = 1;
+			}
+			if(_dx >= this.w - 4) {
+				_dx = this.w - 4;
+			}
+			var _v = (_dx - 1) / (this.w - 5) * (this.max - this.min) + this.min;
+			var _value = _v;
+			var a = this.min;
+			var b = this.max;
+			if(_value < a) {
+				_value = a;
+			} else if(_value > b) {
+				_value = b;
+			} else {
+				_value = _value;
+			}
+			if(this.step != null) {
+				_value = Math.round(_value / this.step) * this.step;
+			}
+			if(this.vertical) {
+				this.bar_w = this.w - 4;
+				this.bar_h = (this.h - 4) * (_value - this.min) / (this.max - this.min);
+				this.bar_y = !this.invert ? this.h - (this.h - 4) * (_value - this.min) / (this.max - this.min) - 2 : 2;
+				var value = this.bar_h;
+				var b1 = this.h - 4;
+				this.bar_h = value < 1 ? 1 : value > b1 ? b1 : value;
+			} else {
+				this.bar_w = (this.w - 4) * (_value - this.min) / (this.max - this.min);
+				var value1 = this.bar_w;
+				var b2 = this.w - 4;
+				this.bar_w = value1 < 1 ? 1 : value1 > b2 ? b2 : value1;
+				this.bar_h = this.h - 4;
+				this.bar_x = !this.invert ? 2 : this.w - (this.w - 4) * (_value - this.min) / (this.max - this.min) - 2;
+			}
+			this.percent = _value / (this.max - this.min);
+			this.ignore_set = true;
+			this.set_value(_value);
+			this.ignore_set = false;
+			var _idx1 = 0;
+			var _count1 = this.onchange.listeners.length;
+			while(_idx1 < _count1) {
+				if(this.onchange != null) {
+					var fn2 = this.onchange.listeners[_idx1];
+					if(fn2 != null) {
+						fn2(this.value,this.percent);
+					}
+				}
+				++_idx1;
+			}
+			if(this.onchange != null) {
+				while(_count1 > 0) {
+					var fn3 = this.onchange.listeners[_count1 - 1];
+					if(fn3 == null) {
+						this.onchange.listeners.splice(_count1 - 1,1);
+					}
+					--_count1;
+				}
+			}
+		} else {
+			var _dy = !this.invert ? this.h - (e.y - this.y) : e.y - this.y;
+			if(_dy < 1) {
+				_dy = 1;
+			}
+			if(_dy >= this.h - 4) {
+				_dy = this.h - 4;
+			}
+			var _v1 = (_dy - 1) / (this.h - 5) * (this.max - this.min) + this.min;
+			var _value1 = _v1;
+			var a1 = this.min;
+			var b3 = this.max;
+			if(_value1 < a1) {
+				_value1 = a1;
+			} else if(_value1 > b3) {
+				_value1 = b3;
+			} else {
+				_value1 = _value1;
+			}
+			if(this.step != null) {
+				_value1 = Math.round(_value1 / this.step) * this.step;
+			}
+			if(this.vertical) {
+				this.bar_w = this.w - 4;
+				this.bar_h = (this.h - 4) * (_value1 - this.min) / (this.max - this.min);
+				this.bar_y = !this.invert ? this.h - (this.h - 4) * (_value1 - this.min) / (this.max - this.min) - 2 : 2;
+				var value2 = this.bar_h;
+				var b4 = this.h - 4;
+				this.bar_h = value2 < 1 ? 1 : value2 > b4 ? b4 : value2;
+			} else {
+				this.bar_w = (this.w - 4) * (_value1 - this.min) / (this.max - this.min);
+				var value3 = this.bar_w;
+				var b5 = this.w - 4;
+				this.bar_w = value3 < 1 ? 1 : value3 > b5 ? b5 : value3;
+				this.bar_h = this.h - 4;
+				this.bar_x = !this.invert ? 2 : this.w - (this.w - 4) * (_value1 - this.min) / (this.max - this.min) - 2;
+			}
+			this.percent = _value1 / (this.max - this.min);
+			this.ignore_set = true;
+			this.set_value(_value1);
+			this.ignore_set = false;
+			var _idx2 = 0;
+			var _count2 = this.onchange.listeners.length;
+			while(_idx2 < _count2) {
+				if(this.onchange != null) {
+					var fn4 = this.onchange.listeners[_idx2];
+					if(fn4 != null) {
+						fn4(this.value,this.percent);
+					}
+				}
+				++_idx2;
+			}
+			if(this.onchange != null) {
+				while(_count2 > 0) {
+					var fn5 = this.onchange.listeners[_count2 - 1];
+					if(fn5 == null) {
+						this.onchange.listeners.splice(_count2 - 1,1);
+					}
+					--_count2;
+				}
+			}
+		}
+	}
+	,get_range: function() {
+		return this.max - this.min;
+	}
+	,update_value: function(_value) {
+		var a = this.min;
+		var b = this.max;
+		if(_value < a) {
+			_value = a;
+		} else if(_value > b) {
+			_value = b;
+		} else {
+			_value = _value;
+		}
+		if(this.step != null) {
+			_value = Math.round(_value / this.step) * this.step;
+		}
+		if(this.vertical) {
+			this.bar_w = this.w - 4;
+			this.bar_h = (this.h - 4) * (_value - this.min) / (this.max - this.min);
+			this.bar_y = !this.invert ? this.h - (this.h - 4) * (_value - this.min) / (this.max - this.min) - 2 : 2;
+			var value = this.bar_h;
+			var b1 = this.h - 4;
+			this.bar_h = value < 1 ? 1 : value > b1 ? b1 : value;
+		} else {
+			this.bar_w = (this.w - 4) * (_value - this.min) / (this.max - this.min);
+			var value1 = this.bar_w;
+			var b2 = this.w - 4;
+			this.bar_w = value1 < 1 ? 1 : value1 > b2 ? b2 : value1;
+			this.bar_h = this.h - 4;
+			this.bar_x = !this.invert ? 2 : this.w - (this.w - 4) * (_value - this.min) / (this.max - this.min) - 2;
+		}
+		this.percent = _value / (this.max - this.min);
+		this.ignore_set = true;
+		this.set_value(_value);
+		this.ignore_set = false;
+		var _idx = 0;
+		var _count = this.onchange.listeners.length;
+		while(_idx < _count) {
+			if(this.onchange != null) {
+				var fn = this.onchange.listeners[_idx];
+				if(fn != null) {
+					fn(this.value,this.percent);
+				}
+			}
+			++_idx;
+		}
+		if(this.onchange != null) {
+			while(_count > 0) {
+				var fn1 = this.onchange.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onchange.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+	}
+	,set_value: function(_value) {
+		if(this.ignore_set) {
+			return this.value = _value;
+		}
+		var _value1 = _value;
+		var a = this.min;
+		var b = this.max;
+		if(_value1 < a) {
+			_value1 = a;
+		} else if(_value1 > b) {
+			_value1 = b;
+		} else {
+			_value1 = _value1;
+		}
+		if(this.step != null) {
+			_value1 = Math.round(_value1 / this.step) * this.step;
+		}
+		if(this.vertical) {
+			this.bar_w = this.w - 4;
+			this.bar_h = (this.h - 4) * (_value1 - this.min) / (this.max - this.min);
+			this.bar_y = !this.invert ? this.h - (this.h - 4) * (_value1 - this.min) / (this.max - this.min) - 2 : 2;
+			var value = this.bar_h;
+			var b1 = this.h - 4;
+			this.bar_h = value < 1 ? 1 : value > b1 ? b1 : value;
+		} else {
+			this.bar_w = (this.w - 4) * (_value1 - this.min) / (this.max - this.min);
+			var value1 = this.bar_w;
+			var b2 = this.w - 4;
+			this.bar_w = value1 < 1 ? 1 : value1 > b2 ? b2 : value1;
+			this.bar_h = this.h - 4;
+			this.bar_x = !this.invert ? 2 : this.w - (this.w - 4) * (_value1 - this.min) / (this.max - this.min) - 2;
+		}
+		this.percent = _value1 / (this.max - this.min);
+		this.ignore_set = true;
+		this.set_value(_value1);
+		this.ignore_set = false;
+		var _idx = 0;
+		var _count = this.onchange.listeners.length;
+		while(_idx < _count) {
+			if(this.onchange != null) {
+				var fn = this.onchange.listeners[_idx];
+				if(fn != null) {
+					fn(this.value,this.percent);
+				}
+			}
+			++_idx;
+		}
+		if(this.onchange != null) {
+			while(_count > 0) {
+				var fn1 = this.onchange.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onchange.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+		return this.value;
+	}
+	,update_value_from_mouse: function(e) {
+		if(!this.vertical) {
+			var _dx = !this.invert ? e.x - this.x : this.w - (e.x - this.x);
+			if(_dx < 1) {
+				_dx = 1;
+			}
+			if(_dx >= this.w - 4) {
+				_dx = this.w - 4;
+			}
+			var _v = (_dx - 1) / (this.w - 5) * (this.max - this.min) + this.min;
+			var _value = _v;
+			var a = this.min;
+			var b = this.max;
+			if(_value < a) {
+				_value = a;
+			} else if(_value > b) {
+				_value = b;
+			} else {
+				_value = _value;
+			}
+			if(this.step != null) {
+				_value = Math.round(_value / this.step) * this.step;
+			}
+			if(this.vertical) {
+				this.bar_w = this.w - 4;
+				this.bar_h = (this.h - 4) * (_value - this.min) / (this.max - this.min);
+				this.bar_y = !this.invert ? this.h - (this.h - 4) * (_value - this.min) / (this.max - this.min) - 2 : 2;
+				var value = this.bar_h;
+				var b1 = this.h - 4;
+				this.bar_h = value < 1 ? 1 : value > b1 ? b1 : value;
+			} else {
+				this.bar_w = (this.w - 4) * (_value - this.min) / (this.max - this.min);
+				var value1 = this.bar_w;
+				var b2 = this.w - 4;
+				this.bar_w = value1 < 1 ? 1 : value1 > b2 ? b2 : value1;
+				this.bar_h = this.h - 4;
+				this.bar_x = !this.invert ? 2 : this.w - (this.w - 4) * (_value - this.min) / (this.max - this.min) - 2;
+			}
+			this.percent = _value / (this.max - this.min);
+			this.ignore_set = true;
+			this.set_value(_value);
+			this.ignore_set = false;
+			var _idx = 0;
+			var _count = this.onchange.listeners.length;
+			while(_idx < _count) {
+				if(this.onchange != null) {
+					var fn = this.onchange.listeners[_idx];
+					if(fn != null) {
+						fn(this.value,this.percent);
+					}
+				}
+				++_idx;
+			}
+			if(this.onchange != null) {
+				while(_count > 0) {
+					var fn1 = this.onchange.listeners[_count - 1];
+					if(fn1 == null) {
+						this.onchange.listeners.splice(_count - 1,1);
+					}
+					--_count;
+				}
+			}
+		} else {
+			var _dy = !this.invert ? this.h - (e.y - this.y) : e.y - this.y;
+			if(_dy < 1) {
+				_dy = 1;
+			}
+			if(_dy >= this.h - 4) {
+				_dy = this.h - 4;
+			}
+			var _v1 = (_dy - 1) / (this.h - 5) * (this.max - this.min) + this.min;
+			var _value1 = _v1;
+			var a1 = this.min;
+			var b3 = this.max;
+			if(_value1 < a1) {
+				_value1 = a1;
+			} else if(_value1 > b3) {
+				_value1 = b3;
+			} else {
+				_value1 = _value1;
+			}
+			if(this.step != null) {
+				_value1 = Math.round(_value1 / this.step) * this.step;
+			}
+			if(this.vertical) {
+				this.bar_w = this.w - 4;
+				this.bar_h = (this.h - 4) * (_value1 - this.min) / (this.max - this.min);
+				this.bar_y = !this.invert ? this.h - (this.h - 4) * (_value1 - this.min) / (this.max - this.min) - 2 : 2;
+				var value2 = this.bar_h;
+				var b4 = this.h - 4;
+				this.bar_h = value2 < 1 ? 1 : value2 > b4 ? b4 : value2;
+			} else {
+				this.bar_w = (this.w - 4) * (_value1 - this.min) / (this.max - this.min);
+				var value3 = this.bar_w;
+				var b5 = this.w - 4;
+				this.bar_w = value3 < 1 ? 1 : value3 > b5 ? b5 : value3;
+				this.bar_h = this.h - 4;
+				this.bar_x = !this.invert ? 2 : this.w - (this.w - 4) * (_value1 - this.min) / (this.max - this.min) - 2;
+			}
+			this.percent = _value1 / (this.max - this.min);
+			this.ignore_set = true;
+			this.set_value(_value1);
+			this.ignore_set = false;
+			var _idx1 = 0;
+			var _count1 = this.onchange.listeners.length;
+			while(_idx1 < _count1) {
+				if(this.onchange != null) {
+					var fn2 = this.onchange.listeners[_idx1];
+					if(fn2 != null) {
+						fn2(this.value,this.percent);
+					}
+				}
+				++_idx1;
+			}
+			if(this.onchange != null) {
+				while(_count1 > 0) {
+					var fn3 = this.onchange.listeners[_count1 - 1];
+					if(fn3 == null) {
+						this.onchange.listeners.splice(_count1 - 1,1);
+					}
+					--_count1;
+				}
+			}
+		}
+	}
+	,mousemove: function(e) {
+		if(this.dragging) {
+			if(!this.vertical) {
+				var _dx = !this.invert ? e.x - this.x : this.w - (e.x - this.x);
+				if(_dx < 1) {
+					_dx = 1;
+				}
+				if(_dx >= this.w - 4) {
+					_dx = this.w - 4;
+				}
+				var _v = (_dx - 1) / (this.w - 5) * (this.max - this.min) + this.min;
+				var _value = _v;
+				var a = this.min;
+				var b = this.max;
+				if(_value < a) {
+					_value = a;
+				} else if(_value > b) {
+					_value = b;
+				} else {
+					_value = _value;
+				}
+				if(this.step != null) {
+					_value = Math.round(_value / this.step) * this.step;
+				}
+				if(this.vertical) {
+					this.bar_w = this.w - 4;
+					this.bar_h = (this.h - 4) * (_value - this.min) / (this.max - this.min);
+					this.bar_y = !this.invert ? this.h - (this.h - 4) * (_value - this.min) / (this.max - this.min) - 2 : 2;
+					var value = this.bar_h;
+					var b1 = this.h - 4;
+					this.bar_h = value < 1 ? 1 : value > b1 ? b1 : value;
+				} else {
+					this.bar_w = (this.w - 4) * (_value - this.min) / (this.max - this.min);
+					var value1 = this.bar_w;
+					var b2 = this.w - 4;
+					this.bar_w = value1 < 1 ? 1 : value1 > b2 ? b2 : value1;
+					this.bar_h = this.h - 4;
+					this.bar_x = !this.invert ? 2 : this.w - (this.w - 4) * (_value - this.min) / (this.max - this.min) - 2;
+				}
+				this.percent = _value / (this.max - this.min);
+				this.ignore_set = true;
+				this.set_value(_value);
+				this.ignore_set = false;
+				var _idx = 0;
+				var _count = this.onchange.listeners.length;
+				while(_idx < _count) {
+					if(this.onchange != null) {
+						var fn = this.onchange.listeners[_idx];
+						if(fn != null) {
+							fn(this.value,this.percent);
+						}
+					}
+					++_idx;
+				}
+				if(this.onchange != null) {
+					while(_count > 0) {
+						var fn1 = this.onchange.listeners[_count - 1];
+						if(fn1 == null) {
+							this.onchange.listeners.splice(_count - 1,1);
+						}
+						--_count;
+					}
+				}
+			} else {
+				var _dy = !this.invert ? this.h - (e.y - this.y) : e.y - this.y;
+				if(_dy < 1) {
+					_dy = 1;
+				}
+				if(_dy >= this.h - 4) {
+					_dy = this.h - 4;
+				}
+				var _v1 = (_dy - 1) / (this.h - 5) * (this.max - this.min) + this.min;
+				var _value1 = _v1;
+				var a1 = this.min;
+				var b3 = this.max;
+				if(_value1 < a1) {
+					_value1 = a1;
+				} else if(_value1 > b3) {
+					_value1 = b3;
+				} else {
+					_value1 = _value1;
+				}
+				if(this.step != null) {
+					_value1 = Math.round(_value1 / this.step) * this.step;
+				}
+				if(this.vertical) {
+					this.bar_w = this.w - 4;
+					this.bar_h = (this.h - 4) * (_value1 - this.min) / (this.max - this.min);
+					this.bar_y = !this.invert ? this.h - (this.h - 4) * (_value1 - this.min) / (this.max - this.min) - 2 : 2;
+					var value2 = this.bar_h;
+					var b4 = this.h - 4;
+					this.bar_h = value2 < 1 ? 1 : value2 > b4 ? b4 : value2;
+				} else {
+					this.bar_w = (this.w - 4) * (_value1 - this.min) / (this.max - this.min);
+					var value3 = this.bar_w;
+					var b5 = this.w - 4;
+					this.bar_w = value3 < 1 ? 1 : value3 > b5 ? b5 : value3;
+					this.bar_h = this.h - 4;
+					this.bar_x = !this.invert ? 2 : this.w - (this.w - 4) * (_value1 - this.min) / (this.max - this.min) - 2;
+				}
+				this.percent = _value1 / (this.max - this.min);
+				this.ignore_set = true;
+				this.set_value(_value1);
+				this.ignore_set = false;
+				var _idx1 = 0;
+				var _count1 = this.onchange.listeners.length;
+				while(_idx1 < _count1) {
+					if(this.onchange != null) {
+						var fn2 = this.onchange.listeners[_idx1];
+						if(fn2 != null) {
+							fn2(this.value,this.percent);
+						}
+					}
+					++_idx1;
+				}
+				if(this.onchange != null) {
+					while(_count1 > 0) {
+						var fn3 = this.onchange.listeners[_count1 - 1];
+						if(fn3 == null) {
+							this.onchange.listeners.splice(_count1 - 1,1);
+						}
+						--_count1;
+					}
+				}
+			}
+		}
+	}
+	,mouseup: function(e) {
+		this.dragging = false;
+		if(this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		if(this.canvas != this) {
+			if(this.canvas.get_captured() == this) {
+				this.canvas.set_captured(null);
+				var _idx = 0;
+				var _count = this.oncaptured.listeners.length;
+				while(_idx < _count) {
+					if(this.oncaptured != null) {
+						var fn = this.oncaptured.listeners[_idx];
+						if(fn != null) {
+							fn(false);
+						}
+					}
+					++_idx;
+				}
+				if(this.oncaptured != null) {
+					while(_count > 0) {
+						var fn1 = this.oncaptured.listeners[_count - 1];
+						if(fn1 == null) {
+							this.oncaptured.listeners.splice(_count - 1,1);
+						}
+						--_count;
+					}
+				}
+			}
+		}
+		mint_Control.prototype.mouseup.call(this,e);
+	}
+	,__class__: mint_Slider
+	,__properties__: $extend(mint_Control.prototype.__properties__,{set_value:"set_value"})
+});
+var mint_TextEdit = function(_options) {
+	this.display = "";
+	this.composition_length = 0;
+	this.composition_start = 0;
+	this.composition = "";
+	this.edit = "";
+	this.index = 0;
+	this.options = _options;
+	if(this.options.name == null) {
+		var tmp = mint_types_Helper.uniqueid();
+		this.options.name = "textedit." + tmp;
+	}
+	if(this.options.mouse_input == null) {
+		this.options.mouse_input = true;
+	}
+	if(this.options.key_input == null) {
+		this.options.key_input = true;
+	}
+	mint_Control.call(this,this.options);
+	this.onchangeindex = new mint_core_Signal();
+	this.onchange = new mint_core_Signal();
+	this.oncommit = new mint_core_Signal();
+	if(this.options.filter == null) {
+		this.options.filter = null;
+	}
+	this.filter = this.options.filter;
+	if(this.options.text == null) {
+		this.options.text = "mint.TextEdit";
+	}
+	if(this.options.text_size == null) {
+		this.options.text_size = this.options.h * 0.8;
+	}
+	if(this.options.align == null) {
+		this.options.align = 1;
+	}
+	this.label = new mint_Label({ parent : this, x : 2, y : 0, w : this.w, h : this.h, text : this.options.text, text_size : this.options.text_size, align : this.options.align, align_vertical : this.options.align_vertical, bounds_wrap : this.options.bounds_wrap, options : this.options.options.label, name : this.name + ".label", mouse_input : false, depth : this.options.depth + 0.001, internal_visible : this.options.visible});
+	this.edit = this.label.text;
+	var s = this.edit;
+	var this1 = s;
+	var this2 = this1;
+	this.index = mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointCount(this2,0,s.length);
+	this.renderer = this.rendering.get(mint_TextEdit,this);
+	if(this.options.display_char != null) {
+		var v = this.options.display_char;
+		if(v != null) {
+			var this3 = v;
+			var this4 = this3;
+			var this5 = this4;
+			var index = 0;
+			var len = this5.length;
+			var i = 0;
+			while(i < 0 && index < len) {
+				var c = this5.charCodeAt(index);
+				index += !(55296 <= c && c <= 56319) ? 1 : 2;
+				++i;
+			}
+			var i1 = index;
+			var this6 = v;
+			var this7 = this6;
+			var this8 = this7;
+			var c1 = this8.charCodeAt(i1);
+			var this9 = HxOverrides.substr(this8,i1,!(55296 <= c1 && c1 <= 56319) ? 1 : 2);
+			var this10 = this9;
+			this.display_char = this10;
+		} else {
+			this.display_char = v;
+		}
+		var str = this.edit;
+		this.edit = str;
+		if(this.display_char != null) {
+			this.display = "";
+			var this11 = str;
+			var this12 = this11;
+			var _l = mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointCount(this12,0,str.length);
+			var _g1 = 0;
+			var _g = _l;
+			while(_g1 < _g) {
+				var i2 = _g1++;
+				this.display += this.display_char;
+			}
+		} else {
+			var cur = this.index;
+			var s1 = this.edit;
+			var index1 = 0;
+			var this13 = s1;
+			var this14 = this13;
+			var this15 = this14;
+			var index2 = index1;
+			var len1 = this15.length;
+			var i3 = 0;
+			while(i3 < 0 && index2 < len1) {
+				var c2 = this15.charCodeAt(index2);
+				index2 += !(55296 <= c2 && c2 <= 56319) ? 1 : 2;
+				++i3;
+			}
+			var si = index2;
+			var ei;
+			if(cur == null) {
+				ei = s1.length;
+			} else if(cur < 0) {
+				ei = si;
+			} else {
+				var this16 = s1;
+				var this17 = this16;
+				var this18 = this17;
+				if(cur >= 0) {
+					var index3 = si;
+					var len2 = this18.length;
+					var i4 = 0;
+					while(i4 < cur && index3 < len2) {
+						var c3 = this18.charCodeAt(index3);
+						index3 += !(55296 <= c3 && c3 <= 56319) ? 1 : 2;
+						++i4;
+					}
+					ei = index3;
+				} else {
+					var index4 = si;
+					var count = 0;
+					while(count < -cur && 0 < index4) {
+						var c4 = this18.charCodeAt(index4 - 1);
+						index4 -= !(56320 <= c4 && c4 <= 57343) ? 1 : 2;
+						++count;
+					}
+					ei = index4;
+				}
+			}
+			var tmp1 = s1.substring(si,ei) + this.composition;
+			var cur1 = this.index;
+			var s2 = this.edit;
+			var length = this.edit.length;
+			var index5 = cur1 >= 0 ? 0 : s2.length;
+			var this19 = s2;
+			var this20 = this19;
+			var this21 = this20;
+			var si1;
+			if(cur1 >= 0) {
+				var index6 = index5;
+				var len3 = this21.length;
+				var i5 = 0;
+				while(i5 < cur1 && index6 < len3) {
+					var c5 = this21.charCodeAt(index6);
+					index6 += !(55296 <= c5 && c5 <= 56319) ? 1 : 2;
+					++i5;
+				}
+				si1 = index6;
+			} else {
+				var index7 = index5;
+				var count1 = 0;
+				while(count1 < -cur1 && 0 < index7) {
+					var c6 = this21.charCodeAt(index7 - 1);
+					index7 -= !(56320 <= c6 && c6 <= 57343) ? 1 : 2;
+					++count1;
+				}
+				si1 = index7;
+			}
+			var ei1;
+			if(length == null) {
+				ei1 = s2.length;
+			} else if(length < 0) {
+				ei1 = si1;
+			} else {
+				var this22 = s2;
+				var this23 = this22;
+				var this24 = this23;
+				if(length >= 0) {
+					var index8 = si1;
+					var len4 = this24.length;
+					var i6 = 0;
+					while(i6 < length && index8 < len4) {
+						var c7 = this24.charCodeAt(index8);
+						index8 += !(55296 <= c7 && c7 <= 56319) ? 1 : 2;
+						++i6;
+					}
+					ei1 = index8;
+				} else {
+					var index9 = si1;
+					var count2 = 0;
+					while(count2 < -length && 0 < index9) {
+						var c8 = this24.charCodeAt(index9 - 1);
+						index9 -= !(56320 <= c8 && c8 <= 57343) ? 1 : 2;
+						++count2;
+					}
+					ei1 = index9;
+				}
+			}
+			this.display = tmp1 + s2.substring(si1,ei1);
+		}
+		this.label.set_text(this.display);
+		var _idx = 0;
+		var _count = this.onchangeindex.listeners.length;
+		while(_idx < _count) {
+			if(this.onchangeindex != null) {
+				var fn = this.onchangeindex.listeners[_idx];
+				if(fn != null) {
+					fn(this.index);
+				}
+			}
+			++_idx;
+		}
+		if(this.onchangeindex != null) {
+			while(_count > 0) {
+				var fn1 = this.onchangeindex.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onchangeindex.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+		var _idx1 = 0;
+		var _count1 = this.onchange.listeners.length;
+		while(_idx1 < _count1) {
+			if(this.onchange != null) {
+				var fn2 = this.onchange.listeners[_idx1];
+				if(fn2 != null) {
+					fn2(this.edit,this.display,false);
+				}
+			}
+			++_idx1;
+		}
+		if(this.onchange != null) {
+			while(_count1 > 0) {
+				var fn3 = this.onchange.listeners[_count1 - 1];
+				if(fn3 == null) {
+					this.onchange.listeners.splice(_count1 - 1,1);
+				}
+				--_count1;
+			}
+		}
+		var _idx2 = 0;
+		var _count2 = this.onchangeindex.listeners.length;
+		while(_idx2 < _count2) {
+			if(this.onchangeindex != null) {
+				var fn4 = this.onchangeindex.listeners[_idx2];
+				if(fn4 != null) {
+					fn4(this.index);
+				}
+			}
+			++_idx2;
+		}
+		if(this.onchangeindex != null) {
+			while(_count2 > 0) {
+				var fn5 = this.onchangeindex.listeners[_count2 - 1];
+				if(fn5 == null) {
+					this.onchangeindex.listeners.splice(_count2 - 1,1);
+				}
+				--_count2;
+			}
+		}
+	}
+	var str1 = this.edit;
+	this.edit = str1;
+	if(this.display_char != null) {
+		this.display = "";
+		var this25 = str1;
+		var this26 = this25;
+		var _l1 = mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointCount(this26,0,str1.length);
+		var _g11 = 0;
+		var _g2 = _l1;
+		while(_g11 < _g2) {
+			var i7 = _g11++;
+			this.display += this.display_char;
+		}
+	} else {
+		var cur2 = this.index;
+		var s3 = this.edit;
+		var index10 = 0;
+		var this27 = s3;
+		var this28 = this27;
+		var this29 = this28;
+		var index11 = index10;
+		var len5 = this29.length;
+		var i8 = 0;
+		while(i8 < 0 && index11 < len5) {
+			var c9 = this29.charCodeAt(index11);
+			index11 += !(55296 <= c9 && c9 <= 56319) ? 1 : 2;
+			++i8;
+		}
+		var si2 = index11;
+		var ei2;
+		if(cur2 == null) {
+			ei2 = s3.length;
+		} else if(cur2 < 0) {
+			ei2 = si2;
+		} else {
+			var this30 = s3;
+			var this31 = this30;
+			var this32 = this31;
+			if(cur2 >= 0) {
+				var index12 = si2;
+				var len6 = this32.length;
+				var i9 = 0;
+				while(i9 < cur2 && index12 < len6) {
+					var c10 = this32.charCodeAt(index12);
+					index12 += !(55296 <= c10 && c10 <= 56319) ? 1 : 2;
+					++i9;
+				}
+				ei2 = index12;
+			} else {
+				var index13 = si2;
+				var count3 = 0;
+				while(count3 < -cur2 && 0 < index13) {
+					var c11 = this32.charCodeAt(index13 - 1);
+					index13 -= !(56320 <= c11 && c11 <= 57343) ? 1 : 2;
+					++count3;
+				}
+				ei2 = index13;
+			}
+		}
+		var tmp2 = s3.substring(si2,ei2) + this.composition;
+		var cur3 = this.index;
+		var s4 = this.edit;
+		var length1 = this.edit.length;
+		var index14 = cur3 >= 0 ? 0 : s4.length;
+		var this33 = s4;
+		var this34 = this33;
+		var this35 = this34;
+		var si3;
+		if(cur3 >= 0) {
+			var index15 = index14;
+			var len7 = this35.length;
+			var i10 = 0;
+			while(i10 < cur3 && index15 < len7) {
+				var c12 = this35.charCodeAt(index15);
+				index15 += !(55296 <= c12 && c12 <= 56319) ? 1 : 2;
+				++i10;
+			}
+			si3 = index15;
+		} else {
+			var index16 = index14;
+			var count4 = 0;
+			while(count4 < -cur3 && 0 < index16) {
+				var c13 = this35.charCodeAt(index16 - 1);
+				index16 -= !(56320 <= c13 && c13 <= 57343) ? 1 : 2;
+				++count4;
+			}
+			si3 = index16;
+		}
+		var ei3;
+		if(length1 == null) {
+			ei3 = s4.length;
+		} else if(length1 < 0) {
+			ei3 = si3;
+		} else {
+			var this36 = s4;
+			var this37 = this36;
+			var this38 = this37;
+			if(length1 >= 0) {
+				var index17 = si3;
+				var len8 = this38.length;
+				var i11 = 0;
+				while(i11 < length1 && index17 < len8) {
+					var c14 = this38.charCodeAt(index17);
+					index17 += !(55296 <= c14 && c14 <= 56319) ? 1 : 2;
+					++i11;
+				}
+				ei3 = index17;
+			} else {
+				var index18 = si3;
+				var count5 = 0;
+				while(count5 < -length1 && 0 < index18) {
+					var c15 = this38.charCodeAt(index18 - 1);
+					index18 -= !(56320 <= c15 && c15 <= 57343) ? 1 : 2;
+					++count5;
+				}
+				ei3 = index18;
+			}
+		}
+		this.display = tmp2 + s4.substring(si3,ei3);
+	}
+	this.label.set_text(this.display);
+	var _idx3 = 0;
+	var _count3 = this.onchangeindex.listeners.length;
+	while(_idx3 < _count3) {
+		if(this.onchangeindex != null) {
+			var fn6 = this.onchangeindex.listeners[_idx3];
+			if(fn6 != null) {
+				fn6(this.index);
+			}
+		}
+		++_idx3;
+	}
+	if(this.onchangeindex != null) {
+		while(_count3 > 0) {
+			var fn7 = this.onchangeindex.listeners[_count3 - 1];
+			if(fn7 == null) {
+				this.onchangeindex.listeners.splice(_count3 - 1,1);
+			}
+			--_count3;
+		}
+	}
+	var _idx4 = 0;
+	var _count4 = this.onchange.listeners.length;
+	while(_idx4 < _count4) {
+		if(this.onchange != null) {
+			var fn8 = this.onchange.listeners[_idx4];
+			if(fn8 != null) {
+				fn8(this.edit,this.display,false);
+			}
+		}
+		++_idx4;
+	}
+	if(this.onchange != null) {
+		while(_count4 > 0) {
+			var fn9 = this.onchange.listeners[_count4 - 1];
+			if(fn9 == null) {
+				this.onchange.listeners.splice(_count4 - 1,1);
+			}
+			--_count4;
+		}
+	}
+	var _idx5 = 0;
+	var _count5 = this.oncreate.listeners.length;
+	while(_idx5 < _count5) {
+		if(this.oncreate != null) {
+			var fn10 = this.oncreate.listeners[_idx5];
+			if(fn10 != null) {
+				fn10();
+			}
+		}
+		++_idx5;
+	}
+	if(this.oncreate != null) {
+		while(_count5 > 0) {
+			var fn11 = this.oncreate.listeners[_count5 - 1];
+			if(fn11 == null) {
+				this.oncreate.listeners.splice(_count5 - 1,1);
+			}
+			--_count5;
+		}
+	}
+};
+$hxClasses["mint.TextEdit"] = mint_TextEdit;
+mint_TextEdit.__name__ = ["mint","TextEdit"];
+mint_TextEdit.__super__ = mint_Control;
+mint_TextEdit.prototype = $extend(mint_Control.prototype,{
+	destroy: function() {
+		mint_Control.prototype.destroy.call(this);
+		var _this = this.onchange;
+		_this.listeners = null;
+		_this.listeners = [];
+		this.onchange = null;
+		var _this1 = this.onchangeindex;
+		_this1.listeners = null;
+		_this1.listeners = [];
+		this.onchangeindex = null;
+		var _this2 = this.oncommit;
+		_this2.listeners = null;
+		_this2.listeners = [];
+		this.oncommit = null;
+	}
+	,mousedown: function(event) {
+		mint_Control.prototype.mousedown.call(this,event);
+		if(this.contains(event.x,event.y)) {
+			if(this.destroyed != false) {
+				throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+			}
+			if(this.canvas != this) {
+				var _pre = this.canvas.get_focused() == this;
+				this.canvas.set_focused(this);
+				if(!_pre) {
+					var _idx = 0;
+					var _count = this.onfocused.listeners.length;
+					while(_idx < _count) {
+						if(this.onfocused != null) {
+							var fn = this.onfocused.listeners[_idx];
+							if(fn != null) {
+								fn(true);
+							}
+						}
+						++_idx;
+					}
+					if(this.onfocused != null) {
+						while(_count > 0) {
+							var fn1 = this.onfocused.listeners[_count - 1];
+							if(fn1 == null) {
+								this.onfocused.listeners.splice(_count - 1,1);
+							}
+							--_count;
+						}
+					}
+				}
+			}
+		} else {
+			this.unfocus();
+		}
+	}
+	,unfocus: function() {
+		mint_Control.prototype.unfocus.call(this);
+		this.composition = "";
+		this.composition_start = this.composition_length = 0;
+	}
+	,textinput: function(event) {
+		mint_Control.prototype.textinput.call(this,event);
+		var cur = this.index;
+		var s = this.edit;
+		var index = 0;
+		var this1 = s;
+		var this2 = this1;
+		var this3 = this2;
+		var index1 = index;
+		var len = this3.length;
+		var i = 0;
+		while(i < 0 && index1 < len) {
+			var c = this3.charCodeAt(index1);
+			index1 += !(55296 <= c && c <= 56319) ? 1 : 2;
+			++i;
+		}
+		var si = index1;
+		var ei;
+		if(cur == null) {
+			ei = s.length;
+		} else if(cur < 0) {
+			ei = si;
+		} else {
+			var this4 = s;
+			var this5 = this4;
+			var this6 = this5;
+			if(cur >= 0) {
+				var index2 = si;
+				var len1 = this6.length;
+				var i1 = 0;
+				while(i1 < cur && index2 < len1) {
+					var c1 = this6.charCodeAt(index2);
+					index2 += !(55296 <= c1 && c1 <= 56319) ? 1 : 2;
+					++i1;
+				}
+				ei = index2;
+			} else {
+				var index3 = si;
+				var count = 0;
+				while(count < -cur && 0 < index3) {
+					var c2 = this6.charCodeAt(index3 - 1);
+					index3 -= !(56320 <= c2 && c2 <= 57343) ? 1 : 2;
+					++count;
+				}
+				ei = index3;
+			}
+		}
+		var _bef = s.substring(si,ei);
+		var cur1 = this.index;
+		var s1 = this.edit;
+		var length = this.edit.length;
+		var index4 = cur1 >= 0 ? 0 : s1.length;
+		var this7 = s1;
+		var this8 = this7;
+		var this9 = this8;
+		var si1;
+		if(cur1 >= 0) {
+			var index5 = index4;
+			var len2 = this9.length;
+			var i2 = 0;
+			while(i2 < cur1 && index5 < len2) {
+				var c3 = this9.charCodeAt(index5);
+				index5 += !(55296 <= c3 && c3 <= 56319) ? 1 : 2;
+				++i2;
+			}
+			si1 = index5;
+		} else {
+			var index6 = index4;
+			var count1 = 0;
+			while(count1 < -cur1 && 0 < index6) {
+				var c4 = this9.charCodeAt(index6 - 1);
+				index6 -= !(56320 <= c4 && c4 <= 57343) ? 1 : 2;
+				++count1;
+			}
+			si1 = index6;
+		}
+		var ei1;
+		if(length == null) {
+			ei1 = s1.length;
+		} else if(length < 0) {
+			ei1 = si1;
+		} else {
+			var this10 = s1;
+			var this11 = this10;
+			var this12 = this11;
+			if(length >= 0) {
+				var index7 = si1;
+				var len3 = this12.length;
+				var i3 = 0;
+				while(i3 < length && index7 < len3) {
+					var c5 = this12.charCodeAt(index7);
+					index7 += !(55296 <= c5 && c5 <= 56319) ? 1 : 2;
+					++i3;
+				}
+				ei1 = index7;
+			} else {
+				var index8 = si1;
+				var count2 = 0;
+				while(count2 < -length && 0 < index8) {
+					var c6 = this12.charCodeAt(index8 - 1);
+					index8 -= !(56320 <= c6 && c6 <= 57343) ? 1 : 2;
+					++count2;
+				}
+				ei1 = index8;
+			}
+		}
+		var _aft = s1.substring(si1,ei1);
+		var _new = _bef + event.text + _aft;
+		var _g = event.type;
+		switch(_g[1]) {
+		case 1:
+			this.composition = event.text;
+			this.composition_start = event.start;
+			this.composition_length = event.length;
+			var str = this.edit;
+			this.edit = str;
+			if(this.display_char != null) {
+				this.display = "";
+				var this13 = str;
+				var this14 = this13;
+				var _l = mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointCount(this14,0,str.length);
+				var _g1 = 0;
+				var _g2 = _l;
+				while(_g1 < _g2) {
+					var i4 = _g1++;
+					this.display += this.display_char;
+				}
+			} else {
+				var cur2 = this.index;
+				var s2 = this.edit;
+				var index9 = 0;
+				var this15 = s2;
+				var this16 = this15;
+				var this17 = this16;
+				var index10 = index9;
+				var len4 = this17.length;
+				var i5 = 0;
+				while(i5 < 0 && index10 < len4) {
+					var c7 = this17.charCodeAt(index10);
+					index10 += !(55296 <= c7 && c7 <= 56319) ? 1 : 2;
+					++i5;
+				}
+				var si2 = index10;
+				var ei2;
+				if(cur2 == null) {
+					ei2 = s2.length;
+				} else if(cur2 < 0) {
+					ei2 = si2;
+				} else {
+					var this18 = s2;
+					var this19 = this18;
+					var this20 = this19;
+					if(cur2 >= 0) {
+						var index11 = si2;
+						var len5 = this20.length;
+						var i6 = 0;
+						while(i6 < cur2 && index11 < len5) {
+							var c8 = this20.charCodeAt(index11);
+							index11 += !(55296 <= c8 && c8 <= 56319) ? 1 : 2;
+							++i6;
+						}
+						ei2 = index11;
+					} else {
+						var index12 = si2;
+						var count3 = 0;
+						while(count3 < -cur2 && 0 < index12) {
+							var c9 = this20.charCodeAt(index12 - 1);
+							index12 -= !(56320 <= c9 && c9 <= 57343) ? 1 : 2;
+							++count3;
+						}
+						ei2 = index12;
+					}
+				}
+				var tmp = s2.substring(si2,ei2) + this.composition;
+				var cur3 = this.index;
+				var s3 = this.edit;
+				var length1 = this.edit.length;
+				var index13 = cur3 >= 0 ? 0 : s3.length;
+				var this21 = s3;
+				var this22 = this21;
+				var this23 = this22;
+				var si3;
+				if(cur3 >= 0) {
+					var index14 = index13;
+					var len6 = this23.length;
+					var i7 = 0;
+					while(i7 < cur3 && index14 < len6) {
+						var c10 = this23.charCodeAt(index14);
+						index14 += !(55296 <= c10 && c10 <= 56319) ? 1 : 2;
+						++i7;
+					}
+					si3 = index14;
+				} else {
+					var index15 = index13;
+					var count4 = 0;
+					while(count4 < -cur3 && 0 < index15) {
+						var c11 = this23.charCodeAt(index15 - 1);
+						index15 -= !(56320 <= c11 && c11 <= 57343) ? 1 : 2;
+						++count4;
+					}
+					si3 = index15;
+				}
+				var ei3;
+				if(length1 == null) {
+					ei3 = s3.length;
+				} else if(length1 < 0) {
+					ei3 = si3;
+				} else {
+					var this24 = s3;
+					var this25 = this24;
+					var this26 = this25;
+					if(length1 >= 0) {
+						var index16 = si3;
+						var len7 = this26.length;
+						var i8 = 0;
+						while(i8 < length1 && index16 < len7) {
+							var c12 = this26.charCodeAt(index16);
+							index16 += !(55296 <= c12 && c12 <= 56319) ? 1 : 2;
+							++i8;
+						}
+						ei3 = index16;
+					} else {
+						var index17 = si3;
+						var count5 = 0;
+						while(count5 < -length1 && 0 < index17) {
+							var c13 = this26.charCodeAt(index17 - 1);
+							index17 -= !(56320 <= c13 && c13 <= 57343) ? 1 : 2;
+							++count5;
+						}
+						ei3 = index17;
+					}
+				}
+				this.display = tmp + s3.substring(si3,ei3);
+			}
+			this.label.set_text(this.display);
+			var _idx = 0;
+			var _count = this.onchangeindex.listeners.length;
+			while(_idx < _count) {
+				if(this.onchangeindex != null) {
+					var fn = this.onchangeindex.listeners[_idx];
+					if(fn != null) {
+						fn(this.index);
+					}
+				}
+				++_idx;
+			}
+			if(this.onchangeindex != null) {
+				while(_count > 0) {
+					var fn1 = this.onchangeindex.listeners[_count - 1];
+					if(fn1 == null) {
+						this.onchangeindex.listeners.splice(_count - 1,1);
+					}
+					--_count;
+				}
+			}
+			break;
+		case 2:
+			this.composition = "";
+			this.composition_start = this.composition_length = 0;
+			if(this.filter != null && !this.filter(event.text,_new,this.edit)) {
+				return;
+			}
+			var s4 = event.text;
+			var this27 = s4;
+			var this28 = this27;
+			this.index += mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointCount(this28,0,s4.length);
+			this.edit = _new;
+			if(this.display_char != null) {
+				this.display = "";
+				var this29 = _new;
+				var this30 = this29;
+				var _l1 = mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointCount(this30,0,_new.length);
+				var _g11 = 0;
+				var _g3 = _l1;
+				while(_g11 < _g3) {
+					var i9 = _g11++;
+					this.display += this.display_char;
+				}
+			} else {
+				var cur4 = this.index;
+				var s5 = this.edit;
+				var index18 = 0;
+				var this31 = s5;
+				var this32 = this31;
+				var this33 = this32;
+				var index19 = index18;
+				var len8 = this33.length;
+				var i10 = 0;
+				while(i10 < 0 && index19 < len8) {
+					var c14 = this33.charCodeAt(index19);
+					index19 += !(55296 <= c14 && c14 <= 56319) ? 1 : 2;
+					++i10;
+				}
+				var si4 = index19;
+				var ei4;
+				if(cur4 == null) {
+					ei4 = s5.length;
+				} else if(cur4 < 0) {
+					ei4 = si4;
+				} else {
+					var this34 = s5;
+					var this35 = this34;
+					var this36 = this35;
+					if(cur4 >= 0) {
+						var index20 = si4;
+						var len9 = this36.length;
+						var i11 = 0;
+						while(i11 < cur4 && index20 < len9) {
+							var c15 = this36.charCodeAt(index20);
+							index20 += !(55296 <= c15 && c15 <= 56319) ? 1 : 2;
+							++i11;
+						}
+						ei4 = index20;
+					} else {
+						var index21 = si4;
+						var count6 = 0;
+						while(count6 < -cur4 && 0 < index21) {
+							var c16 = this36.charCodeAt(index21 - 1);
+							index21 -= !(56320 <= c16 && c16 <= 57343) ? 1 : 2;
+							++count6;
+						}
+						ei4 = index21;
+					}
+				}
+				var tmp1 = s5.substring(si4,ei4) + this.composition;
+				var cur5 = this.index;
+				var s6 = this.edit;
+				var length2 = this.edit.length;
+				var index22 = cur5 >= 0 ? 0 : s6.length;
+				var this37 = s6;
+				var this38 = this37;
+				var this39 = this38;
+				var si5;
+				if(cur5 >= 0) {
+					var index23 = index22;
+					var len10 = this39.length;
+					var i12 = 0;
+					while(i12 < cur5 && index23 < len10) {
+						var c17 = this39.charCodeAt(index23);
+						index23 += !(55296 <= c17 && c17 <= 56319) ? 1 : 2;
+						++i12;
+					}
+					si5 = index23;
+				} else {
+					var index24 = index22;
+					var count7 = 0;
+					while(count7 < -cur5 && 0 < index24) {
+						var c18 = this39.charCodeAt(index24 - 1);
+						index24 -= !(56320 <= c18 && c18 <= 57343) ? 1 : 2;
+						++count7;
+					}
+					si5 = index24;
+				}
+				var ei5;
+				if(length2 == null) {
+					ei5 = s6.length;
+				} else if(length2 < 0) {
+					ei5 = si5;
+				} else {
+					var this40 = s6;
+					var this41 = this40;
+					var this42 = this41;
+					if(length2 >= 0) {
+						var index25 = si5;
+						var len11 = this42.length;
+						var i13 = 0;
+						while(i13 < length2 && index25 < len11) {
+							var c19 = this42.charCodeAt(index25);
+							index25 += !(55296 <= c19 && c19 <= 56319) ? 1 : 2;
+							++i13;
+						}
+						ei5 = index25;
+					} else {
+						var index26 = si5;
+						var count8 = 0;
+						while(count8 < -length2 && 0 < index26) {
+							var c20 = this42.charCodeAt(index26 - 1);
+							index26 -= !(56320 <= c20 && c20 <= 57343) ? 1 : 2;
+							++count8;
+						}
+						ei5 = index26;
+					}
+				}
+				this.display = tmp1 + s6.substring(si5,ei5);
+			}
+			this.label.set_text(this.display);
+			var _idx1 = 0;
+			var _count1 = this.onchangeindex.listeners.length;
+			while(_idx1 < _count1) {
+				if(this.onchangeindex != null) {
+					var fn2 = this.onchangeindex.listeners[_idx1];
+					if(fn2 != null) {
+						fn2(this.index);
+					}
+				}
+				++_idx1;
+			}
+			if(this.onchangeindex != null) {
+				while(_count1 > 0) {
+					var fn3 = this.onchangeindex.listeners[_count1 - 1];
+					if(fn3 == null) {
+						this.onchangeindex.listeners.splice(_count1 - 1,1);
+					}
+					--_count1;
+				}
+			}
+			var _idx2 = 0;
+			var _count2 = this.onchange.listeners.length;
+			while(_idx2 < _count2) {
+				if(this.onchange != null) {
+					var fn4 = this.onchange.listeners[_idx2];
+					if(fn4 != null) {
+						fn4(this.edit,this.display,true);
+					}
+				}
+				++_idx2;
+			}
+			if(this.onchange != null) {
+				while(_count2 > 0) {
+					var fn5 = this.onchange.listeners[_count2 - 1];
+					if(fn5 == null) {
+						this.onchange.listeners.splice(_count2 - 1,1);
+					}
+					--_count2;
+				}
+			}
+			break;
+		default:
+		}
+	}
+	,keydown: function(event) {
+		mint_Control.prototype.keydown.call(this,event);
+		var _g = event.key;
+		switch(_g) {
+		case -1:
+			break;
+		case 0:
+			this.move(-1);
+			break;
+		case 1:
+			this.move(1);
+			break;
+		case 2:
+			break;
+		case 3:
+			break;
+		case 4:
+			this.move(-1);
+			var start = this.index;
+			var s = this.edit;
+			var length = this.edit.length;
+			var index = start >= 0 ? 0 : s.length;
+			var this1 = s;
+			var this2 = this1;
+			var this3 = this2;
+			var si;
+			if(start >= 0) {
+				var index1 = index;
+				var len = this3.length;
+				var i = 0;
+				while(i < start && index1 < len) {
+					var c = this3.charCodeAt(index1);
+					index1 += !(55296 <= c && c <= 56319) ? 1 : 2;
+					++i;
+				}
+				si = index1;
+			} else {
+				var index2 = index;
+				var count = 0;
+				while(count < -start && 0 < index2) {
+					var c1 = this3.charCodeAt(index2 - 1);
+					index2 -= !(56320 <= c1 && c1 <= 57343) ? 1 : 2;
+					++count;
+				}
+				si = index2;
+			}
+			var ei;
+			if(length == null) {
+				ei = s.length;
+			} else if(length < 0) {
+				ei = si;
+			} else {
+				var this4 = s;
+				var this5 = this4;
+				var this6 = this5;
+				if(length >= 0) {
+					var index3 = si;
+					var len1 = this6.length;
+					var i1 = 0;
+					while(i1 < length && index3 < len1) {
+						var c2 = this6.charCodeAt(index3);
+						index3 += !(55296 <= c2 && c2 <= 56319) ? 1 : 2;
+						++i1;
+					}
+					ei = index3;
+				} else {
+					var index4 = si;
+					var count1 = 0;
+					while(count1 < -length && 0 < index4) {
+						var c3 = this6.charCodeAt(index4 - 1);
+						index4 -= !(56320 <= c3 && c3 <= 57343) ? 1 : 2;
+						++count1;
+					}
+					ei = index4;
+				}
+			}
+			var a = s.substring(si,ei);
+			var s1 = this.edit;
+			var index5 = 0;
+			var this7 = s1;
+			var this8 = this7;
+			var this9 = this8;
+			var index6 = index5;
+			var len2 = this9.length;
+			var i2 = 0;
+			while(i2 < 0 && index6 < len2) {
+				var c4 = this9.charCodeAt(index6);
+				index6 += !(55296 <= c4 && c4 <= 56319) ? 1 : 2;
+				++i2;
+			}
+			var si1 = index6;
+			var ei1;
+			if(start == null) {
+				ei1 = s1.length;
+			} else if(start < 0) {
+				ei1 = si1;
+			} else {
+				var this10 = s1;
+				var this11 = this10;
+				var this12 = this11;
+				if(start >= 0) {
+					var index7 = si1;
+					var len3 = this12.length;
+					var i3 = 0;
+					while(i3 < start && index7 < len3) {
+						var c5 = this12.charCodeAt(index7);
+						index7 += !(55296 <= c5 && c5 <= 56319) ? 1 : 2;
+						++i3;
+					}
+					ei1 = index7;
+				} else {
+					var index8 = si1;
+					var count2 = 0;
+					while(count2 < -start && 0 < index8) {
+						var c6 = this12.charCodeAt(index8 - 1);
+						index8 -= !(56320 <= c6 && c6 <= 57343) ? 1 : 2;
+						++count2;
+					}
+					ei1 = index8;
+				}
+			}
+			var str = s1.substring(si1,ei1);
+			var this13 = a;
+			var this14 = this13;
+			var length1 = mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointCount(this14,0,a.length);
+			var index9 = 0;
+			var this15 = a;
+			var this16 = this15;
+			var this17 = this16;
+			var index10 = index9;
+			var len4 = this17.length;
+			var i4 = 0;
+			while(i4 < 1 && index10 < len4) {
+				var c7 = this17.charCodeAt(index10);
+				index10 += !(55296 <= c7 && c7 <= 56319) ? 1 : 2;
+				++i4;
+			}
+			var si2 = index10;
+			var ei2;
+			if(length1 == null) {
+				ei2 = a.length;
+			} else if(length1 < 0) {
+				ei2 = si2;
+			} else {
+				var this18 = a;
+				var this19 = this18;
+				var this20 = this19;
+				if(length1 >= 0) {
+					var index11 = si2;
+					var len5 = this20.length;
+					var i5 = 0;
+					while(i5 < length1 && index11 < len5) {
+						var c8 = this20.charCodeAt(index11);
+						index11 += !(55296 <= c8 && c8 <= 56319) ? 1 : 2;
+						++i5;
+					}
+					ei2 = index11;
+				} else {
+					var index12 = si2;
+					var count3 = 0;
+					while(count3 < -length1 && 0 < index12) {
+						var c9 = this20.charCodeAt(index12 - 1);
+						index12 -= !(56320 <= c9 && c9 <= 57343) ? 1 : 2;
+						++count3;
+					}
+					ei2 = index12;
+				}
+			}
+			var str1 = str + a.substring(si2,ei2);
+			this.edit = str1;
+			if(this.display_char != null) {
+				this.display = "";
+				var this21 = str1;
+				var this22 = this21;
+				var _l = mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointCount(this22,0,str1.length);
+				var _g1 = 0;
+				var _g2 = _l;
+				while(_g1 < _g2) {
+					var i6 = _g1++;
+					this.display += this.display_char;
+				}
+			} else {
+				var cur = this.index;
+				var s2 = this.edit;
+				var index13 = 0;
+				var this23 = s2;
+				var this24 = this23;
+				var this25 = this24;
+				var index14 = index13;
+				var len6 = this25.length;
+				var i7 = 0;
+				while(i7 < 0 && index14 < len6) {
+					var c10 = this25.charCodeAt(index14);
+					index14 += !(55296 <= c10 && c10 <= 56319) ? 1 : 2;
+					++i7;
+				}
+				var si3 = index14;
+				var ei3;
+				if(cur == null) {
+					ei3 = s2.length;
+				} else if(cur < 0) {
+					ei3 = si3;
+				} else {
+					var this26 = s2;
+					var this27 = this26;
+					var this28 = this27;
+					if(cur >= 0) {
+						var index15 = si3;
+						var len7 = this28.length;
+						var i8 = 0;
+						while(i8 < cur && index15 < len7) {
+							var c11 = this28.charCodeAt(index15);
+							index15 += !(55296 <= c11 && c11 <= 56319) ? 1 : 2;
+							++i8;
+						}
+						ei3 = index15;
+					} else {
+						var index16 = si3;
+						var count4 = 0;
+						while(count4 < -cur && 0 < index16) {
+							var c12 = this28.charCodeAt(index16 - 1);
+							index16 -= !(56320 <= c12 && c12 <= 57343) ? 1 : 2;
+							++count4;
+						}
+						ei3 = index16;
+					}
+				}
+				var tmp = s2.substring(si3,ei3) + this.composition;
+				var cur1 = this.index;
+				var s3 = this.edit;
+				var length2 = this.edit.length;
+				var index17 = cur1 >= 0 ? 0 : s3.length;
+				var this29 = s3;
+				var this30 = this29;
+				var this31 = this30;
+				var si4;
+				if(cur1 >= 0) {
+					var index18 = index17;
+					var len8 = this31.length;
+					var i9 = 0;
+					while(i9 < cur1 && index18 < len8) {
+						var c13 = this31.charCodeAt(index18);
+						index18 += !(55296 <= c13 && c13 <= 56319) ? 1 : 2;
+						++i9;
+					}
+					si4 = index18;
+				} else {
+					var index19 = index17;
+					var count5 = 0;
+					while(count5 < -cur1 && 0 < index19) {
+						var c14 = this31.charCodeAt(index19 - 1);
+						index19 -= !(56320 <= c14 && c14 <= 57343) ? 1 : 2;
+						++count5;
+					}
+					si4 = index19;
+				}
+				var ei4;
+				if(length2 == null) {
+					ei4 = s3.length;
+				} else if(length2 < 0) {
+					ei4 = si4;
+				} else {
+					var this32 = s3;
+					var this33 = this32;
+					var this34 = this33;
+					if(length2 >= 0) {
+						var index20 = si4;
+						var len9 = this34.length;
+						var i10 = 0;
+						while(i10 < length2 && index20 < len9) {
+							var c15 = this34.charCodeAt(index20);
+							index20 += !(55296 <= c15 && c15 <= 56319) ? 1 : 2;
+							++i10;
+						}
+						ei4 = index20;
+					} else {
+						var index21 = si4;
+						var count6 = 0;
+						while(count6 < -length2 && 0 < index21) {
+							var c16 = this34.charCodeAt(index21 - 1);
+							index21 -= !(56320 <= c16 && c16 <= 57343) ? 1 : 2;
+							++count6;
+						}
+						ei4 = index21;
+					}
+				}
+				this.display = tmp + s3.substring(si4,ei4);
+			}
+			this.label.set_text(this.display);
+			var _idx = 0;
+			var _count = this.onchangeindex.listeners.length;
+			while(_idx < _count) {
+				if(this.onchangeindex != null) {
+					var fn = this.onchangeindex.listeners[_idx];
+					if(fn != null) {
+						fn(this.index);
+					}
+				}
+				++_idx;
+			}
+			if(this.onchangeindex != null) {
+				while(_count > 0) {
+					var fn1 = this.onchangeindex.listeners[_count - 1];
+					if(fn1 == null) {
+						this.onchangeindex.listeners.splice(_count - 1,1);
+					}
+					--_count;
+				}
+			}
+			var _idx1 = 0;
+			var _count1 = this.onchange.listeners.length;
+			while(_idx1 < _count1) {
+				if(this.onchange != null) {
+					var fn2 = this.onchange.listeners[_idx1];
+					if(fn2 != null) {
+						fn2(this.edit,this.display,true);
+					}
+				}
+				++_idx1;
+			}
+			if(this.onchange != null) {
+				while(_count1 > 0) {
+					var fn3 = this.onchange.listeners[_count1 - 1];
+					if(fn3 == null) {
+						this.onchange.listeners.splice(_count1 - 1,1);
+					}
+					--_count1;
+				}
+			}
+			break;
+		case 5:
+			var start1 = this.index;
+			var s4 = this.edit;
+			var length3 = this.edit.length;
+			var index22 = start1 >= 0 ? 0 : s4.length;
+			var this35 = s4;
+			var this36 = this35;
+			var this37 = this36;
+			var si5;
+			if(start1 >= 0) {
+				var index23 = index22;
+				var len10 = this37.length;
+				var i11 = 0;
+				while(i11 < start1 && index23 < len10) {
+					var c17 = this37.charCodeAt(index23);
+					index23 += !(55296 <= c17 && c17 <= 56319) ? 1 : 2;
+					++i11;
+				}
+				si5 = index23;
+			} else {
+				var index24 = index22;
+				var count7 = 0;
+				while(count7 < -start1 && 0 < index24) {
+					var c18 = this37.charCodeAt(index24 - 1);
+					index24 -= !(56320 <= c18 && c18 <= 57343) ? 1 : 2;
+					++count7;
+				}
+				si5 = index24;
+			}
+			var ei5;
+			if(length3 == null) {
+				ei5 = s4.length;
+			} else if(length3 < 0) {
+				ei5 = si5;
+			} else {
+				var this38 = s4;
+				var this39 = this38;
+				var this40 = this39;
+				if(length3 >= 0) {
+					var index25 = si5;
+					var len11 = this40.length;
+					var i12 = 0;
+					while(i12 < length3 && index25 < len11) {
+						var c19 = this40.charCodeAt(index25);
+						index25 += !(55296 <= c19 && c19 <= 56319) ? 1 : 2;
+						++i12;
+					}
+					ei5 = index25;
+				} else {
+					var index26 = si5;
+					var count8 = 0;
+					while(count8 < -length3 && 0 < index26) {
+						var c20 = this40.charCodeAt(index26 - 1);
+						index26 -= !(56320 <= c20 && c20 <= 57343) ? 1 : 2;
+						++count8;
+					}
+					ei5 = index26;
+				}
+			}
+			var a1 = s4.substring(si5,ei5);
+			var s5 = this.edit;
+			var index27 = 0;
+			var this41 = s5;
+			var this42 = this41;
+			var this43 = this42;
+			var index28 = index27;
+			var len12 = this43.length;
+			var i13 = 0;
+			while(i13 < 0 && index28 < len12) {
+				var c21 = this43.charCodeAt(index28);
+				index28 += !(55296 <= c21 && c21 <= 56319) ? 1 : 2;
+				++i13;
+			}
+			var si6 = index28;
+			var ei6;
+			if(start1 == null) {
+				ei6 = s5.length;
+			} else if(start1 < 0) {
+				ei6 = si6;
+			} else {
+				var this44 = s5;
+				var this45 = this44;
+				var this46 = this45;
+				if(start1 >= 0) {
+					var index29 = si6;
+					var len13 = this46.length;
+					var i14 = 0;
+					while(i14 < start1 && index29 < len13) {
+						var c22 = this46.charCodeAt(index29);
+						index29 += !(55296 <= c22 && c22 <= 56319) ? 1 : 2;
+						++i14;
+					}
+					ei6 = index29;
+				} else {
+					var index30 = si6;
+					var count9 = 0;
+					while(count9 < -start1 && 0 < index30) {
+						var c23 = this46.charCodeAt(index30 - 1);
+						index30 -= !(56320 <= c23 && c23 <= 57343) ? 1 : 2;
+						++count9;
+					}
+					ei6 = index30;
+				}
+			}
+			var str2 = s5.substring(si6,ei6);
+			var this47 = a1;
+			var this48 = this47;
+			var length4 = mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointCount(this48,0,a1.length);
+			var index31 = 0;
+			var this49 = a1;
+			var this50 = this49;
+			var this51 = this50;
+			var index32 = index31;
+			var len14 = this51.length;
+			var i15 = 0;
+			while(i15 < 1 && index32 < len14) {
+				var c24 = this51.charCodeAt(index32);
+				index32 += !(55296 <= c24 && c24 <= 56319) ? 1 : 2;
+				++i15;
+			}
+			var si7 = index32;
+			var ei7;
+			if(length4 == null) {
+				ei7 = a1.length;
+			} else if(length4 < 0) {
+				ei7 = si7;
+			} else {
+				var this52 = a1;
+				var this53 = this52;
+				var this54 = this53;
+				if(length4 >= 0) {
+					var index33 = si7;
+					var len15 = this54.length;
+					var i16 = 0;
+					while(i16 < length4 && index33 < len15) {
+						var c25 = this54.charCodeAt(index33);
+						index33 += !(55296 <= c25 && c25 <= 56319) ? 1 : 2;
+						++i16;
+					}
+					ei7 = index33;
+				} else {
+					var index34 = si7;
+					var count10 = 0;
+					while(count10 < -length4 && 0 < index34) {
+						var c26 = this54.charCodeAt(index34 - 1);
+						index34 -= !(56320 <= c26 && c26 <= 57343) ? 1 : 2;
+						++count10;
+					}
+					ei7 = index34;
+				}
+			}
+			var str3 = str2 + a1.substring(si7,ei7);
+			this.edit = str3;
+			if(this.display_char != null) {
+				this.display = "";
+				var this55 = str3;
+				var this56 = this55;
+				var _l1 = mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointCount(this56,0,str3.length);
+				var _g11 = 0;
+				var _g3 = _l1;
+				while(_g11 < _g3) {
+					var i17 = _g11++;
+					this.display += this.display_char;
+				}
+			} else {
+				var cur2 = this.index;
+				var s6 = this.edit;
+				var index35 = 0;
+				var this57 = s6;
+				var this58 = this57;
+				var this59 = this58;
+				var index36 = index35;
+				var len16 = this59.length;
+				var i18 = 0;
+				while(i18 < 0 && index36 < len16) {
+					var c27 = this59.charCodeAt(index36);
+					index36 += !(55296 <= c27 && c27 <= 56319) ? 1 : 2;
+					++i18;
+				}
+				var si8 = index36;
+				var ei8;
+				if(cur2 == null) {
+					ei8 = s6.length;
+				} else if(cur2 < 0) {
+					ei8 = si8;
+				} else {
+					var this60 = s6;
+					var this61 = this60;
+					var this62 = this61;
+					if(cur2 >= 0) {
+						var index37 = si8;
+						var len17 = this62.length;
+						var i19 = 0;
+						while(i19 < cur2 && index37 < len17) {
+							var c28 = this62.charCodeAt(index37);
+							index37 += !(55296 <= c28 && c28 <= 56319) ? 1 : 2;
+							++i19;
+						}
+						ei8 = index37;
+					} else {
+						var index38 = si8;
+						var count11 = 0;
+						while(count11 < -cur2 && 0 < index38) {
+							var c29 = this62.charCodeAt(index38 - 1);
+							index38 -= !(56320 <= c29 && c29 <= 57343) ? 1 : 2;
+							++count11;
+						}
+						ei8 = index38;
+					}
+				}
+				var tmp1 = s6.substring(si8,ei8) + this.composition;
+				var cur3 = this.index;
+				var s7 = this.edit;
+				var length5 = this.edit.length;
+				var index39 = cur3 >= 0 ? 0 : s7.length;
+				var this63 = s7;
+				var this64 = this63;
+				var this65 = this64;
+				var si9;
+				if(cur3 >= 0) {
+					var index40 = index39;
+					var len18 = this65.length;
+					var i20 = 0;
+					while(i20 < cur3 && index40 < len18) {
+						var c30 = this65.charCodeAt(index40);
+						index40 += !(55296 <= c30 && c30 <= 56319) ? 1 : 2;
+						++i20;
+					}
+					si9 = index40;
+				} else {
+					var index41 = index39;
+					var count12 = 0;
+					while(count12 < -cur3 && 0 < index41) {
+						var c31 = this65.charCodeAt(index41 - 1);
+						index41 -= !(56320 <= c31 && c31 <= 57343) ? 1 : 2;
+						++count12;
+					}
+					si9 = index41;
+				}
+				var ei9;
+				if(length5 == null) {
+					ei9 = s7.length;
+				} else if(length5 < 0) {
+					ei9 = si9;
+				} else {
+					var this66 = s7;
+					var this67 = this66;
+					var this68 = this67;
+					if(length5 >= 0) {
+						var index42 = si9;
+						var len19 = this68.length;
+						var i21 = 0;
+						while(i21 < length5 && index42 < len19) {
+							var c32 = this68.charCodeAt(index42);
+							index42 += !(55296 <= c32 && c32 <= 56319) ? 1 : 2;
+							++i21;
+						}
+						ei9 = index42;
+					} else {
+						var index43 = si9;
+						var count13 = 0;
+						while(count13 < -length5 && 0 < index43) {
+							var c33 = this68.charCodeAt(index43 - 1);
+							index43 -= !(56320 <= c33 && c33 <= 57343) ? 1 : 2;
+							++count13;
+						}
+						ei9 = index43;
+					}
+				}
+				this.display = tmp1 + s7.substring(si9,ei9);
+			}
+			this.label.set_text(this.display);
+			var _idx2 = 0;
+			var _count2 = this.onchangeindex.listeners.length;
+			while(_idx2 < _count2) {
+				if(this.onchangeindex != null) {
+					var fn4 = this.onchangeindex.listeners[_idx2];
+					if(fn4 != null) {
+						fn4(this.index);
+					}
+				}
+				++_idx2;
+			}
+			if(this.onchangeindex != null) {
+				while(_count2 > 0) {
+					var fn5 = this.onchangeindex.listeners[_count2 - 1];
+					if(fn5 == null) {
+						this.onchangeindex.listeners.splice(_count2 - 1,1);
+					}
+					--_count2;
+				}
+			}
+			var _idx3 = 0;
+			var _count3 = this.onchange.listeners.length;
+			while(_idx3 < _count3) {
+				if(this.onchange != null) {
+					var fn6 = this.onchange.listeners[_idx3];
+					if(fn6 != null) {
+						fn6(this.edit,this.display,true);
+					}
+				}
+				++_idx3;
+			}
+			if(this.onchange != null) {
+				while(_count3 > 0) {
+					var fn7 = this.onchange.listeners[_count3 - 1];
+					if(fn7 == null) {
+						this.onchange.listeners.splice(_count3 - 1,1);
+					}
+					--_count3;
+				}
+			}
+			break;
+		case 6:
+			break;
+		case 7:
+			var _idx4 = 0;
+			var _count4 = this.oncommit.listeners.length;
+			while(_idx4 < _count4) {
+				if(this.oncommit != null) {
+					var fn8 = this.oncommit.listeners[_idx4];
+					if(fn8 != null) {
+						fn8(this.edit,this.display);
+					}
+				}
+				++_idx4;
+			}
+			if(this.oncommit != null) {
+				while(_count4 > 0) {
+					var fn9 = this.oncommit.listeners[_count4 - 1];
+					if(fn9 == null) {
+						this.oncommit.listeners.splice(_count4 - 1,1);
+					}
+					--_count4;
+				}
+			}
+			break;
+		case 8:
+			break;
+		}
+	}
+	,refresh: function(str,_from_typing,_emit) {
+		if(_emit == null) {
+			_emit = true;
+		}
+		if(_from_typing == null) {
+			_from_typing = true;
+		}
+		this.edit = str;
+		if(this.display_char != null) {
+			this.display = "";
+			var this1 = str;
+			var this2 = this1;
+			var _l = mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointCount(this2,0,str.length);
+			var _g1 = 0;
+			var _g = _l;
+			while(_g1 < _g) {
+				var i = _g1++;
+				this.display += this.display_char;
+			}
+		} else {
+			var cur = this.index;
+			var s = this.edit;
+			var index = 0;
+			var this3 = s;
+			var this4 = this3;
+			var this5 = this4;
+			var index1 = index;
+			var len = this5.length;
+			var i1 = 0;
+			while(i1 < 0 && index1 < len) {
+				var c = this5.charCodeAt(index1);
+				index1 += !(55296 <= c && c <= 56319) ? 1 : 2;
+				++i1;
+			}
+			var si = index1;
+			var ei;
+			if(cur == null) {
+				ei = s.length;
+			} else if(cur < 0) {
+				ei = si;
+			} else {
+				var this6 = s;
+				var this7 = this6;
+				var this8 = this7;
+				if(cur >= 0) {
+					var index2 = si;
+					var len1 = this8.length;
+					var i2 = 0;
+					while(i2 < cur && index2 < len1) {
+						var c1 = this8.charCodeAt(index2);
+						index2 += !(55296 <= c1 && c1 <= 56319) ? 1 : 2;
+						++i2;
+					}
+					ei = index2;
+				} else {
+					var index3 = si;
+					var count = 0;
+					while(count < -cur && 0 < index3) {
+						var c2 = this8.charCodeAt(index3 - 1);
+						index3 -= !(56320 <= c2 && c2 <= 57343) ? 1 : 2;
+						++count;
+					}
+					ei = index3;
+				}
+			}
+			var tmp = s.substring(si,ei) + this.composition;
+			var cur1 = this.index;
+			var s1 = this.edit;
+			var length = this.edit.length;
+			var index4 = cur1 >= 0 ? 0 : s1.length;
+			var this9 = s1;
+			var this10 = this9;
+			var this11 = this10;
+			var si1;
+			if(cur1 >= 0) {
+				var index5 = index4;
+				var len2 = this11.length;
+				var i3 = 0;
+				while(i3 < cur1 && index5 < len2) {
+					var c3 = this11.charCodeAt(index5);
+					index5 += !(55296 <= c3 && c3 <= 56319) ? 1 : 2;
+					++i3;
+				}
+				si1 = index5;
+			} else {
+				var index6 = index4;
+				var count1 = 0;
+				while(count1 < -cur1 && 0 < index6) {
+					var c4 = this11.charCodeAt(index6 - 1);
+					index6 -= !(56320 <= c4 && c4 <= 57343) ? 1 : 2;
+					++count1;
+				}
+				si1 = index6;
+			}
+			var ei1;
+			if(length == null) {
+				ei1 = s1.length;
+			} else if(length < 0) {
+				ei1 = si1;
+			} else {
+				var this12 = s1;
+				var this13 = this12;
+				var this14 = this13;
+				if(length >= 0) {
+					var index7 = si1;
+					var len3 = this14.length;
+					var i4 = 0;
+					while(i4 < length && index7 < len3) {
+						var c5 = this14.charCodeAt(index7);
+						index7 += !(55296 <= c5 && c5 <= 56319) ? 1 : 2;
+						++i4;
+					}
+					ei1 = index7;
+				} else {
+					var index8 = si1;
+					var count2 = 0;
+					while(count2 < -length && 0 < index8) {
+						var c6 = this14.charCodeAt(index8 - 1);
+						index8 -= !(56320 <= c6 && c6 <= 57343) ? 1 : 2;
+						++count2;
+					}
+					ei1 = index8;
+				}
+			}
+			this.display = tmp + s1.substring(si1,ei1);
+		}
+		this.label.set_text(this.display);
+		var _idx = 0;
+		var _count = this.onchangeindex.listeners.length;
+		while(_idx < _count) {
+			if(this.onchangeindex != null) {
+				var fn = this.onchangeindex.listeners[_idx];
+				if(fn != null) {
+					fn(this.index);
+				}
+			}
+			++_idx;
+		}
+		if(this.onchangeindex != null) {
+			while(_count > 0) {
+				var fn1 = this.onchangeindex.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onchangeindex.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+		if(_emit) {
+			var _idx1 = 0;
+			var _count1 = this.onchange.listeners.length;
+			while(_idx1 < _count1) {
+				if(this.onchange != null) {
+					var fn2 = this.onchange.listeners[_idx1];
+					if(fn2 != null) {
+						fn2(this.edit,this.display,_from_typing);
+					}
+				}
+				++_idx1;
+			}
+			if(this.onchange != null) {
+				while(_count1 > 0) {
+					var fn3 = this.onchange.listeners[_count1 - 1];
+					if(fn3 == null) {
+						this.onchange.listeners.splice(_count1 - 1,1);
+					}
+					--_count1;
+				}
+			}
+		}
+		return this.edit;
+	}
+	,get_text: function() {
+		return this.edit;
+	}
+	,get_display_text: function() {
+		return this.display;
+	}
+	,get_display_char: function() {
+		return this.display_char;
+	}
+	,set_text: function(v) {
+		var this1 = v;
+		var this2 = this1;
+		this.index = mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointCount(this2,0,v.length);
+		this.edit = v;
+		if(this.display_char != null) {
+			this.display = "";
+			var this3 = v;
+			var this4 = this3;
+			var _l = mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointCount(this4,0,v.length);
+			var _g1 = 0;
+			var _g = _l;
+			while(_g1 < _g) {
+				var i = _g1++;
+				this.display += this.display_char;
+			}
+		} else {
+			var cur = this.index;
+			var s = this.edit;
+			var index = 0;
+			var this5 = s;
+			var this6 = this5;
+			var this7 = this6;
+			var index1 = index;
+			var len = this7.length;
+			var i1 = 0;
+			while(i1 < 0 && index1 < len) {
+				var c = this7.charCodeAt(index1);
+				index1 += !(55296 <= c && c <= 56319) ? 1 : 2;
+				++i1;
+			}
+			var si = index1;
+			var ei;
+			if(cur == null) {
+				ei = s.length;
+			} else if(cur < 0) {
+				ei = si;
+			} else {
+				var this8 = s;
+				var this9 = this8;
+				var this10 = this9;
+				if(cur >= 0) {
+					var index2 = si;
+					var len1 = this10.length;
+					var i2 = 0;
+					while(i2 < cur && index2 < len1) {
+						var c1 = this10.charCodeAt(index2);
+						index2 += !(55296 <= c1 && c1 <= 56319) ? 1 : 2;
+						++i2;
+					}
+					ei = index2;
+				} else {
+					var index3 = si;
+					var count = 0;
+					while(count < -cur && 0 < index3) {
+						var c2 = this10.charCodeAt(index3 - 1);
+						index3 -= !(56320 <= c2 && c2 <= 57343) ? 1 : 2;
+						++count;
+					}
+					ei = index3;
+				}
+			}
+			var tmp = s.substring(si,ei) + this.composition;
+			var cur1 = this.index;
+			var s1 = this.edit;
+			var length = this.edit.length;
+			var index4 = cur1 >= 0 ? 0 : s1.length;
+			var this11 = s1;
+			var this12 = this11;
+			var this13 = this12;
+			var si1;
+			if(cur1 >= 0) {
+				var index5 = index4;
+				var len2 = this13.length;
+				var i3 = 0;
+				while(i3 < cur1 && index5 < len2) {
+					var c3 = this13.charCodeAt(index5);
+					index5 += !(55296 <= c3 && c3 <= 56319) ? 1 : 2;
+					++i3;
+				}
+				si1 = index5;
+			} else {
+				var index6 = index4;
+				var count1 = 0;
+				while(count1 < -cur1 && 0 < index6) {
+					var c4 = this13.charCodeAt(index6 - 1);
+					index6 -= !(56320 <= c4 && c4 <= 57343) ? 1 : 2;
+					++count1;
+				}
+				si1 = index6;
+			}
+			var ei1;
+			if(length == null) {
+				ei1 = s1.length;
+			} else if(length < 0) {
+				ei1 = si1;
+			} else {
+				var this14 = s1;
+				var this15 = this14;
+				var this16 = this15;
+				if(length >= 0) {
+					var index7 = si1;
+					var len3 = this16.length;
+					var i4 = 0;
+					while(i4 < length && index7 < len3) {
+						var c5 = this16.charCodeAt(index7);
+						index7 += !(55296 <= c5 && c5 <= 56319) ? 1 : 2;
+						++i4;
+					}
+					ei1 = index7;
+				} else {
+					var index8 = si1;
+					var count2 = 0;
+					while(count2 < -length && 0 < index8) {
+						var c6 = this16.charCodeAt(index8 - 1);
+						index8 -= !(56320 <= c6 && c6 <= 57343) ? 1 : 2;
+						++count2;
+					}
+					ei1 = index8;
+				}
+			}
+			this.display = tmp + s1.substring(si1,ei1);
+		}
+		this.label.set_text(this.display);
+		var _idx = 0;
+		var _count = this.onchangeindex.listeners.length;
+		while(_idx < _count) {
+			if(this.onchangeindex != null) {
+				var fn = this.onchangeindex.listeners[_idx];
+				if(fn != null) {
+					fn(this.index);
+				}
+			}
+			++_idx;
+		}
+		if(this.onchangeindex != null) {
+			while(_count > 0) {
+				var fn1 = this.onchangeindex.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onchangeindex.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+		var _idx1 = 0;
+		var _count1 = this.onchange.listeners.length;
+		while(_idx1 < _count1) {
+			if(this.onchange != null) {
+				var fn2 = this.onchange.listeners[_idx1];
+				if(fn2 != null) {
+					fn2(this.edit,this.display,false);
+				}
+			}
+			++_idx1;
+		}
+		if(this.onchange != null) {
+			while(_count1 > 0) {
+				var fn3 = this.onchange.listeners[_count1 - 1];
+				if(fn3 == null) {
+					this.onchange.listeners.splice(_count1 - 1,1);
+				}
+				--_count1;
+			}
+		}
+		return this.edit;
+	}
+	,set_display_char: function(v) {
+		if(v != null) {
+			var this1 = v;
+			var this2 = this1;
+			var this3 = this2;
+			var index = 0;
+			var len = this3.length;
+			var i = 0;
+			while(i < 0 && index < len) {
+				var c = this3.charCodeAt(index);
+				index += !(55296 <= c && c <= 56319) ? 1 : 2;
+				++i;
+			}
+			var i1 = index;
+			var this4 = v;
+			var this5 = this4;
+			var this6 = this5;
+			var c1 = this6.charCodeAt(i1);
+			var this7 = HxOverrides.substr(this6,i1,!(55296 <= c1 && c1 <= 56319) ? 1 : 2);
+			var this8 = this7;
+			this.display_char = this8;
+		} else {
+			this.display_char = v;
+		}
+		var str = this.edit;
+		this.edit = str;
+		if(this.display_char != null) {
+			this.display = "";
+			var this9 = str;
+			var this10 = this9;
+			var _l = mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointCount(this10,0,str.length);
+			var _g1 = 0;
+			var _g = _l;
+			while(_g1 < _g) {
+				var i2 = _g1++;
+				this.display += this.display_char;
+			}
+		} else {
+			var cur = this.index;
+			var s = this.edit;
+			var index1 = 0;
+			var this11 = s;
+			var this12 = this11;
+			var this13 = this12;
+			var index2 = index1;
+			var len1 = this13.length;
+			var i3 = 0;
+			while(i3 < 0 && index2 < len1) {
+				var c2 = this13.charCodeAt(index2);
+				index2 += !(55296 <= c2 && c2 <= 56319) ? 1 : 2;
+				++i3;
+			}
+			var si = index2;
+			var ei;
+			if(cur == null) {
+				ei = s.length;
+			} else if(cur < 0) {
+				ei = si;
+			} else {
+				var this14 = s;
+				var this15 = this14;
+				var this16 = this15;
+				if(cur >= 0) {
+					var index3 = si;
+					var len2 = this16.length;
+					var i4 = 0;
+					while(i4 < cur && index3 < len2) {
+						var c3 = this16.charCodeAt(index3);
+						index3 += !(55296 <= c3 && c3 <= 56319) ? 1 : 2;
+						++i4;
+					}
+					ei = index3;
+				} else {
+					var index4 = si;
+					var count = 0;
+					while(count < -cur && 0 < index4) {
+						var c4 = this16.charCodeAt(index4 - 1);
+						index4 -= !(56320 <= c4 && c4 <= 57343) ? 1 : 2;
+						++count;
+					}
+					ei = index4;
+				}
+			}
+			var tmp = s.substring(si,ei) + this.composition;
+			var cur1 = this.index;
+			var s1 = this.edit;
+			var length = this.edit.length;
+			var index5 = cur1 >= 0 ? 0 : s1.length;
+			var this17 = s1;
+			var this18 = this17;
+			var this19 = this18;
+			var si1;
+			if(cur1 >= 0) {
+				var index6 = index5;
+				var len3 = this19.length;
+				var i5 = 0;
+				while(i5 < cur1 && index6 < len3) {
+					var c5 = this19.charCodeAt(index6);
+					index6 += !(55296 <= c5 && c5 <= 56319) ? 1 : 2;
+					++i5;
+				}
+				si1 = index6;
+			} else {
+				var index7 = index5;
+				var count1 = 0;
+				while(count1 < -cur1 && 0 < index7) {
+					var c6 = this19.charCodeAt(index7 - 1);
+					index7 -= !(56320 <= c6 && c6 <= 57343) ? 1 : 2;
+					++count1;
+				}
+				si1 = index7;
+			}
+			var ei1;
+			if(length == null) {
+				ei1 = s1.length;
+			} else if(length < 0) {
+				ei1 = si1;
+			} else {
+				var this20 = s1;
+				var this21 = this20;
+				var this22 = this21;
+				if(length >= 0) {
+					var index8 = si1;
+					var len4 = this22.length;
+					var i6 = 0;
+					while(i6 < length && index8 < len4) {
+						var c7 = this22.charCodeAt(index8);
+						index8 += !(55296 <= c7 && c7 <= 56319) ? 1 : 2;
+						++i6;
+					}
+					ei1 = index8;
+				} else {
+					var index9 = si1;
+					var count2 = 0;
+					while(count2 < -length && 0 < index9) {
+						var c8 = this22.charCodeAt(index9 - 1);
+						index9 -= !(56320 <= c8 && c8 <= 57343) ? 1 : 2;
+						++count2;
+					}
+					ei1 = index9;
+				}
+			}
+			this.display = tmp + s1.substring(si1,ei1);
+		}
+		this.label.set_text(this.display);
+		var _idx = 0;
+		var _count = this.onchangeindex.listeners.length;
+		while(_idx < _count) {
+			if(this.onchangeindex != null) {
+				var fn = this.onchangeindex.listeners[_idx];
+				if(fn != null) {
+					fn(this.index);
+				}
+			}
+			++_idx;
+		}
+		if(this.onchangeindex != null) {
+			while(_count > 0) {
+				var fn1 = this.onchangeindex.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onchangeindex.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+		var _idx1 = 0;
+		var _count1 = this.onchange.listeners.length;
+		while(_idx1 < _count1) {
+			if(this.onchange != null) {
+				var fn2 = this.onchange.listeners[_idx1];
+				if(fn2 != null) {
+					fn2(this.edit,this.display,false);
+				}
+			}
+			++_idx1;
+		}
+		if(this.onchange != null) {
+			while(_count1 > 0) {
+				var fn3 = this.onchange.listeners[_count1 - 1];
+				if(fn3 == null) {
+					this.onchange.listeners.splice(_count1 - 1,1);
+				}
+				--_count1;
+			}
+		}
+		var _idx2 = 0;
+		var _count2 = this.onchangeindex.listeners.length;
+		while(_idx2 < _count2) {
+			if(this.onchangeindex != null) {
+				var fn4 = this.onchangeindex.listeners[_idx2];
+				if(fn4 != null) {
+					fn4(this.index);
+				}
+			}
+			++_idx2;
+		}
+		if(this.onchangeindex != null) {
+			while(_count2 > 0) {
+				var fn5 = this.onchangeindex.listeners[_count2 - 1];
+				if(fn5 == null) {
+					this.onchangeindex.listeners.splice(_count2 - 1,1);
+				}
+				--_count2;
+			}
+		}
+		return this.display_char;
+	}
+	,move: function(amount) {
+		if(amount == null) {
+			amount = -1;
+		}
+		var value = this.index += amount;
+		var s = this.edit;
+		var this1 = s;
+		var this2 = this1;
+		var b = mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointCount(this2,0,s.length);
+		this.index = (value < 0 ? 0 : value > b ? b : value) | 0;
+		var _idx = 0;
+		var _count = this.onchangeindex.listeners.length;
+		while(_idx < _count) {
+			if(this.onchangeindex != null) {
+				var fn = this.onchangeindex.listeners[_idx];
+				if(fn != null) {
+					fn(this.index);
+				}
+			}
+			++_idx;
+		}
+		if(this.onchangeindex != null) {
+			while(_count > 0) {
+				var fn1 = this.onchangeindex.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onchangeindex.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+	}
+	,cut: function(start,count) {
+		if(count == null) {
+			count = 1;
+		}
+		if(start == null) {
+			start = 0;
+		}
+		var s = this.edit;
+		var length = this.edit.length;
+		var index = start >= 0 ? 0 : s.length;
+		var this1 = s;
+		var this2 = this1;
+		var this3 = this2;
+		var si;
+		if(start >= 0) {
+			var index1 = index;
+			var len = this3.length;
+			var i = 0;
+			while(i < start && index1 < len) {
+				var c = this3.charCodeAt(index1);
+				index1 += !(55296 <= c && c <= 56319) ? 1 : 2;
+				++i;
+			}
+			si = index1;
+		} else {
+			var index2 = index;
+			var count1 = 0;
+			while(count1 < -start && 0 < index2) {
+				var c1 = this3.charCodeAt(index2 - 1);
+				index2 -= !(56320 <= c1 && c1 <= 57343) ? 1 : 2;
+				++count1;
+			}
+			si = index2;
+		}
+		var ei;
+		if(length == null) {
+			ei = s.length;
+		} else if(length < 0) {
+			ei = si;
+		} else {
+			var this4 = s;
+			var this5 = this4;
+			var this6 = this5;
+			if(length >= 0) {
+				var index3 = si;
+				var len1 = this6.length;
+				var i1 = 0;
+				while(i1 < length && index3 < len1) {
+					var c2 = this6.charCodeAt(index3);
+					index3 += !(55296 <= c2 && c2 <= 56319) ? 1 : 2;
+					++i1;
+				}
+				ei = index3;
+			} else {
+				var index4 = si;
+				var count2 = 0;
+				while(count2 < -length && 0 < index4) {
+					var c3 = this6.charCodeAt(index4 - 1);
+					index4 -= !(56320 <= c3 && c3 <= 57343) ? 1 : 2;
+					++count2;
+				}
+				ei = index4;
+			}
+		}
+		var a = s.substring(si,ei);
+		var s1 = this.edit;
+		var index5 = 0;
+		var this7 = s1;
+		var this8 = this7;
+		var this9 = this8;
+		var index6 = index5;
+		var len2 = this9.length;
+		var i2 = 0;
+		while(i2 < 0 && index6 < len2) {
+			var c4 = this9.charCodeAt(index6);
+			index6 += !(55296 <= c4 && c4 <= 56319) ? 1 : 2;
+			++i2;
+		}
+		var si1 = index6;
+		var ei1;
+		if(start == null) {
+			ei1 = s1.length;
+		} else if(start < 0) {
+			ei1 = si1;
+		} else {
+			var this10 = s1;
+			var this11 = this10;
+			var this12 = this11;
+			if(start >= 0) {
+				var index7 = si1;
+				var len3 = this12.length;
+				var i3 = 0;
+				while(i3 < start && index7 < len3) {
+					var c5 = this12.charCodeAt(index7);
+					index7 += !(55296 <= c5 && c5 <= 56319) ? 1 : 2;
+					++i3;
+				}
+				ei1 = index7;
+			} else {
+				var index8 = si1;
+				var count3 = 0;
+				while(count3 < -start && 0 < index8) {
+					var c6 = this12.charCodeAt(index8 - 1);
+					index8 -= !(56320 <= c6 && c6 <= 57343) ? 1 : 2;
+					++count3;
+				}
+				ei1 = index8;
+			}
+		}
+		var str = s1.substring(si1,ei1);
+		var this13 = a;
+		var this14 = this13;
+		var length1 = mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointCount(this14,0,a.length);
+		var index9 = count >= 0 ? 0 : a.length;
+		var this15 = a;
+		var this16 = this15;
+		var this17 = this16;
+		var si2;
+		if(count >= 0) {
+			var index10 = index9;
+			var len4 = this17.length;
+			var i4 = 0;
+			while(i4 < count && index10 < len4) {
+				var c7 = this17.charCodeAt(index10);
+				index10 += !(55296 <= c7 && c7 <= 56319) ? 1 : 2;
+				++i4;
+			}
+			si2 = index10;
+		} else {
+			var index11 = index9;
+			var count4 = 0;
+			while(count4 < -count && 0 < index11) {
+				var c8 = this17.charCodeAt(index11 - 1);
+				index11 -= !(56320 <= c8 && c8 <= 57343) ? 1 : 2;
+				++count4;
+			}
+			si2 = index11;
+		}
+		var ei2;
+		if(length1 == null) {
+			ei2 = a.length;
+		} else if(length1 < 0) {
+			ei2 = si2;
+		} else {
+			var this18 = a;
+			var this19 = this18;
+			var this20 = this19;
+			if(length1 >= 0) {
+				var index12 = si2;
+				var len5 = this20.length;
+				var i5 = 0;
+				while(i5 < length1 && index12 < len5) {
+					var c9 = this20.charCodeAt(index12);
+					index12 += !(55296 <= c9 && c9 <= 56319) ? 1 : 2;
+					++i5;
+				}
+				ei2 = index12;
+			} else {
+				var index13 = si2;
+				var count5 = 0;
+				while(count5 < -length1 && 0 < index13) {
+					var c10 = this20.charCodeAt(index13 - 1);
+					index13 -= !(56320 <= c10 && c10 <= 57343) ? 1 : 2;
+					++count5;
+				}
+				ei2 = index13;
+			}
+		}
+		var str1 = str + a.substring(si2,ei2);
+		this.edit = str1;
+		if(this.display_char != null) {
+			this.display = "";
+			var this21 = str1;
+			var this22 = this21;
+			var _l = mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointCount(this22,0,str1.length);
+			var _g1 = 0;
+			var _g = _l;
+			while(_g1 < _g) {
+				var i6 = _g1++;
+				this.display += this.display_char;
+			}
+		} else {
+			var cur = this.index;
+			var s2 = this.edit;
+			var index14 = 0;
+			var this23 = s2;
+			var this24 = this23;
+			var this25 = this24;
+			var index15 = index14;
+			var len6 = this25.length;
+			var i7 = 0;
+			while(i7 < 0 && index15 < len6) {
+				var c11 = this25.charCodeAt(index15);
+				index15 += !(55296 <= c11 && c11 <= 56319) ? 1 : 2;
+				++i7;
+			}
+			var si3 = index15;
+			var ei3;
+			if(cur == null) {
+				ei3 = s2.length;
+			} else if(cur < 0) {
+				ei3 = si3;
+			} else {
+				var this26 = s2;
+				var this27 = this26;
+				var this28 = this27;
+				if(cur >= 0) {
+					var index16 = si3;
+					var len7 = this28.length;
+					var i8 = 0;
+					while(i8 < cur && index16 < len7) {
+						var c12 = this28.charCodeAt(index16);
+						index16 += !(55296 <= c12 && c12 <= 56319) ? 1 : 2;
+						++i8;
+					}
+					ei3 = index16;
+				} else {
+					var index17 = si3;
+					var count6 = 0;
+					while(count6 < -cur && 0 < index17) {
+						var c13 = this28.charCodeAt(index17 - 1);
+						index17 -= !(56320 <= c13 && c13 <= 57343) ? 1 : 2;
+						++count6;
+					}
+					ei3 = index17;
+				}
+			}
+			var tmp = s2.substring(si3,ei3) + this.composition;
+			var cur1 = this.index;
+			var s3 = this.edit;
+			var length2 = this.edit.length;
+			var index18 = cur1 >= 0 ? 0 : s3.length;
+			var this29 = s3;
+			var this30 = this29;
+			var this31 = this30;
+			var si4;
+			if(cur1 >= 0) {
+				var index19 = index18;
+				var len8 = this31.length;
+				var i9 = 0;
+				while(i9 < cur1 && index19 < len8) {
+					var c14 = this31.charCodeAt(index19);
+					index19 += !(55296 <= c14 && c14 <= 56319) ? 1 : 2;
+					++i9;
+				}
+				si4 = index19;
+			} else {
+				var index20 = index18;
+				var count7 = 0;
+				while(count7 < -cur1 && 0 < index20) {
+					var c15 = this31.charCodeAt(index20 - 1);
+					index20 -= !(56320 <= c15 && c15 <= 57343) ? 1 : 2;
+					++count7;
+				}
+				si4 = index20;
+			}
+			var ei4;
+			if(length2 == null) {
+				ei4 = s3.length;
+			} else if(length2 < 0) {
+				ei4 = si4;
+			} else {
+				var this32 = s3;
+				var this33 = this32;
+				var this34 = this33;
+				if(length2 >= 0) {
+					var index21 = si4;
+					var len9 = this34.length;
+					var i10 = 0;
+					while(i10 < length2 && index21 < len9) {
+						var c16 = this34.charCodeAt(index21);
+						index21 += !(55296 <= c16 && c16 <= 56319) ? 1 : 2;
+						++i10;
+					}
+					ei4 = index21;
+				} else {
+					var index22 = si4;
+					var count8 = 0;
+					while(count8 < -length2 && 0 < index22) {
+						var c17 = this34.charCodeAt(index22 - 1);
+						index22 -= !(56320 <= c17 && c17 <= 57343) ? 1 : 2;
+						++count8;
+					}
+					ei4 = index22;
+				}
+			}
+			this.display = tmp + s3.substring(si4,ei4);
+		}
+		this.label.set_text(this.display);
+		var _idx = 0;
+		var _count = this.onchangeindex.listeners.length;
+		while(_idx < _count) {
+			if(this.onchangeindex != null) {
+				var fn = this.onchangeindex.listeners[_idx];
+				if(fn != null) {
+					fn(this.index);
+				}
+			}
+			++_idx;
+		}
+		if(this.onchangeindex != null) {
+			while(_count > 0) {
+				var fn1 = this.onchangeindex.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onchangeindex.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+		var _idx1 = 0;
+		var _count1 = this.onchange.listeners.length;
+		while(_idx1 < _count1) {
+			if(this.onchange != null) {
+				var fn2 = this.onchange.listeners[_idx1];
+				if(fn2 != null) {
+					fn2(this.edit,this.display,true);
+				}
+			}
+			++_idx1;
+		}
+		if(this.onchange != null) {
+			while(_count1 > 0) {
+				var fn3 = this.onchange.listeners[_count1 - 1];
+				if(fn3 == null) {
+					this.onchange.listeners.splice(_count1 - 1,1);
+				}
+				--_count1;
+			}
+		}
+		return this.edit;
+	}
+	,after: function(cur) {
+		if(cur == null) {
+			cur = 0;
+		}
+		var s = this.edit;
+		var length = this.edit.length;
+		var index = cur >= 0 ? 0 : s.length;
+		var this1 = s;
+		var this2 = this1;
+		var this3 = this2;
+		var si;
+		if(cur >= 0) {
+			var index1 = index;
+			var len = this3.length;
+			var i = 0;
+			while(i < cur && index1 < len) {
+				var c = this3.charCodeAt(index1);
+				index1 += !(55296 <= c && c <= 56319) ? 1 : 2;
+				++i;
+			}
+			si = index1;
+		} else {
+			var index2 = index;
+			var count = 0;
+			while(count < -cur && 0 < index2) {
+				var c1 = this3.charCodeAt(index2 - 1);
+				index2 -= !(56320 <= c1 && c1 <= 57343) ? 1 : 2;
+				++count;
+			}
+			si = index2;
+		}
+		var ei;
+		if(length == null) {
+			ei = s.length;
+		} else if(length < 0) {
+			ei = si;
+		} else {
+			var this4 = s;
+			var this5 = this4;
+			var this6 = this5;
+			if(length >= 0) {
+				var index3 = si;
+				var len1 = this6.length;
+				var i1 = 0;
+				while(i1 < length && index3 < len1) {
+					var c2 = this6.charCodeAt(index3);
+					index3 += !(55296 <= c2 && c2 <= 56319) ? 1 : 2;
+					++i1;
+				}
+				ei = index3;
+			} else {
+				var index4 = si;
+				var count1 = 0;
+				while(count1 < -length && 0 < index4) {
+					var c3 = this6.charCodeAt(index4 - 1);
+					index4 -= !(56320 <= c3 && c3 <= 57343) ? 1 : 2;
+					++count1;
+				}
+				ei = index4;
+			}
+		}
+		return s.substring(si,ei);
+	}
+	,before: function(cur) {
+		if(cur == null) {
+			cur = 0;
+		}
+		var s = this.edit;
+		var index = 0;
+		var this1 = s;
+		var this2 = this1;
+		var this3 = this2;
+		var index1 = index;
+		var len = this3.length;
+		var i = 0;
+		while(i < 0 && index1 < len) {
+			var c = this3.charCodeAt(index1);
+			index1 += !(55296 <= c && c <= 56319) ? 1 : 2;
+			++i;
+		}
+		var si = index1;
+		var ei;
+		if(cur == null) {
+			ei = s.length;
+		} else if(cur < 0) {
+			ei = si;
+		} else {
+			var this4 = s;
+			var this5 = this4;
+			var this6 = this5;
+			if(cur >= 0) {
+				var index2 = si;
+				var len1 = this6.length;
+				var i1 = 0;
+				while(i1 < cur && index2 < len1) {
+					var c1 = this6.charCodeAt(index2);
+					index2 += !(55296 <= c1 && c1 <= 56319) ? 1 : 2;
+					++i1;
+				}
+				ei = index2;
+			} else {
+				var index3 = si;
+				var count = 0;
+				while(count < -cur && 0 < index3) {
+					var c2 = this6.charCodeAt(index3 - 1);
+					index3 -= !(56320 <= c2 && c2 <= 57343) ? 1 : 2;
+					++count;
+				}
+				ei = index3;
+			}
+		}
+		return s.substring(si,ei);
+	}
+	,after_display: function(cur) {
+		if(cur == null) {
+			cur = 0;
+		}
+		var s = this.display;
+		var length = this.display.length;
+		var index = cur >= 0 ? 0 : s.length;
+		var this1 = s;
+		var this2 = this1;
+		var this3 = this2;
+		var si;
+		if(cur >= 0) {
+			var index1 = index;
+			var len = this3.length;
+			var i = 0;
+			while(i < cur && index1 < len) {
+				var c = this3.charCodeAt(index1);
+				index1 += !(55296 <= c && c <= 56319) ? 1 : 2;
+				++i;
+			}
+			si = index1;
+		} else {
+			var index2 = index;
+			var count = 0;
+			while(count < -cur && 0 < index2) {
+				var c1 = this3.charCodeAt(index2 - 1);
+				index2 -= !(56320 <= c1 && c1 <= 57343) ? 1 : 2;
+				++count;
+			}
+			si = index2;
+		}
+		var ei;
+		if(length == null) {
+			ei = s.length;
+		} else if(length < 0) {
+			ei = si;
+		} else {
+			var this4 = s;
+			var this5 = this4;
+			var this6 = this5;
+			if(length >= 0) {
+				var index3 = si;
+				var len1 = this6.length;
+				var i1 = 0;
+				while(i1 < length && index3 < len1) {
+					var c2 = this6.charCodeAt(index3);
+					index3 += !(55296 <= c2 && c2 <= 56319) ? 1 : 2;
+					++i1;
+				}
+				ei = index3;
+			} else {
+				var index4 = si;
+				var count1 = 0;
+				while(count1 < -length && 0 < index4) {
+					var c3 = this6.charCodeAt(index4 - 1);
+					index4 -= !(56320 <= c3 && c3 <= 57343) ? 1 : 2;
+					++count1;
+				}
+				ei = index4;
+			}
+		}
+		return s.substring(si,ei);
+	}
+	,before_display: function(cur) {
+		if(cur == null) {
+			cur = 0;
+		}
+		var s = this.display;
+		var index = 0;
+		var this1 = s;
+		var this2 = this1;
+		var this3 = this2;
+		var index1 = index;
+		var len = this3.length;
+		var i = 0;
+		while(i < 0 && index1 < len) {
+			var c = this3.charCodeAt(index1);
+			index1 += !(55296 <= c && c <= 56319) ? 1 : 2;
+			++i;
+		}
+		var si = index1;
+		var ei;
+		if(cur == null) {
+			ei = s.length;
+		} else if(cur < 0) {
+			ei = si;
+		} else {
+			var this4 = s;
+			var this5 = this4;
+			var this6 = this5;
+			if(cur >= 0) {
+				var index2 = si;
+				var len1 = this6.length;
+				var i1 = 0;
+				while(i1 < cur && index2 < len1) {
+					var c1 = this6.charCodeAt(index2);
+					index2 += !(55296 <= c1 && c1 <= 56319) ? 1 : 2;
+					++i1;
+				}
+				ei = index2;
+			} else {
+				var index3 = si;
+				var count = 0;
+				while(count < -cur && 0 < index3) {
+					var c2 = this6.charCodeAt(index3 - 1);
+					index3 -= !(56320 <= c2 && c2 <= 57343) ? 1 : 2;
+					++count;
+				}
+				ei = index3;
+			}
+		}
+		return s.substring(si,ei);
+	}
+	,update_cur: function() {
+		var _idx = 0;
+		var _count = this.onchangeindex.listeners.length;
+		while(_idx < _count) {
+			if(this.onchangeindex != null) {
+				var fn = this.onchangeindex.listeners[_idx];
+				if(fn != null) {
+					fn(this.index);
+				}
+			}
+			++_idx;
+		}
+		if(this.onchangeindex != null) {
+			while(_count > 0) {
+				var fn1 = this.onchangeindex.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onchangeindex.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+	}
+	,__class__: mint_TextEdit
+	,__properties__: $extend(mint_Control.prototype.__properties__,{set_display_char:"set_display_char",get_display_char:"get_display_char",get_display_text:"get_display_text",set_text:"set_text",get_text:"get_text"})
+});
+var mint_Window = function(_options) {
+	this.pre_resize = true;
+	this.pre_h_min = 0.0;
+	this.pre_h = 0.0;
+	this.collapsed = false;
+	this.resize_y = 0.0;
+	this.resize_x = 0.0;
+	this.resizing = false;
+	this.ready = false;
+	this.title_height = 22;
+	this.title_margin_right = 4;
+	this.title_margin_left = 2;
+	this.title_margin_top = 2;
+	this.drag_y = 0;
+	this.drag_x = 0;
+	this.dragging = false;
+	this.collapsible = false;
+	this.resizable = true;
+	this.moveable = true;
+	this.focusable = true;
+	this.closable = true;
+	this.options = _options;
+	this.onclose = new mint_core_Signal();
+	this.oncollapse = new mint_core_Signal();
+	if(this.options.name == null) {
+		var tmp = mint_types_Helper.uniqueid();
+		this.options.name = "window." + tmp;
+	}
+	if(this.options.mouse_input == null) {
+		this.options.mouse_input = true;
+	}
+	mint_Control.call(this,this.options);
+	if(this.options.moveable == null) {
+		this.options.moveable = true;
+	}
+	this.moveable = this.options.moveable;
+	if(this.options.resizable == null) {
+		this.options.resizable = true;
+	}
+	this.resizable = this.options.resizable;
+	if(this.options.closable == null) {
+		this.options.closable = true;
+	}
+	this.closable = this.options.closable;
+	if(this.options.focusable == null) {
+		this.options.focusable = true;
+	}
+	this.focusable = this.options.focusable;
+	if(this.options.collapsible == null) {
+		this.options.collapsible = false;
+	}
+	this.collapsible = this.options.collapsible;
+	if(this.options.title_height == null) {
+		this.options.title_height = 22;
+	}
+	this.title_height = this.options.title_height;
+	if(this.options.title_margin_left == null) {
+		this.options.title_margin_left = 2;
+	}
+	this.title_margin_left = this.options.title_margin_left;
+	if(this.options.title_margin_top == null) {
+		this.options.title_margin_top = 2;
+	}
+	this.title_margin_top = this.options.title_margin_top;
+	if(this.options.title_margin_right == null) {
+		this.options.title_margin_right = 4;
+	}
+	this.title_margin_right = this.options.title_margin_right;
+	this.resize_handle = new mint_Control({ parent : this, x : this.w - 24, y : this.h - 24, w : 24, h : 24, name : this.name + ".resize_handle", internal_visible : this.options.visible});
+	this.resize_handle.mouse_input = this.resizable;
+	this.resize_handle.onmousedown.listen($bind(this,this.on_resize_down));
+	this.resize_handle.onmouseup.listen($bind(this,this.on_resize_up));
+	this.title = new mint_Label({ parent : this, x : this.title_margin_left, y : this.title_margin_top, w : this.w - this.title_margin_right, h : this.title_height, text : this.options.title, align : 3, align_vertical : 3, text_size : this.options.text_size, options : this.options.options.label, name : this.name + ".title", internal_visible : this.options.visible});
+	this.close_handle = new mint_Control({ parent : this, x : this.w - this.title_margin_right - 24, y : this.title_margin_top, w : 22, h : this.title_height, name : this.name + ".close", options : this.options.options.close_handle, internal_visible : this.options.visible});
+	this.ready = true;
+	this.close_handle.mouse_input = this.closable;
+	if(!this.closable) {
+		this.close_handle.set_visible(false);
+	} else {
+		this.close_handle.onmousedown.listen($bind(this,this.on_close));
+	}
+	this.collapse_handle = new mint_Control({ parent : this, x : this.closable ? this.w - this.title_margin_right - 48 : this.w - this.title_margin_right - 24, y : this.title_margin_top, w : 22, h : this.title_height, name : this.name + ".collapse", options : this.options.options.collapse_handle, internal_visible : this.options.visible});
+	this.collapse_handle.mouse_input = this.collapsible;
+	if(!this.collapsible) {
+		this.collapse_handle.set_visible(false);
+	} else {
+		this.collapse_handle.onmousedown.listen($bind(this,this.on_collapse));
+	}
+	this.renderer = this.rendering.get(mint_Window,this);
+	var _idx = 0;
+	var _count = this.oncreate.listeners.length;
+	while(_idx < _count) {
+		if(this.oncreate != null) {
+			var fn = this.oncreate.listeners[_idx];
+			if(fn != null) {
+				fn();
+			}
+		}
+		++_idx;
+	}
+	if(this.oncreate != null) {
+		while(_count > 0) {
+			var fn1 = this.oncreate.listeners[_count - 1];
+			if(fn1 == null) {
+				this.oncreate.listeners.splice(_count - 1,1);
+			}
+			--_count;
+		}
+	}
+};
+$hxClasses["mint.Window"] = mint_Window;
+mint_Window.__name__ = ["mint","Window"];
+mint_Window.__super__ = mint_Control;
+mint_Window.prototype = $extend(mint_Control.prototype,{
+	on_resize_up: function(e,_) {
+		if(!this.resizable) {
+			return;
+		}
+		if(this.collapsed) {
+			return;
+		}
+		this.resizing = false;
+		var _this = this.resize_handle;
+		if(_this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + _this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		if(_this.canvas != _this) {
+			if(_this.canvas.get_captured() == _this) {
+				_this.canvas.set_captured(null);
+				var _idx = 0;
+				var _count = _this.oncaptured.listeners.length;
+				while(_idx < _count) {
+					if(_this.oncaptured != null) {
+						var fn = _this.oncaptured.listeners[_idx];
+						if(fn != null) {
+							fn(false);
+						}
+					}
+					++_idx;
+				}
+				if(_this.oncaptured != null) {
+					while(_count > 0) {
+						var fn1 = _this.oncaptured.listeners[_count - 1];
+						if(fn1 == null) {
+							_this.oncaptured.listeners.splice(_count - 1,1);
+						}
+						--_count;
+					}
+				}
+			}
+		}
+	}
+	,on_resize_down: function(e,_) {
+		if(!this.resizable) {
+			return;
+		}
+		if(this.collapsed) {
+			return;
+		}
+		if(this.resizing) {
+			return;
+		}
+		this.resizing = true;
+		this.resize_x = e.x;
+		this.resize_y = e.y;
+		var _this = this.resize_handle;
+		if(_this.destroyed != false) {
+			throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + _this.name + " was already destroyed but is being interacted with") + " )")));
+		}
+		if(_this.canvas != _this) {
+			var _pre = _this.canvas.get_captured() == _this;
+			_this.canvas.set_captured(_this);
+			if(!_pre) {
+				var _idx = 0;
+				var _count = _this.oncaptured.listeners.length;
+				while(_idx < _count) {
+					if(_this.oncaptured != null) {
+						var fn = _this.oncaptured.listeners[_idx];
+						if(fn != null) {
+							fn(true);
+						}
+					}
+					++_idx;
+				}
+				if(_this.oncaptured != null) {
+					while(_count > 0) {
+						var fn1 = _this.oncaptured.listeners[_count - 1];
+						if(fn1 == null) {
+							_this.oncaptured.listeners.splice(_count - 1,1);
+						}
+						--_count;
+					}
+				}
+			}
+		}
+		e.bubble = false;
+	}
+	,on_collapse: function(e,_) {
+		if(!this.collapsible) {
+			return;
+		}
+		this.collapsed = !this.collapsed;
+		if(this.collapsed == true) {
+			this.pre_resize = this.resize_handle.visible;
+			this.pre_h = this.h;
+			this.pre_h_min = this.h_min;
+			var _g = 0;
+			var _g1 = this.children;
+			while(_g < _g1.length) {
+				var child = _g1[_g];
+				++_g;
+				if(child == this.title) {
+					continue;
+				}
+				if(child == this.collapse_handle) {
+					continue;
+				}
+				if(child == this.close_handle) {
+					continue;
+				}
+				if(child.destroyed != false) {
+					throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + child.name + " was already destroyed but is being interacted with") + " )")));
+				}
+				child.update_vis_state = false;
+				child.set_visible(false);
+				child.update_vis_state = true;
+			}
+			this.set_h_min(this.title.h + 6);
+			this.set_h(this.title.h);
+		} else {
+			var _g2 = 0;
+			var _g11 = this.children;
+			while(_g2 < _g11.length) {
+				var child1 = _g11[_g2];
+				++_g2;
+				if(child1 == this.title) {
+					continue;
+				}
+				if(child1 == this.collapse_handle) {
+					continue;
+				}
+				if(child1 == this.close_handle) {
+					continue;
+				}
+				if(child1.destroyed != false) {
+					throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + child1.name + " was already destroyed but is being interacted with") + " )")));
+				}
+				child1.update_vis_state = false;
+				child1.set_visible(true);
+				child1.update_vis_state = true;
+			}
+			this.set_h_min(this.pre_h_min);
+			this.set_h(this.pre_h);
+		}
+		var _idx = 0;
+		var _count = this.oncollapse.listeners.length;
+		while(_idx < _count) {
+			if(this.oncollapse != null) {
+				var fn = this.oncollapse.listeners[_idx];
+				if(fn != null) {
+					fn(this.collapsed);
+				}
+			}
+			++_idx;
+		}
+		if(this.oncollapse != null) {
+			while(_count > 0) {
+				var fn1 = this.oncollapse.listeners[_count - 1];
+				if(fn1 == null) {
+					this.oncollapse.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+		e.bubble = false;
+	}
+	,on_close: function(e,_) {
+		var _idx = 0;
+		var _count = this.onclose.listeners.length;
+		while(_idx < _count) {
+			if(this.onclose != null) {
+				var fn = this.onclose.listeners[_idx];
+				if(fn != null) {
+					fn();
+				}
+			}
+			++_idx;
+		}
+		if(this.onclose != null) {
+			while(_count > 0) {
+				var fn1 = this.onclose.listeners[_count - 1];
+				if(fn1 == null) {
+					this.onclose.listeners.splice(_count - 1,1);
+				}
+				--_count;
+			}
+		}
+		if(this.closable) {
+			this.close();
+		}
+	}
+	,close: function() {
+		this.set_visible(false);
+	}
+	,open: function() {
+		this.set_visible(true);
+	}
+	,destroy: function() {
+		mint_Control.prototype.destroy.call(this);
+		var _this = this.onclose;
+		_this.listeners = null;
+		_this.listeners = [];
+		this.onclose = null;
+		var _this1 = this.oncollapse;
+		_this1.listeners = null;
+		_this1.listeners = [];
+		this.oncollapse = null;
+	}
+	,add: function(child) {
+		mint_Control.prototype.add.call(this,child);
+		if(this.ready && child != this.resize_handle) {
+			this.add(this.resize_handle);
+		}
+	}
+	,mousemove: function(e) {
+		if(this.resizing) {
+			var _dx = e.x - this.resize_x;
+			var _dy = e.y - this.resize_y;
+			var ww = this.w + _dx;
+			var hh = this.h + _dy;
+			var resized = false;
+			if((ww >= this.w_min || ww <= this.w_max) && e.x >= this.x) {
+				this.resize_x = e.x;
+				resized = true;
+			}
+			if((hh >= this.h_min || hh <= this.h_max) && e.y >= this.y) {
+				this.resize_y = e.y;
+				resized = true;
+			}
+			if(resized) {
+				this.set_size(ww,hh);
+			}
+		} else if(this.dragging) {
+			var _dx1 = e.x - this.drag_x;
+			var _dy1 = e.y - this.drag_y;
+			this.drag_x = e.x;
+			this.drag_y = e.y;
+			this.set_pos(this.x + _dx1,this.y + _dy1);
+		} else {
+			mint_Control.prototype.mousemove.call(this,e);
+		}
+	}
+	,mousedown: function(e) {
+		if(this.close_handle.contains(e.x,e.y) && this.closable) {
+			return;
+		}
+		if(this.collapse_handle.contains(e.x,e.y) && this.collapsible) {
+			return;
+		}
+		var in_title = this.title.contains(e.x,e.y);
+		if(!in_title) {
+			mint_Control.prototype.mousedown.call(this,e);
+		}
+		if(this.focusable) {
+			this.canvas.bring_to_front(this);
+		}
+		if(this.moveable && in_title) {
+			this.dragging = true;
+			this.drag_x = e.x;
+			this.drag_y = e.y;
+			if(this.destroyed != false) {
+				throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+			}
+			if(this.canvas != this) {
+				var _pre = this.canvas.get_captured() == this;
+				this.canvas.set_captured(this);
+				if(!_pre) {
+					var _idx = 0;
+					var _count = this.oncaptured.listeners.length;
+					while(_idx < _count) {
+						if(this.oncaptured != null) {
+							var fn = this.oncaptured.listeners[_idx];
+							if(fn != null) {
+								fn(true);
+							}
+						}
+						++_idx;
+					}
+					if(this.oncaptured != null) {
+						while(_count > 0) {
+							var fn1 = this.oncaptured.listeners[_count - 1];
+							if(fn1 == null) {
+								this.oncaptured.listeners.splice(_count - 1,1);
+							}
+							--_count;
+						}
+					}
+				}
+			}
+		}
+	}
+	,mouseup: function(e) {
+		mint_Control.prototype.mouseup.call(this,e);
+		if(this.dragging) {
+			this.dragging = false;
+			if(this.destroyed != false) {
+				throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + this.name + " was already destroyed but is being interacted with") + " )")));
+			}
+			if(this.canvas != this) {
+				if(this.canvas.get_captured() == this) {
+					this.canvas.set_captured(null);
+					var _idx = 0;
+					var _count = this.oncaptured.listeners.length;
+					while(_idx < _count) {
+						if(this.oncaptured != null) {
+							var fn = this.oncaptured.listeners[_idx];
+							if(fn != null) {
+								fn(false);
+							}
+						}
+						++_idx;
+					}
+					if(this.oncaptured != null) {
+						while(_count > 0) {
+							var fn1 = this.oncaptured.listeners[_count - 1];
+							if(fn1 == null) {
+								this.oncaptured.listeners.splice(_count - 1,1);
+							}
+							--_count;
+						}
+					}
+				}
+			}
+		}
+	}
+	,bounds_changed: function(_dx,_dy,_dw,_dh) {
+		if(_dh == null) {
+			_dh = 0.0;
+		}
+		if(_dw == null) {
+			_dw = 0.0;
+		}
+		if(_dy == null) {
+			_dy = 0.0;
+		}
+		if(_dx == null) {
+			_dx = 0.0;
+		}
+		mint_Control.prototype.bounds_changed.call(this,_dx,_dy,_dw,_dh);
+		if(this.close_handle != null) {
+			this.close_handle.set_x_local(this.w - this.title_margin_right - 24);
+		}
+		if(this.collapse_handle != null) {
+			this.collapse_handle.set_x_local(this.closable ? this.w - this.title_margin_right - 48 : this.w - this.title_margin_right - 24);
+		}
+		if(this.title != null) {
+			this.title.set_w(this.w - this.title_margin_right);
+		}
+		if(this.resize_handle != null) {
+			this.resize_handle.set_pos(this.x + this.w - 24,this.y + this.h - 24);
+		}
+	}
+	,__class__: mint_Window
+});
+var mint_core_Macros = function() { };
+$hxClasses["mint.core.Macros"] = mint_core_Macros;
+mint_core_Macros.__name__ = ["mint","core","Macros"];
+var mint_core_DebugError = $hxClasses["mint.core.DebugError"] = { __ename__ : ["mint","core","DebugError"], __constructs__ : ["assertion","null_assertion"] };
+mint_core_DebugError.assertion = function(expr) { var $x = ["assertion",0,expr]; $x.__enum__ = mint_core_DebugError; $x.toString = $estr; return $x; };
+mint_core_DebugError.null_assertion = function(expr) { var $x = ["null_assertion",1,expr]; $x.__enum__ = mint_core_DebugError; $x.toString = $estr; return $x; };
+var mint_core_Signal = function() {
+	this.listeners = [];
+};
+$hxClasses["mint.core.Signal"] = mint_core_Signal;
+mint_core_Signal.__name__ = ["mint","core","Signal"];
+mint_core_Signal.prototype = {
+	listen: function(_handler) {
+		if(this.listeners.indexOf(_handler) != -1) {
+			throw new js__$Boot_HaxeError("mint / signal / listen / attempted to add the same listener twice");
+		}
+		this.listeners.push(_handler);
+	}
+	,remove: function(_handler) {
+		var _index = this.listeners.indexOf(_handler);
+		if(_index != -1) {
+			this.listeners[_index] = null;
+		}
+	}
+	,has: function(_handler) {
+		return this.listeners.indexOf(_handler) != -1;
+	}
+	,clear: function() {
+		this.listeners = null;
+		this.listeners = [];
+	}
+	,__class__: mint_core_Signal
+};
+var mint_core_unifill__$CodePoint_CodePoint_$Impl_$ = {};
+$hxClasses["mint.core.unifill._CodePoint.CodePoint_Impl_"] = mint_core_unifill__$CodePoint_CodePoint_$Impl_$;
+mint_core_unifill__$CodePoint_CodePoint_$Impl_$.__name__ = ["mint","core","unifill","_CodePoint","CodePoint_Impl_"];
+mint_core_unifill__$CodePoint_CodePoint_$Impl_$.cons = function(a,b) {
+	var this1;
+	if(a <= 65535) {
+		var this2 = String.fromCharCode(a);
+		var this3 = this2;
+		this1 = this3;
+	} else {
+		var this4 = String.fromCharCode((a >> 10) + 55232) + String.fromCharCode(a & 1023 | 56320);
+		var this5 = this4;
+		this1 = this5;
+	}
+	return this1 + b;
+};
+mint_core_unifill__$CodePoint_CodePoint_$Impl_$.snoc = function(a,b) {
+	var this1;
+	if(b <= 65535) {
+		var this2 = String.fromCharCode(b);
+		var this3 = this2;
+		this1 = this3;
+	} else {
+		var this4 = String.fromCharCode((b >> 10) + 55232) + String.fromCharCode(b & 1023 | 56320);
+		var this5 = this4;
+		this1 = this5;
+	}
+	return a + this1;
+};
+mint_core_unifill__$CodePoint_CodePoint_$Impl_$.addInt = function(a,b) {
+	return a + b;
+};
+mint_core_unifill__$CodePoint_CodePoint_$Impl_$.sub = function(a,b) {
+	return a - b;
+};
+mint_core_unifill__$CodePoint_CodePoint_$Impl_$.subInt = function(a,b) {
+	return a - b;
+};
+mint_core_unifill__$CodePoint_CodePoint_$Impl_$._new = function(code) {
+	var this1;
+	if(!(0 <= code && code <= 1114111 && !(55296 <= code && code <= 56319) && !(56320 <= code && code <= 57343))) {
+		throw new js__$Boot_HaxeError(mint_core_unifill_Exception.InvalidCodePoint(code));
+	}
+	this1 = code;
+	return this1;
+};
+mint_core_unifill__$CodePoint_CodePoint_$Impl_$.toString = function(this1) {
+	var this2;
+	if(this1 <= 65535) {
+		var this3 = String.fromCharCode(this1);
+		var this4 = this3;
+		this2 = this4;
+	} else {
+		var this5 = String.fromCharCode((this1 >> 10) + 55232) + String.fromCharCode(this1 & 1023 | 56320);
+		var this6 = this5;
+		this2 = this6;
+	}
+	return this2;
+};
+mint_core_unifill__$CodePoint_CodePoint_$Impl_$.toInt = function(this1) {
+	return this1;
+};
+var mint_core_unifill_CodePointIter = function(s) {
+	this.i = 0;
+	this.string = s;
+	this.index = 0;
+	this.endIndex = s.length;
+};
+$hxClasses["mint.core.unifill.CodePointIter"] = mint_core_unifill_CodePointIter;
+mint_core_unifill_CodePointIter.__name__ = ["mint","core","unifill","CodePointIter"];
+mint_core_unifill_CodePointIter.prototype = {
+	hasNext: function() {
+		return this.index < this.endIndex;
+	}
+	,next: function() {
+		this.i = this.index;
+		var tmp = this;
+		var tmp1 = tmp.index;
+		var this1 = this.string;
+		var this2 = this1;
+		var c = this2.charCodeAt(this.index);
+		tmp.index = tmp1 + (!(55296 <= c && c <= 56319) ? 1 : 2);
+		var this3 = this.string;
+		var this4 = this3;
+		return mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointAt(this4,this.i);
+	}
+	,__class__: mint_core_unifill_CodePointIter
+};
+var mint_core_unifill_Exception = $hxClasses["mint.core.unifill.Exception"] = { __ename__ : ["mint","core","unifill","Exception"], __constructs__ : ["InvalidCodePoint","InvalidCodeUnitSequence"] };
+mint_core_unifill_Exception.InvalidCodePoint = function(code) { var $x = ["InvalidCodePoint",0,code]; $x.__enum__ = mint_core_unifill_Exception; $x.toString = $estr; return $x; };
+mint_core_unifill_Exception.InvalidCodeUnitSequence = function(index) { var $x = ["InvalidCodeUnitSequence",1,index]; $x.__enum__ = mint_core_unifill_Exception; $x.toString = $estr; return $x; };
+var mint_core_unifill_InternalEncoding = function() { };
+$hxClasses["mint.core.unifill.InternalEncoding"] = mint_core_unifill_InternalEncoding;
+mint_core_unifill_InternalEncoding.__name__ = ["mint","core","unifill","InternalEncoding"];
+mint_core_unifill_InternalEncoding.__properties__ = {get_internalEncoding:"get_internalEncoding"};
+mint_core_unifill_InternalEncoding.get_internalEncoding = function() {
+	return "UTF-16";
+};
+mint_core_unifill_InternalEncoding.codeUnitAt = function(s,index) {
+	var this1 = s;
+	var this2 = this1;
+	return this2.charCodeAt(index);
+};
+mint_core_unifill_InternalEncoding.codePointAt = function(s,index) {
+	var this1 = s;
+	var this2 = this1;
+	return mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointAt(this2,index);
+};
+mint_core_unifill_InternalEncoding.charAt = function(s,index) {
+	var this1 = s;
+	var this2 = this1;
+	var this3 = this2;
+	var c = this3.charCodeAt(index);
+	var this4 = HxOverrides.substr(this3,index,!(55296 <= c && c <= 56319) ? 1 : 2);
+	var this5 = this4;
+	return this5;
+};
+mint_core_unifill_InternalEncoding.codePointCount = function(s,beginIndex,endIndex) {
+	var this1 = s;
+	var this2 = this1;
+	return mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointCount(this2,beginIndex,endIndex);
+};
+mint_core_unifill_InternalEncoding.codePointWidthAt = function(s,index) {
+	var this1 = s;
+	var this2 = this1;
+	var c = this2.charCodeAt(index);
+	if(!(55296 <= c && c <= 56319)) {
+		return 1;
+	} else {
+		return 2;
+	}
+};
+mint_core_unifill_InternalEncoding.codePointWidthBefore = function(s,index) {
+	var this1 = s;
+	var this2 = this1;
+	var c = this2.charCodeAt(index - 1);
+	if(!(56320 <= c && c <= 57343)) {
+		return 1;
+	} else {
+		return 2;
+	}
+};
+mint_core_unifill_InternalEncoding.offsetByCodePoints = function(s,index,codePointOffset) {
+	var this1 = s;
+	var this2 = this1;
+	var this3 = this2;
+	if(codePointOffset >= 0) {
+		var index1 = index;
+		var len = this3.length;
+		var i = 0;
+		while(i < codePointOffset && index1 < len) {
+			var c = this3.charCodeAt(index1);
+			index1 += !(55296 <= c && c <= 56319) ? 1 : 2;
+			++i;
+		}
+		return index1;
+	} else {
+		var index2 = index;
+		var count = 0;
+		while(count < -codePointOffset && 0 < index2) {
+			var c1 = this3.charCodeAt(index2 - 1);
+			index2 -= !(56320 <= c1 && c1 <= 57343) ? 1 : 2;
+			++count;
+		}
+		return index2;
+	}
+};
+mint_core_unifill_InternalEncoding.backwardOffsetByCodePoints = function(s,index,codePointOffset) {
+	var this1 = s;
+	var this2 = this1;
+	var this3 = this2;
+	var codePointOffset1 = -codePointOffset;
+	if(codePointOffset1 >= 0) {
+		var index1 = index;
+		var len = this3.length;
+		var i = 0;
+		while(i < codePointOffset1 && index1 < len) {
+			var c = this3.charCodeAt(index1);
+			index1 += !(55296 <= c && c <= 56319) ? 1 : 2;
+			++i;
+		}
+		return index1;
+	} else {
+		var index2 = index;
+		var count = 0;
+		while(count < -codePointOffset1 && 0 < index2) {
+			var c1 = this3.charCodeAt(index2 - 1);
+			index2 -= !(56320 <= c1 && c1 <= 57343) ? 1 : 2;
+			++count;
+		}
+		return index2;
+	}
+};
+mint_core_unifill_InternalEncoding.fromCodePoint = function(codePoint) {
+	var this1;
+	if(codePoint <= 65535) {
+		var this2 = String.fromCharCode(codePoint);
+		var this3 = this2;
+		this1 = this3;
+	} else {
+		var this4 = String.fromCharCode((codePoint >> 10) + 55232) + String.fromCharCode(codePoint & 1023 | 56320);
+		var this5 = this4;
+		this1 = this5;
+	}
+	return this1;
+};
+mint_core_unifill_InternalEncoding.fromCodePoints = function(codePoints) {
+	var this1 = new StringBuf();
+	var buf = this1;
+	var c = $iterator(codePoints)();
+	while(c.hasNext()) {
+		var c1 = c.next();
+		mint_core_unifill__$Utf16_Utf16Impl.encode_code_point(function(x) {
+			buf.b += String.fromCharCode(x);
+		},c1);
+	}
+	var this2 = buf.b;
+	var this3 = this2;
+	return this3;
+};
+mint_core_unifill_InternalEncoding.validate = function(s) {
+	var this1 = s;
+	var this2 = this1;
+	mint_core_unifill__$Utf16_Utf16_$Impl_$.validate(this2);
+};
+mint_core_unifill_InternalEncoding.isValidString = function(s) {
+	try {
+		var this1 = s;
+		var this2 = this1;
+		mint_core_unifill__$Utf16_Utf16_$Impl_$.validate(this2);
+		return true;
+	} catch( e ) {
+		if (e instanceof js__$Boot_HaxeError) e = e.val;
+		if( js_Boot.__instanceof(e,mint_core_unifill_Exception) ) {
+			if(e[1] == 1) {
+				var index = e[2];
+				return false;
+			} else {
+				throw new js__$Boot_HaxeError(e);
+			}
+		} else throw(e);
+	}
+};
+var mint_core_unifill_InternalEncodingIter = function(s,beginIndex,endIndex) {
+	this.i = 0;
+	this.string = s;
+	this.index = beginIndex;
+	this.endIndex = endIndex;
+};
+$hxClasses["mint.core.unifill.InternalEncodingIter"] = mint_core_unifill_InternalEncodingIter;
+mint_core_unifill_InternalEncodingIter.__name__ = ["mint","core","unifill","InternalEncodingIter"];
+mint_core_unifill_InternalEncodingIter.prototype = {
+	hasNext: function() {
+		return this.index < this.endIndex;
+	}
+	,next: function() {
+		this.i = this.index;
+		var tmp = this;
+		var tmp1 = tmp.index;
+		var this1 = this.string;
+		var this2 = this1;
+		var c = this2.charCodeAt(this.index);
+		tmp.index = tmp1 + (!(55296 <= c && c <= 56319) ? 1 : 2);
+		return this.i;
+	}
+	,__class__: mint_core_unifill_InternalEncodingIter
+};
+var mint_core_unifill_Unicode = function() { };
+$hxClasses["mint.core.unifill.Unicode"] = mint_core_unifill_Unicode;
+mint_core_unifill_Unicode.__name__ = ["mint","core","unifill","Unicode"];
+mint_core_unifill_Unicode.decodeSurrogate = function(hi,lo) {
+	return hi - 55232 << 10 | lo & 1023;
+};
+mint_core_unifill_Unicode.encodeHighSurrogate = function(c) {
+	return (c >> 10) + 55232;
+};
+mint_core_unifill_Unicode.encodeLowSurrogate = function(c) {
+	return c & 1023 | 56320;
+};
+mint_core_unifill_Unicode.isScalar = function(code) {
+	if(0 <= code && code <= 1114111 && !(55296 <= code && code <= 56319)) {
+		return !(56320 <= code && code <= 57343);
+	} else {
+		return false;
+	}
+};
+mint_core_unifill_Unicode.isHighSurrogate = function(code) {
+	if(55296 <= code) {
+		return code <= 56319;
+	} else {
+		return false;
+	}
+};
+mint_core_unifill_Unicode.isLowSurrogate = function(code) {
+	if(56320 <= code) {
+		return code <= 57343;
+	} else {
+		return false;
+	}
+};
+var mint_core_unifill_Unifill = function() { };
+$hxClasses["mint.core.unifill.Unifill"] = mint_core_unifill_Unifill;
+mint_core_unifill_Unifill.__name__ = ["mint","core","unifill","Unifill"];
+mint_core_unifill_Unifill.uLength = function(s) {
+	var this1 = s;
+	var this2 = this1;
+	return mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointCount(this2,0,s.length);
+};
+mint_core_unifill_Unifill.uCharAt = function(s,index) {
+	var this1 = s;
+	var this2 = this1;
+	var this3 = this2;
+	var i;
+	if(index >= 0) {
+		var index1 = 0;
+		var len = this3.length;
+		var i1 = 0;
+		while(i1 < index && index1 < len) {
+			var c = this3.charCodeAt(index1);
+			index1 += !(55296 <= c && c <= 56319) ? 1 : 2;
+			++i1;
+		}
+		i = index1;
+	} else {
+		var index2 = 0;
+		var count = 0;
+		while(count < -index && 0 < index2) {
+			var c1 = this3.charCodeAt(index2 - 1);
+			index2 -= !(56320 <= c1 && c1 <= 57343) ? 1 : 2;
+			++count;
+		}
+		i = index2;
+	}
+	var this4 = s;
+	var this5 = this4;
+	var this6 = this5;
+	var c2 = this6.charCodeAt(i);
+	var this7 = HxOverrides.substr(this6,i,!(55296 <= c2 && c2 <= 56319) ? 1 : 2);
+	var this8 = this7;
+	return this8;
+};
+mint_core_unifill_Unifill.uCharCodeAt = function(s,index) {
+	var this1 = s;
+	var this2 = this1;
+	var this3 = this2;
+	var i;
+	if(index >= 0) {
+		var index1 = 0;
+		var len = this3.length;
+		var i1 = 0;
+		while(i1 < index && index1 < len) {
+			var c = this3.charCodeAt(index1);
+			index1 += !(55296 <= c && c <= 56319) ? 1 : 2;
+			++i1;
+		}
+		i = index1;
+	} else {
+		var index2 = 0;
+		var count = 0;
+		while(count < -index && 0 < index2) {
+			var c1 = this3.charCodeAt(index2 - 1);
+			index2 -= !(56320 <= c1 && c1 <= 57343) ? 1 : 2;
+			++count;
+		}
+		i = index2;
+	}
+	var this4 = s;
+	var this5 = this4;
+	return mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointAt(this5,i);
+};
+mint_core_unifill_Unifill.uCodePointAt = function(s,index) {
+	var this1 = s;
+	var this2 = this1;
+	var this3 = this2;
+	var i;
+	if(index >= 0) {
+		var index1 = 0;
+		var len = this3.length;
+		var i1 = 0;
+		while(i1 < index && index1 < len) {
+			var c = this3.charCodeAt(index1);
+			index1 += !(55296 <= c && c <= 56319) ? 1 : 2;
+			++i1;
+		}
+		i = index1;
+	} else {
+		var index2 = 0;
+		var count = 0;
+		while(count < -index && 0 < index2) {
+			var c1 = this3.charCodeAt(index2 - 1);
+			index2 -= !(56320 <= c1 && c1 <= 57343) ? 1 : 2;
+			++count;
+		}
+		i = index2;
+	}
+	var this4 = s;
+	var this5 = this4;
+	return mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointAt(this5,i);
+};
+mint_core_unifill_Unifill.uIndexOf = function(s,value,startIndex) {
+	if(startIndex == null) {
+		startIndex = 0;
+	}
+	var this1 = s;
+	var this2 = this1;
+	var this3 = this2;
+	var index;
+	if(startIndex >= 0) {
+		var index1 = 0;
+		var len = this3.length;
+		var i = 0;
+		while(i < startIndex && index1 < len) {
+			var c = this3.charCodeAt(index1);
+			index1 += !(55296 <= c && c <= 56319) ? 1 : 2;
+			++i;
+		}
+		index = index1;
+	} else {
+		var index2 = 0;
+		var count = 0;
+		while(count < -startIndex && 0 < index2) {
+			var c1 = this3.charCodeAt(index2 - 1);
+			index2 -= !(56320 <= c1 && c1 <= 57343) ? 1 : 2;
+			++count;
+		}
+		index = index2;
+	}
+	var index3 = s.indexOf(value,index);
+	if(index3 >= 0) {
+		var this4 = s;
+		var this5 = this4;
+		return mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointCount(this5,0,index3);
+	} else {
+		return -1;
+	}
+};
+mint_core_unifill_Unifill.uLastIndexOf = function(s,value,startIndex) {
+	if(startIndex == null) {
+		startIndex = s.length - 1;
+	}
+	var this1 = s;
+	var this2 = this1;
+	var this3 = this2;
+	var index;
+	if(startIndex >= 0) {
+		var index1 = 0;
+		var len = this3.length;
+		var i = 0;
+		while(i < startIndex && index1 < len) {
+			var c = this3.charCodeAt(index1);
+			index1 += !(55296 <= c && c <= 56319) ? 1 : 2;
+			++i;
+		}
+		index = index1;
+	} else {
+		var index2 = 0;
+		var count = 0;
+		while(count < -startIndex && 0 < index2) {
+			var c1 = this3.charCodeAt(index2 - 1);
+			index2 -= !(56320 <= c1 && c1 <= 57343) ? 1 : 2;
+			++count;
+		}
+		index = index2;
+	}
+	var index3 = s.lastIndexOf(value,index);
+	if(index3 >= 0) {
+		var this4 = s;
+		var this5 = this4;
+		return mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointCount(this5,0,index3);
+	} else {
+		return -1;
+	}
+};
+mint_core_unifill_Unifill.uSplit = function(s,delimiter) {
+	if(delimiter.length == 0) {
+		var _g = [];
+		var _g1_string;
+		var _g1_index;
+		var _g1_i;
+		var _g1_endIndex;
+		_g1_i = 0;
+		_g1_string = s;
+		_g1_index = 0;
+		_g1_endIndex = s.length;
+		while(_g1_index < _g1_endIndex) {
+			_g1_i = _g1_index;
+			var this1 = _g1_string;
+			var this2 = this1;
+			var c = this2.charCodeAt(_g1_index);
+			_g1_index += !(55296 <= c && c <= 56319) ? 1 : 2;
+			var i = _g1_i;
+			var this3 = s;
+			var this4 = this3;
+			var this5 = this4;
+			var c1 = this5.charCodeAt(i);
+			var this6 = HxOverrides.substr(this5,i,!(55296 <= c1 && c1 <= 56319) ? 1 : 2);
+			var this7 = this6;
+			_g.push(this7);
+		}
+		return _g;
+	} else {
+		return s.split(delimiter);
+	}
+};
+mint_core_unifill_Unifill.uSubstr = function(s,startIndex,length) {
+	var index = startIndex >= 0 ? 0 : s.length;
+	var this1 = s;
+	var this2 = this1;
+	var this3 = this2;
+	var si;
+	if(startIndex >= 0) {
+		var index1 = index;
+		var len = this3.length;
+		var i = 0;
+		while(i < startIndex && index1 < len) {
+			var c = this3.charCodeAt(index1);
+			index1 += !(55296 <= c && c <= 56319) ? 1 : 2;
+			++i;
+		}
+		si = index1;
+	} else {
+		var index2 = index;
+		var count = 0;
+		while(count < -startIndex && 0 < index2) {
+			var c1 = this3.charCodeAt(index2 - 1);
+			index2 -= !(56320 <= c1 && c1 <= 57343) ? 1 : 2;
+			++count;
+		}
+		si = index2;
+	}
+	var ei;
+	if(length == null) {
+		ei = s.length;
+	} else if(length < 0) {
+		ei = si;
+	} else {
+		var this4 = s;
+		var this5 = this4;
+		var this6 = this5;
+		if(length >= 0) {
+			var index3 = si;
+			var len1 = this6.length;
+			var i1 = 0;
+			while(i1 < length && index3 < len1) {
+				var c2 = this6.charCodeAt(index3);
+				index3 += !(55296 <= c2 && c2 <= 56319) ? 1 : 2;
+				++i1;
+			}
+			ei = index3;
+		} else {
+			var index4 = si;
+			var count1 = 0;
+			while(count1 < -length && 0 < index4) {
+				var c3 = this6.charCodeAt(index4 - 1);
+				index4 -= !(56320 <= c3 && c3 <= 57343) ? 1 : 2;
+				++count1;
+			}
+			ei = index4;
+		}
+	}
+	return s.substring(si,ei);
+};
+mint_core_unifill_Unifill.uSubstring = function(s,startIndex,endIndex) {
+	var si;
+	if(startIndex < 0) {
+		si = 0;
+	} else {
+		var this1 = s;
+		var this2 = this1;
+		var this3 = this2;
+		if(startIndex >= 0) {
+			var index = 0;
+			var len = this3.length;
+			var i = 0;
+			while(i < startIndex && index < len) {
+				var c = this3.charCodeAt(index);
+				index += !(55296 <= c && c <= 56319) ? 1 : 2;
+				++i;
+			}
+			si = index;
+		} else {
+			var index1 = 0;
+			var count = 0;
+			while(count < -startIndex && 0 < index1) {
+				var c1 = this3.charCodeAt(index1 - 1);
+				index1 -= !(56320 <= c1 && c1 <= 57343) ? 1 : 2;
+				++count;
+			}
+			si = index1;
+		}
+	}
+	var ei;
+	if(endIndex == null) {
+		ei = s.length;
+	} else if(endIndex < 0) {
+		ei = 0;
+	} else {
+		var this4 = s;
+		var this5 = this4;
+		var this6 = this5;
+		if(endIndex >= 0) {
+			var index2 = 0;
+			var len1 = this6.length;
+			var i1 = 0;
+			while(i1 < endIndex && index2 < len1) {
+				var c2 = this6.charCodeAt(index2);
+				index2 += !(55296 <= c2 && c2 <= 56319) ? 1 : 2;
+				++i1;
+			}
+			ei = index2;
+		} else {
+			var index3 = 0;
+			var count1 = 0;
+			while(count1 < -endIndex && 0 < index3) {
+				var c3 = this6.charCodeAt(index3 - 1);
+				index3 -= !(56320 <= c3 && c3 <= 57343) ? 1 : 2;
+				++count1;
+			}
+			ei = index3;
+		}
+	}
+	return s.substring(si,ei);
+};
+mint_core_unifill_Unifill.uIterator = function(s) {
+	return new mint_core_unifill_CodePointIter(s);
+};
+mint_core_unifill_Unifill.uCompare = function(a,b) {
+	var aiter_string;
+	var aiter_index;
+	var aiter_i;
+	var aiter_endIndex;
+	aiter_i = 0;
+	aiter_string = a;
+	aiter_index = 0;
+	aiter_endIndex = a.length;
+	var biter_string;
+	var biter_index;
+	var biter_i;
+	var biter_endIndex;
+	biter_i = 0;
+	biter_string = b;
+	biter_index = 0;
+	biter_endIndex = b.length;
+	while(aiter_index < aiter_endIndex && biter_index < biter_endIndex) {
+		aiter_i = aiter_index;
+		var this1 = aiter_string;
+		var this2 = this1;
+		var c = this2.charCodeAt(aiter_index);
+		aiter_index += !(55296 <= c && c <= 56319) ? 1 : 2;
+		var this3 = a;
+		var this4 = this3;
+		var acode = mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointAt(this4,aiter_i);
+		biter_i = biter_index;
+		var this5 = biter_string;
+		var this6 = this5;
+		var c1 = this6.charCodeAt(biter_index);
+		biter_index += !(55296 <= c1 && c1 <= 56319) ? 1 : 2;
+		var this7 = b;
+		var this8 = this7;
+		var bcode = mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointAt(this8,biter_i);
+		if(acode < bcode) {
+			return -1;
+		}
+		if(acode > bcode) {
+			return 1;
+		}
+	}
+	if(biter_index < biter_endIndex) {
+		return -1;
+	}
+	if(aiter_index < aiter_endIndex) {
+		return 1;
+	}
+	return 0;
+};
+mint_core_unifill_Unifill.uToString = function(codePoints) {
+	var this1 = new StringBuf();
+	var buf = this1;
+	var c = $iterator(codePoints)();
+	while(c.hasNext()) {
+		var c1 = c.next();
+		mint_core_unifill__$Utf16_Utf16Impl.encode_code_point(function(x) {
+			buf.b += String.fromCharCode(x);
+		},c1);
+	}
+	var this2 = buf.b;
+	var this3 = this2;
+	return this3;
+};
+var mint_core_unifill__$Utf16_Utf16_$Impl_$ = {};
+$hxClasses["mint.core.unifill._Utf16.Utf16_Impl_"] = mint_core_unifill__$Utf16_Utf16_$Impl_$;
+mint_core_unifill__$Utf16_Utf16_$Impl_$.__name__ = ["mint","core","unifill","_Utf16","Utf16_Impl_"];
+mint_core_unifill__$Utf16_Utf16_$Impl_$.__properties__ = {get_length:"get_length"};
+mint_core_unifill__$Utf16_Utf16_$Impl_$.fromCodePoint = function(codePoint) {
+	if(codePoint <= 65535) {
+		var this1 = String.fromCharCode(codePoint);
+		var this2 = this1;
+		return this2;
+	} else {
+		var this3 = String.fromCharCode((codePoint >> 10) + 55232) + String.fromCharCode(codePoint & 1023 | 56320);
+		var this4 = this3;
+		return this4;
+	}
+};
+mint_core_unifill__$Utf16_Utf16_$Impl_$.fromCodePoints = function(codePoints) {
+	var this1 = new StringBuf();
+	var buf = this1;
+	var c = $iterator(codePoints)();
+	while(c.hasNext()) {
+		var c1 = c.next();
+		mint_core_unifill__$Utf16_Utf16Impl.encode_code_point(function(x) {
+			buf.b += String.fromCharCode(x);
+		},c1);
+	}
+	var this2 = buf.b;
+	var this3 = this2;
+	return this3;
+};
+mint_core_unifill__$Utf16_Utf16_$Impl_$.fromString = function(s) {
+	var this1 = s;
+	var this2 = this1;
+	return this2;
+};
+mint_core_unifill__$Utf16_Utf16_$Impl_$.fromArray = function(a) {
+	var buf_b = "";
+	var _g = 0;
+	while(_g < a.length) {
+		var x = a[_g];
+		++_g;
+		buf_b += String.fromCharCode(x);
+	}
+	var this1 = buf_b;
+	var this2 = this1;
+	return this2;
+};
+mint_core_unifill__$Utf16_Utf16_$Impl_$.codeUnitAt = function(this1,index) {
+	return this1.charCodeAt(index);
+};
+mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointAt = function(this1,index) {
+	return mint_core_unifill__$Utf16_Utf16Impl.decode_code_point(this1.length,function(i) {
+		return this1.charCodeAt(i);
+	},index);
+};
+mint_core_unifill__$Utf16_Utf16_$Impl_$.charAt = function(this1,index) {
+	var c = this1.charCodeAt(index);
+	var this2 = HxOverrides.substr(this1,index,!(55296 <= c && c <= 56319) ? 1 : 2);
+	var this3 = this2;
+	return this3;
+};
+mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointCount = function(this1,beginIndex,endIndex) {
+	var index = beginIndex;
+	var i = 0;
+	while(index < endIndex) {
+		var c = this1.charCodeAt(index);
+		index += !(55296 <= c && c <= 56319) ? 1 : 2;
+		++i;
+	}
+	return i;
+};
+mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointWidthAt = function(this1,index) {
+	var c = this1.charCodeAt(index);
+	if(!(55296 <= c && c <= 56319)) {
+		return 1;
+	} else {
+		return 2;
+	}
+};
+mint_core_unifill__$Utf16_Utf16_$Impl_$.codePointWidthBefore = function(this1,index) {
+	var c = this1.charCodeAt(index - 1);
+	if(!(56320 <= c && c <= 57343)) {
+		return 1;
+	} else {
+		return 2;
+	}
+};
+mint_core_unifill__$Utf16_Utf16_$Impl_$.offsetByCodePoints = function(this1,index,codePointOffset) {
+	if(codePointOffset >= 0) {
+		var index1 = index;
+		var len = this1.length;
+		var i = 0;
+		while(i < codePointOffset && index1 < len) {
+			var c = this1.charCodeAt(index1);
+			index1 += !(55296 <= c && c <= 56319) ? 1 : 2;
+			++i;
+		}
+		return index1;
+	} else {
+		var index2 = index;
+		var count = 0;
+		while(count < -codePointOffset && 0 < index2) {
+			var c1 = this1.charCodeAt(index2 - 1);
+			index2 -= !(56320 <= c1 && c1 <= 57343) ? 1 : 2;
+			++count;
+		}
+		return index2;
+	}
+};
+mint_core_unifill__$Utf16_Utf16_$Impl_$.substr = function(this1,index,len) {
+	var this2 = HxOverrides.substr(this1,index,len);
+	var this3 = this2;
+	return this3;
+};
+mint_core_unifill__$Utf16_Utf16_$Impl_$.validate = function(this1) {
+	var len = this1.length;
+	var accessor = function(i) {
+		return this1.charCodeAt(i);
+	};
+	var i1 = 0;
+	while(i1 < len) {
+		mint_core_unifill__$Utf16_Utf16Impl.decode_code_point(len,accessor,i1);
+		var c = this1.charCodeAt(i1);
+		i1 += !(55296 <= c && c <= 56319) ? 1 : 2;
+	}
+};
+mint_core_unifill__$Utf16_Utf16_$Impl_$.toString = function(this1) {
+	return this1;
+};
+mint_core_unifill__$Utf16_Utf16_$Impl_$.toArray = function(this1) {
+	var i = 0;
+	var len = this1.length;
+	var _g = [];
+	while(i < len) _g.push(this1.charCodeAt(i++));
+	return _g;
+};
+mint_core_unifill__$Utf16_Utf16_$Impl_$._new = function(s) {
+	var this1 = s;
+	return this1;
+};
+mint_core_unifill__$Utf16_Utf16_$Impl_$.get_length = function(this1) {
+	return this1.length;
+};
+mint_core_unifill__$Utf16_Utf16_$Impl_$.forward_offset_by_code_points = function(this1,index,codePointOffset) {
+	var len = this1.length;
+	var i = 0;
+	while(i < codePointOffset && index < len) {
+		var c = this1.charCodeAt(index);
+		index += !(55296 <= c && c <= 56319) ? 1 : 2;
+		++i;
+	}
+	return index;
+};
+mint_core_unifill__$Utf16_Utf16_$Impl_$.backward_offset_by_code_points = function(this1,index,codePointOffset) {
+	var count = 0;
+	while(count < codePointOffset && 0 < index) {
+		var c = this1.charCodeAt(index - 1);
+		index -= !(56320 <= c && c <= 57343) ? 1 : 2;
+		++count;
+	}
+	return index;
+};
+var mint_core_unifill__$Utf16_Utf16Impl = function() { };
+$hxClasses["mint.core.unifill._Utf16.Utf16Impl"] = mint_core_unifill__$Utf16_Utf16Impl;
+mint_core_unifill__$Utf16_Utf16Impl.__name__ = ["mint","core","unifill","_Utf16","Utf16Impl"];
+mint_core_unifill__$Utf16_Utf16Impl.code_point_width = function(c) {
+	if(!(55296 <= c && c <= 56319)) {
+		return 1;
+	} else {
+		return 2;
+	}
+};
+mint_core_unifill__$Utf16_Utf16Impl.find_prev_code_point = function(accessor,index) {
+	var c = accessor(index - 1);
+	if(!(56320 <= c && c <= 57343)) {
+		return 1;
+	} else {
+		return 2;
+	}
+};
+mint_core_unifill__$Utf16_Utf16Impl.encode_code_point = function(addUnit,codePoint) {
+	if(codePoint <= 65535) {
+		addUnit(codePoint);
+	} else {
+		addUnit((codePoint >> 10) + 55232);
+		addUnit(codePoint & 1023 | 56320);
+	}
+};
+mint_core_unifill__$Utf16_Utf16Impl.decode_code_point = function(len,accessor,index) {
+	if(index < 0 || len <= index) {
+		throw new js__$Boot_HaxeError(mint_core_unifill_Exception.InvalidCodeUnitSequence(index));
+	}
+	var hi = accessor(index);
+	if(55296 <= hi && hi <= 56319) {
+		if(index + 1 < 0 || len <= index + 1) {
+			throw new js__$Boot_HaxeError(mint_core_unifill_Exception.InvalidCodeUnitSequence(index));
+		}
+		var lo = accessor(index + 1);
+		if(56320 <= lo && lo <= 57343) {
+			return hi - 55232 << 10 | lo & 1023;
+		} else {
+			throw new js__$Boot_HaxeError(mint_core_unifill_Exception.InvalidCodeUnitSequence(index));
+		}
+	} else if(56320 <= hi && hi <= 57343) {
+		throw new js__$Boot_HaxeError(mint_core_unifill_Exception.InvalidCodeUnitSequence(index));
+	} else {
+		return hi;
+	}
+};
+var mint_core_unifill__$Utf16_StringU16Buffer_$Impl_$ = {};
+$hxClasses["mint.core.unifill._Utf16.StringU16Buffer_Impl_"] = mint_core_unifill__$Utf16_StringU16Buffer_$Impl_$;
+mint_core_unifill__$Utf16_StringU16Buffer_$Impl_$.__name__ = ["mint","core","unifill","_Utf16","StringU16Buffer_Impl_"];
+mint_core_unifill__$Utf16_StringU16Buffer_$Impl_$._new = function() {
+	var this1 = new StringBuf();
+	return this1;
+};
+mint_core_unifill__$Utf16_StringU16Buffer_$Impl_$.addUnit = function(this1,unit) {
+	this1.b += String.fromCharCode(unit);
+};
+mint_core_unifill__$Utf16_StringU16Buffer_$Impl_$.getStringU16 = function(this1) {
+	var this2 = this1.b;
+	return this2;
+};
+var mint_core_unifill__$Utf16_StringU16_$Impl_$ = {};
+$hxClasses["mint.core.unifill._Utf16.StringU16_Impl_"] = mint_core_unifill__$Utf16_StringU16_$Impl_$;
+mint_core_unifill__$Utf16_StringU16_$Impl_$.__name__ = ["mint","core","unifill","_Utf16","StringU16_Impl_"];
+mint_core_unifill__$Utf16_StringU16_$Impl_$.__properties__ = {get_length:"get_length"};
+mint_core_unifill__$Utf16_StringU16_$Impl_$.fromString = function(s) {
+	var this1 = s;
+	return this1;
+};
+mint_core_unifill__$Utf16_StringU16_$Impl_$.fromCodeUnit = function(u) {
+	var this1 = String.fromCharCode(u);
+	return this1;
+};
+mint_core_unifill__$Utf16_StringU16_$Impl_$.fromTwoCodeUnits = function(u0,u1) {
+	var this1 = String.fromCharCode(u0) + String.fromCharCode(u1);
+	return this1;
+};
+mint_core_unifill__$Utf16_StringU16_$Impl_$.ofArray = function(a) {
+	var buf_b = "";
+	var _g = 0;
+	while(_g < a.length) {
+		var x = a[_g];
+		++_g;
+		buf_b += String.fromCharCode(x);
+	}
+	var this1 = buf_b;
+	return this1;
+};
+mint_core_unifill__$Utf16_StringU16_$Impl_$.fromArray = function(a) {
+	var buf_b = "";
+	var _g = 0;
+	while(_g < a.length) {
+		var x = a[_g];
+		++_g;
+		buf_b += String.fromCharCode(x);
+	}
+	var this1 = buf_b;
+	return this1;
+};
+mint_core_unifill__$Utf16_StringU16_$Impl_$.codeUnitAt = function(this1,index) {
+	return this1.charCodeAt(index);
+};
+mint_core_unifill__$Utf16_StringU16_$Impl_$.substr = function(this1,index,len) {
+	var this2 = HxOverrides.substr(this1,index,len);
+	return this2;
+};
+mint_core_unifill__$Utf16_StringU16_$Impl_$.toString = function(this1) {
+	return this1;
+};
+mint_core_unifill__$Utf16_StringU16_$Impl_$.toArray = function(this1) {
+	var i = 0;
+	var len = this1.length;
+	var _g = [];
+	while(i < len) _g.push(this1.charCodeAt(i++));
+	return _g;
+};
+mint_core_unifill__$Utf16_StringU16_$Impl_$._new = function(s) {
+	var this1 = s;
+	return this1;
+};
+mint_core_unifill__$Utf16_StringU16_$Impl_$.get_length = function(this1) {
+	return this1.length;
+};
+var mint_focus_Focus = function(_canvas) {
+	this.canvas = _canvas;
+	this.canvas.onmousemove.listen($bind(this,this.mousemove));
+	this.canvas.onmousedown.listen($bind(this,this.mousedown));
+	this.canvas.onmouseup.listen($bind(this,this.mouseup));
+	this.canvas.onmousewheel.listen($bind(this,this.mousewheel));
+	this.canvas.onkeydown.listen($bind(this,this.keydown));
+	this.canvas.onkeyup.listen($bind(this,this.keyup));
+	this.canvas.ontextinput.listen($bind(this,this.textinput));
+};
+$hxClasses["mint.focus.Focus"] = mint_focus_Focus;
+mint_focus_Focus.__name__ = ["mint","focus","Focus"];
+mint_focus_Focus.prototype = {
+	destroy: function() {
+		this.canvas.onmousemove.remove($bind(this,this.mousemove));
+		this.canvas.onmousedown.remove($bind(this,this.mousedown));
+		this.canvas.onmouseup.remove($bind(this,this.mouseup));
+		this.canvas.onmousewheel.remove($bind(this,this.mousewheel));
+		this.canvas.onkeydown.remove($bind(this,this.keydown));
+		this.canvas.onkeyup.remove($bind(this,this.keyup));
+		this.canvas.ontextinput.remove($bind(this,this.textinput));
+	}
+	,keydown: function(e,target) {
+		if(this.canvas.get_focused() != null && this.canvas.get_focused().key_input) {
+			this.canvas.get_focused().keydown(e);
+		}
+	}
+	,keyup: function(e,target) {
+		if(this.canvas.get_focused() != null && this.canvas.get_focused().key_input) {
+			this.canvas.get_focused().keyup(e);
+		}
+	}
+	,textinput: function(e,target) {
+		if(this.canvas.get_focused() != null && this.canvas.get_focused().key_input) {
+			this.canvas.get_focused().textinput(e);
+		}
+	}
+	,mousedown: function(e,target) {
+		if(this.canvas.get_focused() != null && this.canvas.get_focused().mouse_input) {
+			this.canvas.get_focused().mousedown(e);
+		}
+		if(this.marked_mouse()) {
+			this.canvas.get_marked().mousedown(e);
+		}
+	}
+	,mouseup: function(e,target) {
+		if(this.canvas.get_focused() != null && this.canvas.get_focused().mouse_input) {
+			this.canvas.get_focused().mouseup(e);
+		}
+		if(this.marked_mouse()) {
+			this.canvas.get_marked().mouseup(e);
+		}
+	}
+	,mousewheel: function(e,target) {
+		if(this.canvas.get_focused() != null && this.canvas.get_focused().mouse_input) {
+			this.canvas.get_focused().mousewheel(e);
+		}
+		if(this.marked_mouse()) {
+			this.canvas.get_marked().mousewheel(e);
+		}
+	}
+	,marked_mouse: function() {
+		if(this.canvas.get_marked() != this.canvas.get_focused() && this.canvas.get_marked() != null) {
+			return this.canvas.get_marked().mouse_input;
+		} else {
+			return false;
+		}
+	}
+	,get_markable: function(_target,_x,_y) {
+		var _highest = _target.topmost_child_at_point(_x,_y);
+		if(_highest == null && _highest == _target) {
+			return null;
+		}
+		var _current = _highest;
+		var _canvas = _target.canvas;
+		while(true) {
+			if(_current == null || _current == _canvas) {
+				return _current;
+			}
+			if(_current.mouse_input) {
+				return _current;
+			}
+			_current = _current.parent;
+		}
+	}
+	,mousemove: function(e,_) {
+		var _captured = this.canvas.get_captured();
+		if(_captured != null && _captured.mouse_input) {
+			var _markable = this.get_markable(_captured,e.x,e.y);
+			if(_markable != null) {
+				this.mark_control(_markable,e);
+			}
+			if(this.marked_mouse()) {
+				this.canvas.get_marked().mousemove(e);
+			}
+		} else if(this.canvas.ishovered) {
+			if(this.canvas.get_marked() != null && !this.canvas.get_marked().contains(e.x,e.y)) {
+				this.unmark_control(this.canvas.get_marked(),e);
+			}
+			if(this.canvas.get_focused() != null && this.canvas.get_focused().mouse_input) {
+				this.canvas.get_focused().mousemove(e);
+			}
+			var _markable1 = this.get_markable(this.canvas,e.x,e.y);
+			if(_markable1 != null) {
+				this.mark_control(_markable1,e);
+			}
+			if(this.marked_mouse()) {
+				this.canvas.get_marked().mousemove(e);
+			}
+		}
+	}
+	,reset_marked: function(_control,e) {
+		if(_control != null && _control.ismarked) {
+			this.unmark_control(_control,e);
+		}
+	}
+	,get_focusable: function(_x,_y) {
+		if(this.canvas.get_captured() != null) {
+			return this.canvas.get_captured();
+		} else {
+			return this.canvas.topmost_at_point(_x,_y);
+		}
+	}
+	,find_marked: function(e) {
+		var _marked = this.get_focusable(e.x,e.y);
+		if(_marked != null) {
+			this.mark_control(_marked,e);
+		}
+		return _marked;
+	}
+	,unmark_control: function(_control,e) {
+		if(_control != null && _control.ismarked) {
+			if(_control.destroyed != false) {
+				throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + _control.name + " was already destroyed but is being interacted with") + " )")));
+			}
+			if(_control.canvas != _control) {
+				if(_control.canvas.get_marked() == _control) {
+					_control.canvas.set_marked(null);
+					var _idx = 0;
+					var _count = _control.onmarked.listeners.length;
+					while(_idx < _count) {
+						if(_control.onmarked != null) {
+							var fn = _control.onmarked.listeners[_idx];
+							if(fn != null) {
+								fn(false);
+							}
+						}
+						++_idx;
+					}
+					if(_control.onmarked != null) {
+						while(_count > 0) {
+							var fn1 = _control.onmarked.listeners[_count - 1];
+							if(fn1 == null) {
+								_control.onmarked.listeners.splice(_count - 1,1);
+							}
+							--_count;
+						}
+					}
+				}
+			}
+			if(_control.mouse_input) {
+				_control.mouseleave(e);
+			}
+		}
+	}
+	,mark_control: function(_control,e) {
+		if(_control != null && !_control.ismarked) {
+			this.reset_marked(this.canvas.get_marked());
+			if(_control.destroyed != false) {
+				throw new js__$Boot_HaxeError(mint_core_DebugError.assertion("destroyed == false" + (" ( " + ("" + _control.name + " was already destroyed but is being interacted with") + " )")));
+			}
+			if(_control.canvas != _control) {
+				var _pre = _control.canvas.get_marked() == _control;
+				_control.canvas.set_marked(_control);
+				if(!_pre) {
+					var _idx = 0;
+					var _count = _control.onmarked.listeners.length;
+					while(_idx < _count) {
+						if(_control.onmarked != null) {
+							var fn = _control.onmarked.listeners[_idx];
+							if(fn != null) {
+								fn(true);
+							}
+						}
+						++_idx;
+					}
+					if(_control.onmarked != null) {
+						while(_count > 0) {
+							var fn1 = _control.onmarked.listeners[_count - 1];
+							if(fn1 == null) {
+								_control.onmarked.listeners.splice(_count - 1,1);
+							}
+							--_count;
+						}
+					}
+				}
+			}
+			if(_control.mouse_input) {
+				_control.mouseenter(e);
+			}
+		}
+	}
+	,__class__: mint_focus_Focus
+};
+var mint_render_Renderer = function() { };
+$hxClasses["mint.render.Renderer"] = mint_render_Renderer;
+mint_render_Renderer.__name__ = ["mint","render","Renderer"];
+mint_render_Renderer.prototype = {
+	__class__: mint_render_Renderer
+};
+var mint_render_Render = function(_render,_control) {
+	this.control = _control;
+	this.rendering = _render;
+	this.control.oncreate.listen($bind(this,this.internal_connect));
+};
+$hxClasses["mint.render.Render"] = mint_render_Render;
+mint_render_Render.__name__ = ["mint","render","Render"];
+mint_render_Render.__interfaces__ = [mint_render_Renderer];
+mint_render_Render.prototype = {
+	internal_connect: function() {
+		this.control.canvas.onscalechange.listen($bind(this,this.onscale));
+		this.control.onvisible.listen($bind(this,this.onvisible));
+		this.control.ondepth.listen($bind(this,this.ondepth));
+		this.control.ondestroy.listen($bind(this,this.ondestroy));
+		this.control.onclip.listen($bind(this,this.onclip));
+		this.control.onchildadd.listen($bind(this,this.onchildadd));
+		this.control.onchildremove.listen($bind(this,this.onchildremove));
+		this.control.onbounds.listen($bind(this,this.onbounds));
+		this.control.ondestroy.listen($bind(this,this.internal_disconnect));
+	}
+	,internal_disconnect: function() {
+		this.control.canvas.onscalechange.remove($bind(this,this.onscale));
+		this.control.onvisible.remove($bind(this,this.onvisible));
+		this.control.ondepth.remove($bind(this,this.ondepth));
+		this.control.ondestroy.remove($bind(this,this.ondestroy));
+		this.control.onclip.remove($bind(this,this.onclip));
+		this.control.onchildadd.remove($bind(this,this.onchildadd));
+		this.control.onchildremove.remove($bind(this,this.onchildremove));
+		this.control.onbounds.remove($bind(this,this.onbounds));
+		this.control.oncreate.remove($bind(this,this.internal_connect));
+		this.control.ondestroy.remove($bind(this,this.internal_disconnect));
+	}
+	,get_scale: function() {
+		return this.control.canvas.scale;
+	}
+	,get_sx: function() {
+		return this.control.x * this.control.canvas.scale;
+	}
+	,get_sy: function() {
+		return this.control.y * this.control.canvas.scale;
+	}
+	,get_sw: function() {
+		return this.control.w * this.control.canvas.scale;
+	}
+	,get_sh: function() {
+		return this.control.h * this.control.canvas.scale;
+	}
+	,cs: function(_value) {
+		return this.control.canvas.scale * _value;
+	}
+	,onscale: function(_scale,_prev) {
+	}
+	,onvisible: function(_v) {
+	}
+	,ondepth: function(_d) {
+	}
+	,ondestroy: function() {
+	}
+	,onbounds: function() {
+	}
+	,onclip: function(_disable,_x,_y,_w,_h) {
+	}
+	,onchildadd: function(_c) {
+	}
+	,onchildremove: function(_c) {
+	}
+	,__class__: mint_render_Render
+	,__properties__: {get_sh:"get_sh",get_sw:"get_sw",get_sy:"get_sy",get_sx:"get_sx",get_scale:"get_scale"}
+};
+var mint_render_Rendering = function() {
+};
+$hxClasses["mint.render.Rendering"] = mint_render_Rendering;
+mint_render_Rendering.__name__ = ["mint","render","Rendering"];
+mint_render_Rendering.prototype = {
+	get: function(type,control) {
+		haxe_Log.trace("" + Std.string(type) + " / " + Std.string(control) + " / This is probably not expected : landed in root Rendering class.",{ fileName : "Rendering.hx", lineNumber : 19, className : "mint.render.Rendering", methodName : "get"});
+		return null;
+	}
+	,__class__: mint_render_Rendering
+};
+var mint_render_luxe_Button = function(_render,_control) {
+	var _gthis = this;
+	this.render = _render;
+	this.button = _control;
+	mint_render_Render.call(this,this.render,_control);
+	var _opt = this.button.options.options;
+	if(_opt.color == null) {
+		_opt.color = new phoenix_Color().rgb(3618615);
+	}
+	this.color = _opt.color;
+	if(_opt.color_hover == null) {
+		_opt.color_hover = new phoenix_Color().rgb(4477272);
+	}
+	this.color_hover = _opt.color_hover;
+	if(_opt.color_down == null) {
+		_opt.color_down = new phoenix_Color().rgb(4473924);
+	}
+	this.color_down = _opt.color_down;
+	this.visual = new luxe_Sprite({ name : this.control.name + ".visual", batcher : this.render.options.batcher, no_scene : true, centered : false, pos : new phoenix_Vector(this.control.x * this.control.canvas.scale,this.control.y * this.control.canvas.scale), size : new phoenix_Vector(this.control.w * this.control.canvas.scale,this.control.h * this.control.canvas.scale), color : this.color, depth : this.render.options.depth + this.control.depth, visible : this.control.visible});
+	this.update_clip(this.control.canvas.scale);
+	this.button.onmouseenter.listen(function(e,c) {
+		_gthis.visual.set_color(_gthis.color_hover);
+	});
+	this.button.onmouseleave.listen(function(e1,c1) {
+		_gthis.visual.set_color(_gthis.color);
+	});
+	this.button.onmousedown.listen(function(e2,c2) {
+		_gthis.visual.set_color(_gthis.color_down);
+	});
+	this.button.onmouseup.listen(function(e3,c3) {
+		_gthis.visual.set_color(_gthis.color);
+	});
+};
+$hxClasses["mint.render.luxe.Button"] = mint_render_luxe_Button;
+mint_render_luxe_Button.__name__ = ["mint","render","luxe","Button"];
+mint_render_luxe_Button.__super__ = mint_render_Render;
+mint_render_luxe_Button.prototype = $extend(mint_render_Render.prototype,{
+	update_clip: function(_scale) {
+		this.visual.set_clip_rect(mint_render_luxe_Convert.clip_bounds(this.control.clip_with,this.render.options.batcher.view,_scale));
+	}
+	,onscale: function(_scale,_prev_scale) {
+		this.update_clip(_scale);
+	}
+	,onbounds: function() {
+		var _this = this.visual.get_transform().local.pos;
+		var _x = this.control.x * this.control.canvas.scale;
+		var _y = this.control.y * this.control.canvas.scale;
+		var prev = _this.ignore_listeners;
+		_this.ignore_listeners = true;
+		_this.x = _x;
+		if(!_this._construct) {
+			if(_this.listen_x != null && !_this.ignore_listeners) {
+				_this.listen_x(_x);
+			}
+		}
+		_this.y = _y;
+		if(!_this._construct) {
+			if(_this.listen_y != null && !_this.ignore_listeners) {
+				_this.listen_y(_y);
+			}
+		}
+		_this.ignore_listeners = prev;
+		if(_this.listen_x != null && !_this.ignore_listeners) {
+			_this.listen_x(_this.x);
+		}
+		if(_this.listen_y != null && !_this.ignore_listeners) {
+			_this.listen_y(_this.y);
+		}
+		this.visual.geometry_quad.resize_xy(this.control.w * this.control.canvas.scale,this.control.h * this.control.canvas.scale);
+	}
+	,ondestroy: function() {
+		this.visual.destroy();
+		this.visual = null;
+	}
+	,onclip: function(_disable,_x,_y,_w,_h) {
+		this.update_clip(this.control.canvas.scale);
+	}
+	,onvisible: function(_visible) {
+		this.visual.set_visible(_visible);
+	}
+	,ondepth: function(_depth) {
+		this.visual.set_depth(this.render.options.depth + _depth);
+	}
+	,__class__: mint_render_luxe_Button
+});
+var mint_render_luxe_Canvas = function(_render,_control) {
+	this.canvas = _control;
+	this.render = _render;
+	mint_render_Render.call(this,this.render,_control);
+	var _opt = this.canvas.options.options;
+	if(_opt.color == null) {
+		_opt.color = new phoenix_Color(0,0,0,0).rgb(789516);
+	}
+	this.color = _opt.color;
+	this.visual = Luxe.draw.box({ id : this.control.name + ".visual", batcher : this.render.options.batcher, x : this.control.x * this.control.canvas.scale, y : this.control.y * this.control.canvas.scale, w : this.control.w * this.control.canvas.scale, h : this.control.h * this.control.canvas.scale, color : this.color, depth : this.render.options.depth + this.control.depth, visible : this.control.visible});
+	this.update_clip(this.control.canvas.scale);
+};
+$hxClasses["mint.render.luxe.Canvas"] = mint_render_luxe_Canvas;
+mint_render_luxe_Canvas.__name__ = ["mint","render","luxe","Canvas"];
+mint_render_luxe_Canvas.__super__ = mint_render_Render;
+mint_render_luxe_Canvas.prototype = $extend(mint_render_Render.prototype,{
+	update_clip: function(_scale) {
+		this.visual.set_clip_rect(mint_render_luxe_Convert.clip_bounds(this.control.clip_with,this.render.options.batcher.view,_scale));
+	}
+	,onscale: function(_scale,_prev_scale) {
+		this.update_clip(_scale);
+	}
+	,ondestroy: function() {
+		this.visual.drop();
+		this.visual = null;
+	}
+	,onbounds: function() {
+		var _this = this.visual.transform.local.pos;
+		var _x = this.control.x * this.control.canvas.scale;
+		var _y = this.control.y * this.control.canvas.scale;
+		var prev = _this.ignore_listeners;
+		_this.ignore_listeners = true;
+		_this.x = _x;
+		if(!_this._construct) {
+			if(_this.listen_x != null && !_this.ignore_listeners) {
+				_this.listen_x(_x);
+			}
+		}
+		_this.y = _y;
+		if(!_this._construct) {
+			if(_this.listen_y != null && !_this.ignore_listeners) {
+				_this.listen_y(_y);
+			}
+		}
+		_this.ignore_listeners = prev;
+		if(_this.listen_x != null && !_this.ignore_listeners) {
+			_this.listen_x(_this.x);
+		}
+		if(_this.listen_y != null && !_this.ignore_listeners) {
+			_this.listen_y(_this.y);
+		}
+		this.visual.resize_xy(this.control.w * this.control.canvas.scale,this.control.h * this.control.canvas.scale);
+	}
+	,onclip: function(_disable,_x,_y,_w,_h) {
+		this.update_clip(this.control.canvas.scale);
+	}
+	,onvisible: function(_visible) {
+		this.visual.set_visible(_visible);
+	}
+	,ondepth: function(_depth) {
+		this.visual.set_depth(this.render.options.depth + _depth);
+	}
+	,__class__: mint_render_luxe_Canvas
+});
+var mint_render_luxe_Checkbox = function(_render,_control) {
+	var _gthis = this;
+	this.checkbox = _control;
+	this.render = _render;
+	mint_render_Render.call(this,this.render,_control);
+	var _opt = this.checkbox.options.options;
+	if(_opt.color == null) {
+		_opt.color = new phoenix_Color().rgb(3618615);
+	}
+	this.color = _opt.color;
+	if(_opt.color_hover == null) {
+		_opt.color_hover = new phoenix_Color().rgb(4477272);
+	}
+	this.color_hover = _opt.color_hover;
+	if(_opt.color_node == null) {
+		_opt.color_node = new phoenix_Color().rgb(10340963);
+	}
+	this.color_node = _opt.color_node;
+	if(_opt.color_node_hover == null) {
+		_opt.color_node_hover = new phoenix_Color().rgb(11389539);
+	}
+	this.color_node_hover = _opt.color_node_hover;
+	if(_opt.size_margin == null) {
+		_opt.size_margin = 4;
+	}
+	this.size_margin = _opt.size_margin;
+	this.visual = new luxe_Sprite({ name : this.control.name + ".visual", batcher : this.render.options.batcher, no_scene : true, centered : false, pos : new phoenix_Vector(this.control.x * this.control.canvas.scale,this.control.y * this.control.canvas.scale), size : new phoenix_Vector(this.control.w * this.control.canvas.scale,this.control.h * this.control.canvas.scale), color : this.color, depth : this.render.options.depth + this.control.depth, visible : this.control.visible});
+	var _margin = this.control.canvas.scale * this.size_margin;
+	this.node_off = new luxe_Sprite({ name : this.control.name + ".node_off", batcher : this.render.options.batcher, no_scene : true, centered : false, pos : new phoenix_Vector(this.control.x * this.control.canvas.scale + _margin,this.control.y * this.control.canvas.scale + _margin), size : new phoenix_Vector(this.control.w * this.control.canvas.scale - _margin * 2,this.control.h * this.control.canvas.scale - _margin * 2), color : this.color_node.clone().set(null,null,null,0.25), depth : this.render.options.depth + this.control.depth + 0.001, visible : this.control.visible});
+	this.node = new luxe_Sprite({ name : this.control.name + ".node_on", batcher : this.render.options.batcher, no_scene : true, centered : false, pos : new phoenix_Vector(this.control.x * this.control.canvas.scale + _margin,this.control.y * this.control.canvas.scale + _margin), size : new phoenix_Vector(this.control.w * this.control.canvas.scale - _margin * 2,this.control.h * this.control.canvas.scale - _margin * 2), color : this.color_node, depth : this.render.options.depth + this.control.depth + 0.002, visible : this.control.visible && this.checkbox.state});
+	this.update_clip(this.control.canvas.scale);
+	this.checkbox.onmouseenter.listen(function(e,c) {
+		_gthis.node.set_color(_gthis.color_node_hover);
+		_gthis.visual.set_color(_gthis.color_hover);
+	});
+	this.checkbox.onmouseleave.listen(function(e1,c1) {
+		_gthis.node.set_color(_gthis.color_node);
+		_gthis.visual.set_color(_gthis.color);
+	});
+	this.checkbox.onchange.listen($bind(this,this.oncheck));
+};
+$hxClasses["mint.render.luxe.Checkbox"] = mint_render_luxe_Checkbox;
+mint_render_luxe_Checkbox.__name__ = ["mint","render","luxe","Checkbox"];
+mint_render_luxe_Checkbox.__super__ = mint_render_Render;
+mint_render_luxe_Checkbox.prototype = $extend(mint_render_Render.prototype,{
+	update_clip: function(_scale) {
+		var _clip = mint_render_luxe_Convert.clip_bounds(this.control.clip_with,this.render.options.batcher.view,_scale);
+		this.visual.set_clip_rect(_clip);
+		this.node_off.set_clip_rect(_clip);
+		this.node.set_clip_rect(_clip);
+	}
+	,onscale: function(_scale,_prev_scale) {
+		this.update_clip(_scale);
+	}
+	,oncheck: function(_new,_old) {
+		this.node.set_visible(_new);
+	}
+	,onbounds: function() {
+		var _margin = this.control.canvas.scale * this.size_margin;
+		var _this = this.visual.get_transform().local.pos;
+		var _x = this.control.x * this.control.canvas.scale;
+		var _y = this.control.y * this.control.canvas.scale;
+		var prev = _this.ignore_listeners;
+		_this.ignore_listeners = true;
+		_this.x = _x;
+		if(!_this._construct) {
+			if(_this.listen_x != null && !_this.ignore_listeners) {
+				_this.listen_x(_x);
+			}
+		}
+		_this.y = _y;
+		if(!_this._construct) {
+			if(_this.listen_y != null && !_this.ignore_listeners) {
+				_this.listen_y(_y);
+			}
+		}
+		_this.ignore_listeners = prev;
+		if(_this.listen_x != null && !_this.ignore_listeners) {
+			_this.listen_x(_this.x);
+		}
+		if(_this.listen_y != null && !_this.ignore_listeners) {
+			_this.listen_y(_this.y);
+		}
+		this.visual.geometry_quad.resize_xy(this.control.w * this.control.canvas.scale,this.control.h * this.control.canvas.scale);
+		var _this1 = this.node_off.get_transform().local.pos;
+		var _x1 = this.control.x * this.control.canvas.scale + _margin;
+		var _y1 = this.control.y * this.control.canvas.scale + _margin;
+		var prev1 = _this1.ignore_listeners;
+		_this1.ignore_listeners = true;
+		_this1.x = _x1;
+		if(!_this1._construct) {
+			if(_this1.listen_x != null && !_this1.ignore_listeners) {
+				_this1.listen_x(_x1);
+			}
+		}
+		_this1.y = _y1;
+		if(!_this1._construct) {
+			if(_this1.listen_y != null && !_this1.ignore_listeners) {
+				_this1.listen_y(_y1);
+			}
+		}
+		_this1.ignore_listeners = prev1;
+		if(_this1.listen_x != null && !_this1.ignore_listeners) {
+			_this1.listen_x(_this1.x);
+		}
+		if(_this1.listen_y != null && !_this1.ignore_listeners) {
+			_this1.listen_y(_this1.y);
+		}
+		this.node_off.geometry_quad.resize_xy(this.control.w * this.control.canvas.scale - _margin * 2,this.control.h * this.control.canvas.scale - _margin * 2);
+		var _this2 = this.node.get_transform().local.pos;
+		var _x2 = this.control.x * this.control.canvas.scale + _margin;
+		var _y2 = this.control.y * this.control.canvas.scale + _margin;
+		var prev2 = _this2.ignore_listeners;
+		_this2.ignore_listeners = true;
+		_this2.x = _x2;
+		if(!_this2._construct) {
+			if(_this2.listen_x != null && !_this2.ignore_listeners) {
+				_this2.listen_x(_x2);
+			}
+		}
+		_this2.y = _y2;
+		if(!_this2._construct) {
+			if(_this2.listen_y != null && !_this2.ignore_listeners) {
+				_this2.listen_y(_y2);
+			}
+		}
+		_this2.ignore_listeners = prev2;
+		if(_this2.listen_x != null && !_this2.ignore_listeners) {
+			_this2.listen_x(_this2.x);
+		}
+		if(_this2.listen_y != null && !_this2.ignore_listeners) {
+			_this2.listen_y(_this2.y);
+		}
+		this.node.geometry_quad.resize_xy(this.control.w * this.control.canvas.scale - _margin * 2,this.control.h * this.control.canvas.scale - _margin * 2);
+	}
+	,ondestroy: function() {
+		this.visual.destroy();
+		this.node_off.destroy();
+		this.node.destroy();
+		this.visual = this.node = this.node_off = null;
+	}
+	,onclip: function(_disable,_x,_y,_w,_h) {
+		this.update_clip(this.control.canvas.scale);
+	}
+	,onvisible: function(_visible) {
+		this.visual.set_visible(this.node_off.set_visible(_visible));
+		if(_visible) {
+			if(this.checkbox.state) {
+				this.node.set_visible(_visible);
+			}
+		} else {
+			this.node.set_visible(_visible);
+		}
+	}
+	,ondepth: function(_depth) {
+		this.visual.set_depth(this.render.options.depth + _depth);
+		this.node_off.set_depth(this.visual.depth + 0.001);
+		this.node.set_depth(this.visual.depth + 0.002);
+	}
+	,__class__: mint_render_luxe_Checkbox
+});
+var phoenix_Vector = function(_x,_y,_z,_w) {
+	if(_w == null) {
+		_w = 0;
+	}
+	if(_z == null) {
+		_z = 0;
+	}
+	if(_y == null) {
+		_y = 0;
+	}
+	if(_x == null) {
+		_x = 0;
+	}
+	this._construct = false;
+	this.ignore_listeners = false;
+	this.w = 0;
+	this.z = 0;
+	this.y = 0;
+	this.x = 0;
+	this._construct = true;
+	this.x = _x;
+	if(!this._construct) {
+		if(this.listen_x != null && !this.ignore_listeners) {
+			this.listen_x(_x);
+		}
+	}
+	this.y = _y;
+	if(!this._construct) {
+		if(this.listen_y != null && !this.ignore_listeners) {
+			this.listen_y(_y);
+		}
+	}
+	this.z = _z;
+	if(!this._construct) {
+		if(this.listen_z != null && !this.ignore_listeners) {
+			this.listen_z(_z);
+		}
+	}
+	this.w = _w;
+	this._construct = false;
+};
+$hxClasses["phoenix.Vector"] = phoenix_Vector;
+phoenix_Vector.__name__ = ["phoenix","Vector"];
+phoenix_Vector.prototype = {
+	toString: function() {
+		return "{ x:" + this.x + ", y:" + this.y + ", z:" + this.z + " }";
+	}
+	,set_x: function(_x) {
+		this.x = _x;
+		if(this._construct) {
+			return this.x;
+		}
+		if(this.listen_x != null && !this.ignore_listeners) {
+			this.listen_x(_x);
+		}
+		return this.x;
+	}
+	,set_y: function(_y) {
+		this.y = _y;
+		if(this._construct) {
+			return this.y;
+		}
+		if(this.listen_y != null && !this.ignore_listeners) {
+			this.listen_y(_y);
+		}
+		return this.y;
+	}
+	,set_z: function(_z) {
+		this.z = _z;
+		if(this._construct) {
+			return this.z;
+		}
+		if(this.listen_z != null && !this.ignore_listeners) {
+			this.listen_z(_z);
+		}
+		return this.z;
+	}
+	,set_angle2D: function(value) {
+		var len = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+		var _x = Math.cos(value) * len;
+		var _y = Math.sin(value) * len;
+		var prev = this.ignore_listeners;
+		this.ignore_listeners = true;
+		this.x = _x;
+		if(!this._construct) {
+			if(this.listen_x != null && !this.ignore_listeners) {
+				this.listen_x(_x);
+			}
+		}
+		this.y = _y;
+		if(!this._construct) {
+			if(this.listen_y != null && !this.ignore_listeners) {
+				this.listen_y(_y);
+			}
+		}
+		this.ignore_listeners = prev;
+		if(this.listen_x != null && !this.ignore_listeners) {
+			this.listen_x(this.x);
+		}
+		if(this.listen_y != null && !this.ignore_listeners) {
+			this.listen_y(this.y);
+		}
+		return value;
+	}
+	,__class__: phoenix_Vector
+	,__properties__: {set_angle2D:"set_angle2D",set_z:"set_z",set_y:"set_y",set_x:"set_x"}
+};
+var mint_render_luxe_Convert = function() { };
+$hxClasses["mint.render.luxe.Convert"] = mint_render_luxe_Convert;
+mint_render_luxe_Convert.__name__ = ["mint","render","luxe","Convert"];
+mint_render_luxe_Convert.text_align = function(_align) {
+	switch(_align) {
+	case 2:
+		return 1;
+	case 3:
+		return 2;
+	case 4:
+		return 3;
+	case 5:
+		return 4;
+	default:
+		return 0;
+	}
+};
+mint_render_luxe_Convert.bounds = function(_control,_scale) {
+	if(_scale == null) {
+		_scale = 1.0;
+	}
+	if(_control == null) {
+		return null;
+	}
+	return new phoenix_Rectangle(_control.x * _scale,_control.y * _scale,_control.w * _scale,_control.h * _scale);
+};
+mint_render_luxe_Convert.clip_bounds = function(_control,_view,_scale) {
+	if(_scale == null) {
+		_scale = 1.0;
+	}
+	if(_control == null) {
+		return null;
+	}
+	var _this = mint_render_luxe_Convert.tmp;
+	var _x = _control.x * _scale;
+	_this.x = _x;
+	if(!_this._construct) {
+		if(_this.listen_x != null && !_this.ignore_listeners) {
+			_this.listen_x(_x);
+		}
+	}
+	var _this1 = mint_render_luxe_Convert.tmp;
+	var _y = _control.y * _scale;
+	_this1.y = _y;
+	if(!_this1._construct) {
+		if(_this1.listen_y != null && !_this1.ignore_listeners) {
+			_this1.listen_y(_y);
+		}
+	}
+	var pos = _view.world_point_to_screen(mint_render_luxe_Convert.tmp);
+	var _g = mint_render_luxe_Convert.tmp;
+	var _x1 = _g.x + _control.w * _scale;
+	_g.x = _x1;
+	if(!_g._construct) {
+		if(_g.listen_x != null && !_g.ignore_listeners) {
+			_g.listen_x(_x1);
+		}
+	}
+	var _g1 = mint_render_luxe_Convert.tmp;
+	var _y1 = _g1.y + _control.h * _scale;
+	_g1.y = _y1;
+	if(!_g1._construct) {
+		if(_g1.listen_y != null && !_g1.ignore_listeners) {
+			_g1.listen_y(_y1);
+		}
+	}
+	var bottom_right = _view.world_point_to_screen(mint_render_luxe_Convert.tmp);
+	return new phoenix_Rectangle(pos.x,pos.y,bottom_right.x - pos.x,bottom_right.y - pos.y);
+};
+mint_render_luxe_Convert.interact_state = function(_state) {
+	switch(_state[1]) {
+	case 0:
+		return 0;
+	case 1:
+		return 1;
+	case 2:
+		return 2;
+	case 3:
+		return 3;
+	case 4:
+		return 4;
+	case 5:
+		return 5;
+	case 6:
+		return 6;
+	}
+};
+mint_render_luxe_Convert.mouse_button = function(_button) {
+	switch(_button) {
+	case 0:
+		return -1;
+	case 1:
+		return 0;
+	case 2:
+		return 1;
+	case 3:
+		return 2;
+	case 4:
+		return 3;
+	case 5:
+		return 4;
+	}
+};
+mint_render_luxe_Convert.key_code = function(_keycode) {
+	switch(_keycode) {
+	case 8:
+		return 4;
+	case 9:
+		return 6;
+	case 13:
+		return 7;
+	case 27:
+		return 8;
+	case 127:
+		return 5;
+	case 1073741903:
+		return 1;
+	case 1073741904:
+		return 0;
+	case 1073741905:
+		return 3;
+	case 1073741906:
+		return 2;
+	default:
+		return -1;
+	}
+};
+mint_render_luxe_Convert.text_event_type = function(_type) {
+	switch(_type[1]) {
+	case 0:
+		return mint_types_TextEventType.unknown;
+	case 1:
+		return mint_types_TextEventType.edit;
+	case 2:
+		return mint_types_TextEventType.input;
+	}
+};
+mint_render_luxe_Convert.mod_state = function(_mod) {
+	return { none : _mod.none, lshift : _mod.lshift, rshift : _mod.rshift, lctrl : _mod.lctrl, rctrl : _mod.rctrl, lalt : _mod.lalt, ralt : _mod.ralt, lmeta : _mod.lmeta, rmeta : _mod.rmeta, num : _mod.num, caps : _mod.caps, mode : _mod.mode, ctrl : _mod.ctrl, shift : _mod.shift, alt : _mod.alt, meta : _mod.meta};
+};
+mint_render_luxe_Convert.mouse_event = function(_event,_scale,view) {
+	if(_scale == null) {
+		_scale = 1.0;
+	}
+	var _pos = new phoenix_Vector(_event.x,_event.y);
+	if(view != null) {
+		_pos = view.screen_point_to_world(_pos);
+	}
+	return { state : mint_render_luxe_Convert.interact_state(_event.state), button : mint_render_luxe_Convert.mouse_button(_event.button), timestamp : _event.timestamp, x : _pos.x / _scale | 0, y : _pos.y / _scale | 0, xrel : _event.x_rel / _scale | 0, yrel : _event.y_rel / _scale | 0, bubble : true};
+};
+mint_render_luxe_Convert.key_event = function(_event) {
+	return { state : mint_render_luxe_Convert.interact_state(_event.state), keycode : _event.keycode, timestamp : _event.timestamp, key : mint_render_luxe_Convert.key_code(_event.keycode), mod : mint_render_luxe_Convert.mod_state(_event.mod), bubble : true};
+};
+mint_render_luxe_Convert.text_event = function(_event) {
+	return { text : _event.text, type : mint_render_luxe_Convert.text_event_type(_event.type), timestamp : _event.timestamp, start : _event.start, length : _event.length, bubble : true};
+};
+var mint_render_luxe_Dropdown = function(_render,_control) {
+	this.dropdown = _control;
+	this.render = _render;
+	mint_render_Render.call(this,this.render,_control);
+	var _opt = this.dropdown.options.options;
+	if(_opt.color == null) {
+		_opt.color = new phoenix_Color().rgb(3618615);
+	}
+	this.color = _opt.color;
+	if(_opt.color_border == null) {
+		_opt.color_border = new phoenix_Color().rgb(1184274);
+	}
+	this.color_border = _opt.color_border;
+	this.visual = Luxe.draw.box({ id : this.control.name + ".visual", batcher : this.render.options.batcher, x : this.control.x * this.control.canvas.scale, y : this.control.y * this.control.canvas.scale, w : this.control.w * this.control.canvas.scale, h : this.control.h * this.control.canvas.scale, color : this.color, depth : this.render.options.depth + this.control.depth, visible : this.control.visible});
+	this.border = Luxe.draw.rectangle({ id : this.control.name + ".border", batcher : this.render.options.batcher, x : this.control.x * this.control.canvas.scale, y : this.control.y * this.control.canvas.scale, w : this.control.w * this.control.canvas.scale, h : this.control.h * this.control.canvas.scale, color : this.color_border, depth : this.render.options.depth + this.control.depth + 0.001, visible : this.control.visible});
+	this.update_clip(this.control.canvas.scale);
+};
+$hxClasses["mint.render.luxe.Dropdown"] = mint_render_luxe_Dropdown;
+mint_render_luxe_Dropdown.__name__ = ["mint","render","luxe","Dropdown"];
+mint_render_luxe_Dropdown.__super__ = mint_render_Render;
+mint_render_luxe_Dropdown.prototype = $extend(mint_render_Render.prototype,{
+	update_clip: function(_scale) {
+		var _clip = mint_render_luxe_Convert.clip_bounds(this.control.clip_with,this.render.options.batcher.view,_scale);
+		this.visual.set_clip_rect(_clip);
+		this.border.set_clip_rect(_clip);
+	}
+	,onscale: function(_scale,_prev_scale) {
+		this.update_clip(_scale);
+	}
+	,ondestroy: function() {
+		this.visual.drop();
+		this.border.drop();
+		this.visual = null;
+		this.border = null;
+	}
+	,onbounds: function() {
+		var _this = this.visual.transform.local.pos;
+		var _x = this.control.x * this.control.canvas.scale;
+		var _y = this.control.y * this.control.canvas.scale;
+		var prev = _this.ignore_listeners;
+		_this.ignore_listeners = true;
+		_this.x = _x;
+		if(!_this._construct) {
+			if(_this.listen_x != null && !_this.ignore_listeners) {
+				_this.listen_x(_x);
+			}
+		}
+		_this.y = _y;
+		if(!_this._construct) {
+			if(_this.listen_y != null && !_this.ignore_listeners) {
+				_this.listen_y(_y);
+			}
+		}
+		_this.ignore_listeners = prev;
+		if(_this.listen_x != null && !_this.ignore_listeners) {
+			_this.listen_x(_this.x);
+		}
+		if(_this.listen_y != null && !_this.ignore_listeners) {
+			_this.listen_y(_this.y);
+		}
+		this.visual.resize_xy(this.control.w * this.control.canvas.scale,this.control.h * this.control.canvas.scale);
+		this.border.set_xywh(this.control.x * this.control.canvas.scale,this.control.y * this.control.canvas.scale,this.control.w * this.control.canvas.scale + 1,this.control.h * this.control.canvas.scale);
+	}
+	,onclip: function(_disable,_x,_y,_w,_h) {
+		this.update_clip(this.control.canvas.scale);
+	}
+	,onvisible: function(_visible) {
+		this.visual.set_visible(this.border.set_visible(_visible));
+	}
+	,ondepth: function(_depth) {
+		this.visual.set_depth(this.render.options.depth + _depth);
+		this.border.set_depth(this.visual.state.depth + 0.001);
+	}
+	,__class__: mint_render_luxe_Dropdown
+});
+var mint_render_luxe_Image = function(_render,_control) {
+	this.ratio_h = 1.0;
+	this.ratio_w = 1.0;
+	this.image = _control;
+	this.render = _render;
+	mint_render_Render.call(this,this.render,_control);
+	var _opt = this.image.options.options;
+	var _texture = Luxe.resources.cache.get(this.image.options.path);
+	if(_texture != null && _opt.sizing != null) {
+		var _g = _opt.sizing;
+		if(_g != null) {
+			switch(_g) {
+			case 1:
+				if(_texture.width > _texture.height) {
+					this.ratio_h = _texture.height / _texture.width;
+				} else {
+					this.ratio_w = _texture.width / _texture.height;
+				}
+				break;
+			case 2:
+				var _rx = 1.0;
+				var _ry = 1.0;
+				if(_texture.width > _texture.height) {
+					_rx = _texture.height / _texture.width;
+				} else {
+					_ry = _texture.width / _texture.height;
+				}
+				_opt.uv = new phoenix_Rectangle(0,0,_texture.width * _rx,_texture.height * _ry);
+				break;
+			default:
+			}
+		}
+	}
+	this.visual = new luxe_Sprite({ name : this.control.name + ".visual", batcher : this.render.options.batcher, centered : false, no_scene : true, texture : _texture, pos : new phoenix_Vector(this.control.x * this.control.canvas.scale,this.control.y * this.control.canvas.scale), size : new phoenix_Vector(this.control.w * this.control.canvas.scale * this.ratio_w,this.control.h * this.control.canvas.scale * this.ratio_h), depth : this.render.options.depth + this.control.depth, visible : this.control.visible, uv : _opt.uv, color : _opt.color});
+	this.update_clip(this.control.canvas.scale);
+};
+$hxClasses["mint.render.luxe.Image"] = mint_render_luxe_Image;
+mint_render_luxe_Image.__name__ = ["mint","render","luxe","Image"];
+mint_render_luxe_Image.__super__ = mint_render_Render;
+mint_render_luxe_Image.prototype = $extend(mint_render_Render.prototype,{
+	update_clip: function(_scale) {
+		this.visual.set_clip_rect(mint_render_luxe_Convert.clip_bounds(this.control.clip_with,this.render.options.batcher.view,_scale));
+	}
+	,onscale: function(_scale,_prev_scale) {
+		this.update_clip(_scale);
+		var _this = this.visual.get_pos();
+		var _x = this.control.x * this.control.canvas.scale;
+		var _y = this.control.y * this.control.canvas.scale;
+		var prev = _this.ignore_listeners;
+		_this.ignore_listeners = true;
+		_this.x = _x;
+		if(!_this._construct) {
+			if(_this.listen_x != null && !_this.ignore_listeners) {
+				_this.listen_x(_x);
+			}
+		}
+		_this.y = _y;
+		if(!_this._construct) {
+			if(_this.listen_y != null && !_this.ignore_listeners) {
+				_this.listen_y(_y);
+			}
+		}
+		_this.ignore_listeners = prev;
+		if(_this.listen_x != null && !_this.ignore_listeners) {
+			_this.listen_x(_this.x);
+		}
+		if(_this.listen_y != null && !_this.ignore_listeners) {
+			_this.listen_y(_this.y);
+		}
+		var _this1 = this.visual.size;
+		var _x1 = this.control.w * this.control.canvas.scale * this.ratio_w;
+		var _y1 = this.control.h * this.control.canvas.scale * this.ratio_h;
+		var prev1 = _this1.ignore_listeners;
+		_this1.ignore_listeners = true;
+		_this1.x = _x1;
+		if(!_this1._construct) {
+			if(_this1.listen_x != null && !_this1.ignore_listeners) {
+				_this1.listen_x(_x1);
+			}
+		}
+		_this1.y = _y1;
+		if(!_this1._construct) {
+			if(_this1.listen_y != null && !_this1.ignore_listeners) {
+				_this1.listen_y(_y1);
+			}
+		}
+		_this1.ignore_listeners = prev1;
+		if(_this1.listen_x != null && !_this1.ignore_listeners) {
+			_this1.listen_x(_this1.x);
+		}
+		if(_this1.listen_y != null && !_this1.ignore_listeners) {
+			_this1.listen_y(_this1.y);
+		}
+	}
+	,onbounds: function() {
+		var _this = this.visual.get_transform().local.pos;
+		var _x = this.control.x * this.control.canvas.scale;
+		var _y = this.control.y * this.control.canvas.scale;
+		var prev = _this.ignore_listeners;
+		_this.ignore_listeners = true;
+		_this.x = _x;
+		if(!_this._construct) {
+			if(_this.listen_x != null && !_this.ignore_listeners) {
+				_this.listen_x(_x);
+			}
+		}
+		_this.y = _y;
+		if(!_this._construct) {
+			if(_this.listen_y != null && !_this.ignore_listeners) {
+				_this.listen_y(_y);
+			}
+		}
+		_this.ignore_listeners = prev;
+		if(_this.listen_x != null && !_this.ignore_listeners) {
+			_this.listen_x(_this.x);
+		}
+		if(_this.listen_y != null && !_this.ignore_listeners) {
+			_this.listen_y(_this.y);
+		}
+		this.visual.geometry_quad.resize_xy(this.control.w * this.control.canvas.scale * this.ratio_w,this.control.h * this.control.canvas.scale * this.ratio_h);
+	}
+	,ondestroy: function() {
+		this.visual.destroy();
+		this.visual = null;
+	}
+	,onclip: function(_disable,_x,_y,_w,_h) {
+		this.update_clip(this.control.canvas.scale);
+	}
+	,onvisible: function(_visible) {
+		this.visual.set_visible(_visible);
+	}
+	,ondepth: function(_depth) {
+		this.visual.set_depth(this.render.options.depth + _depth);
+	}
+	,__class__: mint_render_luxe_Image
+});
+var mint_render_luxe_Label = function(_render,_control) {
+	var _gthis = this;
+	this.label = _control;
+	this.render = _render;
+	mint_render_Render.call(this,this.render,_control);
+	var _opt = this.label.options.options;
+	if(_opt.color == null) {
+		_opt.color = new phoenix_Color().rgb(16777215);
+	}
+	this.color = _opt.color;
+	if(_opt.color_hover == null) {
+		_opt.color_hover = new phoenix_Color().rgb(10340963);
+	}
+	this.color_hover = _opt.color_hover;
+	this.text = new luxe_Text({ name : this.control.name + ".text", batcher : this.render.options.batcher, bounds : new phoenix_Rectangle(this.control.x * this.control.canvas.scale,this.control.y * this.control.canvas.scale,this.control.w * this.control.canvas.scale,this.control.h * this.control.canvas.scale), no_scene : true, color : this.color, text : this.label.text, bounds_wrap : this.label.options.bounds_wrap, align : mint_render_luxe_Convert.text_align(this.label.options.align), align_vertical : mint_render_luxe_Convert.text_align(this.label.options.align_vertical), point_size : this.control.canvas.scale * this.label.options.text_size, depth : this.render.options.depth + this.control.depth, visible : this.control.visible});
+	this.update_clip(this.control.canvas.scale);
+	this.label.onchange.listen($bind(this,this.ontext));
+	this.control.onmouseenter.listen(function(e,c) {
+		_gthis.text.set_color(_gthis.color_hover);
+	});
+	this.control.onmouseleave.listen(function(e1,c1) {
+		_gthis.text.set_color(_gthis.color);
+	});
+};
+$hxClasses["mint.render.luxe.Label"] = mint_render_luxe_Label;
+mint_render_luxe_Label.__name__ = ["mint","render","luxe","Label"];
+mint_render_luxe_Label.__super__ = mint_render_Render;
+mint_render_luxe_Label.prototype = $extend(mint_render_Render.prototype,{
+	update_clip: function(_scale) {
+		this.text.set_clip_rect(mint_render_luxe_Convert.clip_bounds(this.control.clip_with,this.render.options.batcher.view,_scale));
+	}
+	,onscale: function(_scale,_prev_scale) {
+		this.update_clip(_scale);
+		this.text.set_point_size(this.control.canvas.scale * this.label.options.text_size);
+	}
+	,onbounds: function() {
+		this.text.set_bounds(new phoenix_Rectangle(this.control.x * this.control.canvas.scale,this.control.y * this.control.canvas.scale,this.control.w * this.control.canvas.scale,this.control.h * this.control.canvas.scale));
+	}
+	,ontext: function(_text) {
+		this.text.set_text(_text);
+	}
+	,ondestroy: function() {
+		this.label.onchange.remove($bind(this,this.ontext));
+		this.text.destroy();
+		this.text = null;
+	}
+	,onclip: function(_disable,_x,_y,_w,_h) {
+		this.update_clip(this.control.canvas.scale);
+	}
+	,onvisible: function(_visible) {
+		this.text.set_visible(_visible);
+	}
+	,ondepth: function(_depth) {
+		this.text.set_depth(this.render.options.depth + _depth);
+	}
+	,__class__: mint_render_luxe_Label
+});
+var mint_render_luxe_List = function(_render,_control) {
+	this.selected = false;
+	this.list = _control;
+	this.render = _render;
+	mint_render_Render.call(this,this.render,_control);
+	this.list.onitementer.listen($bind(this,this.onitementer));
+	this.list.onitemleave.listen($bind(this,this.onitemleave));
+	this.list.onselect.listen($bind(this,this.onselect));
+};
+$hxClasses["mint.render.luxe.List"] = mint_render_luxe_List;
+mint_render_luxe_List.__name__ = ["mint","render","luxe","List"];
+mint_render_luxe_List.__super__ = mint_render_Render;
+mint_render_luxe_List.prototype = $extend(mint_render_Render.prototype,{
+	onitementer: function(idx,ctrl,e) {
+		var tmp = !this.selected;
+	}
+	,onitemleave: function(idx,ctrl,e) {
+	}
+	,onselect: function(idx,ctrl,e) {
+		this.selected = null != ctrl;
+	}
+	,ondestroy: function() {
+	}
+	,onclip: function(_disable,_x,_y,_w,_h) {
+		var _disable1 = _disable;
+	}
+	,onvisible: function(_visible) {
+	}
+	,ondepth: function(_depth) {
+	}
+	,__class__: mint_render_luxe_List
+});
+var mint_render_luxe_LuxeMintRender = function(_options) {
+	mint_render_Rendering.call(this);
+	if(_options == null) {
+		_options = { };
+	}
+	this.options = _options;
+	if(this.options.batcher == null) {
+		this.options.batcher = Luxe.renderer.batcher;
+	}
+	if(this.options.depth == null) {
+		this.options.depth = 0;
+	}
+	if(this.options.immediate == null) {
+		this.options.immediate = false;
+	}
+	if(this.options.visible == null) {
+		this.options.visible = true;
+	}
+};
+$hxClasses["mint.render.luxe.LuxeMintRender"] = mint_render_luxe_LuxeMintRender;
+mint_render_luxe_LuxeMintRender.__name__ = ["mint","render","luxe","LuxeMintRender"];
+mint_render_luxe_LuxeMintRender.__super__ = mint_render_Rendering;
+mint_render_luxe_LuxeMintRender.prototype = $extend(mint_render_Rendering.prototype,{
+	get: function(type,control) {
+		var tmp;
+		switch(type) {
+		case mint_Button:
+			tmp = new mint_render_luxe_Button(this,control);
+			break;
+		case mint_Canvas:
+			tmp = new mint_render_luxe_Canvas(this,control);
+			break;
+		case mint_Checkbox:
+			tmp = new mint_render_luxe_Checkbox(this,control);
+			break;
+		case mint_Dropdown:
+			tmp = new mint_render_luxe_Dropdown(this,control);
+			break;
+		case mint_Image:
+			tmp = new mint_render_luxe_Image(this,control);
+			break;
+		case mint_Label:
+			tmp = new mint_render_luxe_Label(this,control);
+			break;
+		case mint_List:
+			tmp = new mint_render_luxe_List(this,control);
+			break;
+		case mint_Panel:
+			tmp = new mint_render_luxe_Panel(this,control);
+			break;
+		case mint_Progress:
+			tmp = new mint_render_luxe_Progress(this,control);
+			break;
+		case mint_Scroll:
+			tmp = new mint_render_luxe_Scroll(this,control);
+			break;
+		case mint_Slider:
+			tmp = new mint_render_luxe_Slider(this,control);
+			break;
+		case mint_TextEdit:
+			tmp = new mint_render_luxe_TextEdit(this,control);
+			break;
+		case mint_Window:
+			tmp = new mint_render_luxe_Window(this,control);
+			break;
+		default:
+			tmp = null;
+		}
+		return tmp;
+	}
+	,__class__: mint_render_luxe_LuxeMintRender
+});
+var mint_render_luxe_Panel = function(_render,_control) {
+	this.panel = _control;
+	this.render = _render;
+	mint_render_Render.call(this,this.render,_control);
+	var _opt = this.panel.options.options;
+	if(_opt.color == null) {
+		_opt.color = new phoenix_Color().rgb(2368548);
+	}
+	this.color = _opt.color;
+	this.visual = Luxe.draw.box({ id : this.control.name + ".visual", batcher : this.render.options.batcher, x : this.control.x * this.control.canvas.scale, y : this.control.y * this.control.canvas.scale, w : this.control.w * this.control.canvas.scale, h : this.control.h * this.control.canvas.scale, color : this.color, depth : this.render.options.depth + this.control.depth, visible : this.control.visible});
+	this.update_clip(this.control.canvas.scale);
+};
+$hxClasses["mint.render.luxe.Panel"] = mint_render_luxe_Panel;
+mint_render_luxe_Panel.__name__ = ["mint","render","luxe","Panel"];
+mint_render_luxe_Panel.__super__ = mint_render_Render;
+mint_render_luxe_Panel.prototype = $extend(mint_render_Render.prototype,{
+	update_clip: function(_scale) {
+		this.visual.set_clip_rect(mint_render_luxe_Convert.clip_bounds(this.control.clip_with,this.render.options.batcher.view,_scale));
+	}
+	,onscale: function(_scale,_prev_scale) {
+		this.update_clip(_scale);
+	}
+	,ondestroy: function() {
+		this.visual.drop();
+		this.visual = null;
+	}
+	,onbounds: function() {
+		var _this = this.visual.transform.local.pos;
+		var _x = this.control.x * this.control.canvas.scale;
+		var _y = this.control.y * this.control.canvas.scale;
+		var prev = _this.ignore_listeners;
+		_this.ignore_listeners = true;
+		_this.x = _x;
+		if(!_this._construct) {
+			if(_this.listen_x != null && !_this.ignore_listeners) {
+				_this.listen_x(_x);
+			}
+		}
+		_this.y = _y;
+		if(!_this._construct) {
+			if(_this.listen_y != null && !_this.ignore_listeners) {
+				_this.listen_y(_y);
+			}
+		}
+		_this.ignore_listeners = prev;
+		if(_this.listen_x != null && !_this.ignore_listeners) {
+			_this.listen_x(_this.x);
+		}
+		if(_this.listen_y != null && !_this.ignore_listeners) {
+			_this.listen_y(_this.y);
+		}
+		this.visual.resize_xy(this.control.w * this.control.canvas.scale,this.control.h * this.control.canvas.scale);
+	}
+	,onclip: function(_disable,_x,_y,_w,_h) {
+		this.update_clip(this.control.canvas.scale);
+	}
+	,onvisible: function(_visible) {
+		this.visual.set_visible(_visible);
+	}
+	,ondepth: function(_depth) {
+		this.visual.set_depth(this.render.options.depth + _depth);
+	}
+	,__class__: mint_render_luxe_Panel
+});
+var mint_render_luxe_Progress = function(_render,_control) {
+	this.margin = 2.0;
+	var _gthis = this;
+	this.progress = _control;
+	this.render = _render;
+	mint_render_Render.call(this,this.render,_control);
+	var _opt = this.progress.options.options;
+	if(_opt.color == null) {
+		_opt.color = new phoenix_Color().rgb(2697513);
+	}
+	this.color = _opt.color;
+	if(_opt.color_bar == null) {
+		_opt.color_bar = new phoenix_Color().rgb(10340963);
+	}
+	this.color_bar = _opt.color_bar;
+	this.visual = Luxe.draw.box({ id : this.control.name + ".visual", batcher : this.render.options.batcher, x : this.control.x * this.control.canvas.scale, y : this.control.y * this.control.canvas.scale, w : this.control.w * this.control.canvas.scale, h : this.control.h * this.control.canvas.scale, color : this.color, depth : this.render.options.depth + this.control.depth, visible : this.control.visible});
+	var _margin = this.control.canvas.scale * this.margin;
+	this.bar = Luxe.draw.box({ id : this.control.name + ".bar", batcher : this.render.options.batcher, x : this.control.x * this.control.canvas.scale + _margin, y : this.control.y * this.control.canvas.scale + _margin, w : this.get_bar_width(this.progress.progress), h : this.control.h * this.control.canvas.scale - _margin * 2, color : this.color_bar, depth : this.render.options.depth + this.control.depth + 0.001, visible : this.control.visible});
+	this.update_clip(this.control.canvas.scale);
+	this.progress.onchange.listen(function(cur,prev) {
+		_gthis.bar.resize_xy(_gthis.get_bar_width(cur),_gthis.control.h * _gthis.control.canvas.scale - _gthis.control.canvas.scale * _gthis.margin * 2);
+	});
+};
+$hxClasses["mint.render.luxe.Progress"] = mint_render_luxe_Progress;
+mint_render_luxe_Progress.__name__ = ["mint","render","luxe","Progress"];
+mint_render_luxe_Progress.__super__ = mint_render_Render;
+mint_render_luxe_Progress.prototype = $extend(mint_render_Render.prototype,{
+	update_clip: function(_scale) {
+		var _clip = mint_render_luxe_Convert.clip_bounds(this.control.clip_with,this.render.options.batcher.view,_scale);
+		this.visual.set_clip_rect(_clip);
+		this.bar.set_clip_rect(_clip);
+	}
+	,onscale: function(_scale,_prev_scale) {
+		this.update_clip(_scale);
+	}
+	,get_bar_width: function(_progress) {
+		var _margin = this.control.canvas.scale * this.margin;
+		var _max_w = this.control.w * this.control.canvas.scale - _margin;
+		var _width = (this.control.w * this.control.canvas.scale - _margin * 2) * _progress;
+		if(_width < 1) {
+			_width = 1;
+		} else if(_width > _max_w) {
+			_width = _max_w;
+		} else {
+			_width = _width;
+		}
+		return _width;
+	}
+	,ondestroy: function() {
+		this.visual.drop();
+		this.bar.drop();
+		this.visual = null;
+		this.bar = null;
+	}
+	,onbounds: function() {
+		var _margin = this.control.canvas.scale * this.margin;
+		var _this = this.visual.transform.local.pos;
+		var _x = this.control.x * this.control.canvas.scale;
+		var _y = this.control.y * this.control.canvas.scale;
+		var prev = _this.ignore_listeners;
+		_this.ignore_listeners = true;
+		_this.x = _x;
+		if(!_this._construct) {
+			if(_this.listen_x != null && !_this.ignore_listeners) {
+				_this.listen_x(_x);
+			}
+		}
+		_this.y = _y;
+		if(!_this._construct) {
+			if(_this.listen_y != null && !_this.ignore_listeners) {
+				_this.listen_y(_y);
+			}
+		}
+		_this.ignore_listeners = prev;
+		if(_this.listen_x != null && !_this.ignore_listeners) {
+			_this.listen_x(_this.x);
+		}
+		if(_this.listen_y != null && !_this.ignore_listeners) {
+			_this.listen_y(_this.y);
+		}
+		this.visual.resize_xy(this.control.w * this.control.canvas.scale,this.control.h * this.control.canvas.scale);
+		var _this1 = this.bar.transform.local.pos;
+		var _x1 = this.control.x * this.control.canvas.scale + _margin;
+		var _y1 = this.control.y * this.control.canvas.scale + _margin;
+		var prev1 = _this1.ignore_listeners;
+		_this1.ignore_listeners = true;
+		_this1.x = _x1;
+		if(!_this1._construct) {
+			if(_this1.listen_x != null && !_this1.ignore_listeners) {
+				_this1.listen_x(_x1);
+			}
+		}
+		_this1.y = _y1;
+		if(!_this1._construct) {
+			if(_this1.listen_y != null && !_this1.ignore_listeners) {
+				_this1.listen_y(_y1);
+			}
+		}
+		_this1.ignore_listeners = prev1;
+		if(_this1.listen_x != null && !_this1.ignore_listeners) {
+			_this1.listen_x(_this1.x);
+		}
+		if(_this1.listen_y != null && !_this1.ignore_listeners) {
+			_this1.listen_y(_this1.y);
+		}
+		this.bar.resize_xy(this.get_bar_width(this.progress.progress),this.control.h * this.control.canvas.scale - _margin * 2);
+	}
+	,onclip: function(_disable,_x,_y,_w,_h) {
+		this.update_clip(this.control.canvas.scale);
+	}
+	,onvisible: function(_visible) {
+		this.visual.set_visible(this.bar.set_visible(_visible));
+	}
+	,ondepth: function(_depth) {
+		this.visual.set_depth(this.render.options.depth + _depth);
+		this.bar.set_depth(this.visual.state.depth + 0.001);
+	}
+	,__class__: mint_render_luxe_Progress
+});
+var mint_render_luxe_Scroll = function(_render,_control) {
+	this.scroll = _control;
+	this.render = _render;
+	mint_render_Render.call(this,this.render,_control);
+	var _opt = this.scroll.options.options;
+	if(_opt.color == null) {
+		_opt.color = new phoenix_Color().rgb(1644826);
+	}
+	this.color = _opt.color;
+	if(_opt.color_handles == null) {
+		_opt.color_handles = new phoenix_Color().rgb(10340963);
+	}
+	this.color_handles = _opt.color_handles;
+	this.visual = new luxe_Sprite({ name : this.control.name + ".visual", batcher : this.render.options.batcher, no_scene : true, centered : false, pos : new phoenix_Vector(this.control.x * this.control.canvas.scale,this.control.y * this.control.canvas.scale), size : new phoenix_Vector(this.control.w * this.control.canvas.scale,this.control.h * this.control.canvas.scale), color : this.color, depth : this.render.options.depth + this.control.depth, visible : this.control.visible});
+	this.scrollh = new luxe_Sprite({ name : this.control.name + ".scrollh", batcher : this.render.options.batcher, no_scene : true, centered : false, pos : new phoenix_Vector(this.control.canvas.scale * this.scroll.scrollh.x,this.control.canvas.scale * this.scroll.scrollh.y), size : new phoenix_Vector(this.control.canvas.scale * this.scroll.scrollh.w,this.control.canvas.scale * this.scroll.scrollh.h), color : this.color_handles, depth : this.render.options.depth + this.scroll.scrollh.depth, visible : this.scroll.visible_h});
+	this.scrollv = new luxe_Sprite({ name : this.control.name + ".scrollv", batcher : this.render.options.batcher, no_scene : true, centered : false, pos : new phoenix_Vector(this.control.canvas.scale * this.scroll.scrollv.x,this.control.canvas.scale * this.scroll.scrollv.y), size : new phoenix_Vector(this.control.canvas.scale * this.scroll.scrollv.w,this.control.canvas.scale * this.scroll.scrollv.h), color : this.color_handles, depth : this.render.options.depth + this.scroll.scrollv.depth, visible : this.scroll.visible_v});
+	this.update_clip(this.control.canvas.scale);
+	this.scroll.onchange.listen($bind(this,this.onchange));
+	this.scroll.onhandlevis.listen($bind(this,this.onhandlevis));
+};
+$hxClasses["mint.render.luxe.Scroll"] = mint_render_luxe_Scroll;
+mint_render_luxe_Scroll.__name__ = ["mint","render","luxe","Scroll"];
+mint_render_luxe_Scroll.__super__ = mint_render_Render;
+mint_render_luxe_Scroll.prototype = $extend(mint_render_Render.prototype,{
+	update_clip: function(_scale) {
+		var _clip = mint_render_luxe_Convert.clip_bounds(this.control.clip_with,this.render.options.batcher.view,_scale);
+		this.visual.set_clip_rect(_clip);
+		this.scrollh.set_clip_rect(_clip);
+		this.scrollv.set_clip_rect(_clip);
+	}
+	,onscale: function(_scale,_prev_scale) {
+		this.scrollh.geometry_quad.resize_xy(this.control.canvas.scale * this.scroll.scrollh.w,this.control.canvas.scale * this.scroll.scrollh.h);
+		this.scrollv.geometry_quad.resize_xy(this.control.canvas.scale * this.scroll.scrollv.w,this.control.canvas.scale * this.scroll.scrollv.h);
+		this.update_clip(_scale);
+	}
+	,ondestroy: function() {
+		this.scroll.onchange.remove($bind(this,this.onchange));
+		this.scrollh.destroy();
+		this.scrollv.destroy();
+		this.visual.destroy();
+		this.visual = null;
+	}
+	,onbounds: function() {
+		var _this = this.visual.get_transform().local.pos;
+		var _x = this.control.x * this.control.canvas.scale;
+		var _y = this.control.y * this.control.canvas.scale;
+		var prev = _this.ignore_listeners;
+		_this.ignore_listeners = true;
+		_this.x = _x;
+		if(!_this._construct) {
+			if(_this.listen_x != null && !_this.ignore_listeners) {
+				_this.listen_x(_x);
+			}
+		}
+		_this.y = _y;
+		if(!_this._construct) {
+			if(_this.listen_y != null && !_this.ignore_listeners) {
+				_this.listen_y(_y);
+			}
+		}
+		_this.ignore_listeners = prev;
+		if(_this.listen_x != null && !_this.ignore_listeners) {
+			_this.listen_x(_this.x);
+		}
+		if(_this.listen_y != null && !_this.ignore_listeners) {
+			_this.listen_y(_this.y);
+		}
+		this.visual.geometry_quad.resize_xy(this.control.w * this.control.canvas.scale,this.control.h * this.control.canvas.scale);
+		var _this1 = this.scrollh.get_pos();
+		var _x1 = this.control.canvas.scale * this.scroll.scrollh.x;
+		var _y1 = this.control.canvas.scale * this.scroll.scrollh.y;
+		var prev1 = _this1.ignore_listeners;
+		_this1.ignore_listeners = true;
+		_this1.x = _x1;
+		if(!_this1._construct) {
+			if(_this1.listen_x != null && !_this1.ignore_listeners) {
+				_this1.listen_x(_x1);
+			}
+		}
+		_this1.y = _y1;
+		if(!_this1._construct) {
+			if(_this1.listen_y != null && !_this1.ignore_listeners) {
+				_this1.listen_y(_y1);
+			}
+		}
+		_this1.ignore_listeners = prev1;
+		if(_this1.listen_x != null && !_this1.ignore_listeners) {
+			_this1.listen_x(_this1.x);
+		}
+		if(_this1.listen_y != null && !_this1.ignore_listeners) {
+			_this1.listen_y(_this1.y);
+		}
+		var _this2 = this.scrollv.get_pos();
+		var _x2 = this.control.canvas.scale * this.scroll.scrollv.x;
+		var _y2 = this.control.canvas.scale * this.scroll.scrollv.y;
+		var prev2 = _this2.ignore_listeners;
+		_this2.ignore_listeners = true;
+		_this2.x = _x2;
+		if(!_this2._construct) {
+			if(_this2.listen_x != null && !_this2.ignore_listeners) {
+				_this2.listen_x(_x2);
+			}
+		}
+		_this2.y = _y2;
+		if(!_this2._construct) {
+			if(_this2.listen_y != null && !_this2.ignore_listeners) {
+				_this2.listen_y(_y2);
+			}
+		}
+		_this2.ignore_listeners = prev2;
+		if(_this2.listen_x != null && !_this2.ignore_listeners) {
+			_this2.listen_x(_this2.x);
+		}
+		if(_this2.listen_y != null && !_this2.ignore_listeners) {
+			_this2.listen_y(_this2.y);
+		}
+	}
+	,onhandlevis: function(_h,_v) {
+		this.scrollh.set_visible(_h && this.scroll.visible);
+		this.scrollv.set_visible(_v && this.scroll.visible);
+	}
+	,onchange: function() {
+		var _this = this.scrollh.get_pos();
+		var _x = this.control.canvas.scale * this.scroll.scrollh.x;
+		_this.x = _x;
+		if(!_this._construct) {
+			if(_this.listen_x != null && !_this.ignore_listeners) {
+				_this.listen_x(_x);
+			}
+		}
+		var _this1 = this.scrollv.get_pos();
+		var _y = this.control.canvas.scale * this.scroll.scrollv.y;
+		_this1.y = _y;
+		if(!_this1._construct) {
+			if(_this1.listen_y != null && !_this1.ignore_listeners) {
+				_this1.listen_y(_y);
+			}
+		}
+	}
+	,onclip: function(_disable,_x,_y,_w,_h) {
+		this.update_clip(this.control.canvas.scale);
+	}
+	,onvisible: function(_visible) {
+		this.visual.set_visible(_visible);
+		this.scrollh.set_visible(this.scroll.visible_h && _visible);
+		this.scrollv.set_visible(this.scroll.visible_v && _visible);
+	}
+	,ondepth: function(_depth) {
+		this.visual.set_depth(this.render.options.depth + _depth);
+		this.scrollv.set_depth(this.render.options.depth + this.scroll.scrollv.depth);
+		this.scrollh.set_depth(this.render.options.depth + this.scroll.scrollh.depth);
+	}
+	,__class__: mint_render_luxe_Scroll
+});
+var mint_render_luxe_Slider = function(_render,_control) {
+	var _gthis = this;
+	this.slider = _control;
+	this.render = _render;
+	mint_render_Render.call(this,this.render,_control);
+	var _opt = this.slider.options.options;
+	if(_opt.color == null) {
+		_opt.color = new phoenix_Color().rgb(3618617);
+	}
+	this.color = _opt.color;
+	if(_opt.color_bar == null) {
+		_opt.color_bar = new phoenix_Color().rgb(10340963);
+	}
+	this.color_bar = _opt.color_bar;
+	if(_opt.color_bar_hover == null) {
+		_opt.color_bar_hover = new phoenix_Color().rgb(11917193);
+	}
+	this.color_bar_hover = _opt.color_bar_hover;
+	this.visual = Luxe.draw.box({ id : this.control.name + ".visual", batcher : this.render.options.batcher, x : this.control.x * this.control.canvas.scale, y : this.control.y * this.control.canvas.scale, w : this.control.w * this.control.canvas.scale, h : this.control.h * this.control.canvas.scale, color : this.color, depth : this.render.options.depth + this.control.depth, visible : this.control.visible});
+	this.bar = Luxe.draw.box({ id : this.control.name + ".bar", batcher : this.render.options.batcher, x : this.control.x * this.control.canvas.scale + this.control.canvas.scale * this.slider.bar_x, y : this.control.y * this.control.canvas.scale + this.control.canvas.scale * this.slider.bar_y, w : this.control.canvas.scale * this.slider.bar_w, h : this.control.canvas.scale * this.slider.bar_h, color : this.color_bar, depth : this.render.options.depth + this.control.depth + 0.001, visible : this.control.visible});
+	this.update_clip(this.control.canvas.scale);
+	this.slider.onchange.listen($bind(this,this.onchange));
+	this.slider.onmouseenter.listen(function(_,_1) {
+		_gthis.bar.set_color(_gthis.color_bar_hover);
+	});
+	this.slider.onmouseleave.listen(function(_2,_3) {
+		_gthis.bar.set_color(_gthis.color_bar);
+	});
+};
+$hxClasses["mint.render.luxe.Slider"] = mint_render_luxe_Slider;
+mint_render_luxe_Slider.__name__ = ["mint","render","luxe","Slider"];
+mint_render_luxe_Slider.__super__ = mint_render_Render;
+mint_render_luxe_Slider.prototype = $extend(mint_render_Render.prototype,{
+	update_clip: function(_scale) {
+		var _clip = mint_render_luxe_Convert.clip_bounds(this.control.clip_with,this.render.options.batcher.view,_scale);
+		this.visual.set_clip_rect(_clip);
+		this.bar.set_clip_rect(_clip);
+	}
+	,onscale: function(_scale,_prev_scale) {
+		this.update_clip(_scale);
+	}
+	,onchange: function(value,prev_value) {
+		var _this = this.bar.transform.local.pos;
+		var _x = this.control.x * this.control.canvas.scale + this.control.canvas.scale * this.slider.bar_x;
+		var _y = this.control.y * this.control.canvas.scale + this.control.canvas.scale * this.slider.bar_y;
+		var prev = _this.ignore_listeners;
+		_this.ignore_listeners = true;
+		_this.x = _x;
+		if(!_this._construct) {
+			if(_this.listen_x != null && !_this.ignore_listeners) {
+				_this.listen_x(_x);
+			}
+		}
+		_this.y = _y;
+		if(!_this._construct) {
+			if(_this.listen_y != null && !_this.ignore_listeners) {
+				_this.listen_y(_y);
+			}
+		}
+		_this.ignore_listeners = prev;
+		if(_this.listen_x != null && !_this.ignore_listeners) {
+			_this.listen_x(_this.x);
+		}
+		if(_this.listen_y != null && !_this.ignore_listeners) {
+			_this.listen_y(_this.y);
+		}
+		this.bar.resize_xy(this.control.canvas.scale * this.slider.bar_w,this.control.canvas.scale * this.slider.bar_h);
+	}
+	,ondestroy: function() {
+		this.visual.drop();
+		this.bar.drop();
+		this.visual = null;
+		this.bar = null;
+	}
+	,onbounds: function() {
+		var _this = this.visual.transform.local.pos;
+		var _x = this.control.x * this.control.canvas.scale;
+		var _y = this.control.y * this.control.canvas.scale;
+		var prev = _this.ignore_listeners;
+		_this.ignore_listeners = true;
+		_this.x = _x;
+		if(!_this._construct) {
+			if(_this.listen_x != null && !_this.ignore_listeners) {
+				_this.listen_x(_x);
+			}
+		}
+		_this.y = _y;
+		if(!_this._construct) {
+			if(_this.listen_y != null && !_this.ignore_listeners) {
+				_this.listen_y(_y);
+			}
+		}
+		_this.ignore_listeners = prev;
+		if(_this.listen_x != null && !_this.ignore_listeners) {
+			_this.listen_x(_this.x);
+		}
+		if(_this.listen_y != null && !_this.ignore_listeners) {
+			_this.listen_y(_this.y);
+		}
+		this.visual.resize_xy(this.control.w * this.control.canvas.scale,this.control.h * this.control.canvas.scale);
+		var _this1 = this.bar.transform.local.pos;
+		var _x1 = this.control.x * this.control.canvas.scale + this.control.canvas.scale * this.slider.bar_x;
+		var _y1 = this.control.y * this.control.canvas.scale + this.control.canvas.scale * this.slider.bar_y;
+		var prev1 = _this1.ignore_listeners;
+		_this1.ignore_listeners = true;
+		_this1.x = _x1;
+		if(!_this1._construct) {
+			if(_this1.listen_x != null && !_this1.ignore_listeners) {
+				_this1.listen_x(_x1);
+			}
+		}
+		_this1.y = _y1;
+		if(!_this1._construct) {
+			if(_this1.listen_y != null && !_this1.ignore_listeners) {
+				_this1.listen_y(_y1);
+			}
+		}
+		_this1.ignore_listeners = prev1;
+		if(_this1.listen_x != null && !_this1.ignore_listeners) {
+			_this1.listen_x(_this1.x);
+		}
+		if(_this1.listen_y != null && !_this1.ignore_listeners) {
+			_this1.listen_y(_this1.y);
+		}
+		this.bar.resize_xy(this.control.canvas.scale * this.slider.bar_w,this.control.canvas.scale * this.slider.bar_h);
+	}
+	,onclip: function(_disable,_x,_y,_w,_h) {
+		this.update_clip(this.control.canvas.scale);
+	}
+	,onvisible: function(_visible) {
+		this.visual.set_visible(_visible);
+		this.bar.set_visible(_visible);
+	}
+	,ondepth: function(_depth) {
+		this.visual.set_depth(this.render.options.depth + _depth);
+		this.bar.set_depth(this.visual.state.depth + 0.001);
+	}
+	,__class__: mint_render_luxe_Slider
+});
+var mint_render_luxe_TextEdit = function(_render,_control) {
+	this.cursor_blink_rate = 0.5;
+	var _gthis = this;
+	this.textedit = _control;
+	this.render = _render;
+	mint_render_Render.call(this,this.render,_control);
+	var _opt = this.textedit.options.options;
+	if(_opt.color == null) {
+		_opt.color = new phoenix_Color().rgb(6579305);
+	}
+	this.color = _opt.color;
+	if(_opt.color_hover == null) {
+		_opt.color_hover = new phoenix_Color().rgb(4473929);
+	}
+	this.color_hover = _opt.color_hover;
+	if(_opt.color_cursor == null) {
+		_opt.color_cursor = new phoenix_Color().rgb(10340963);
+	}
+	this.color_cursor = _opt.color_cursor;
+	if(_opt.cursor_blink_rate == null) {
+		_opt.cursor_blink_rate = 0.5;
+	}
+	this.cursor_blink_rate = _opt.cursor_blink_rate;
+	this.visual = Luxe.draw.box({ id : this.control.name + ".visual", batcher : this.render.options.batcher, x : this.control.x * this.control.canvas.scale, y : this.control.y * this.control.canvas.scale, w : this.control.w * this.control.canvas.scale, h : this.control.h * this.control.canvas.scale, color : this.color, depth : this.render.options.depth + this.control.depth, visible : this.control.visible});
+	this.focus = Luxe.draw.rectangle({ id : this.control.name + ".focus", batcher : this.render.options.batcher, x : this.control.x * this.control.canvas.scale, y : this.control.y * this.control.canvas.scale, w : this.control.w * this.control.canvas.scale, h : this.control.h * this.control.canvas.scale, color : this.color_cursor, depth : this.render.options.depth + this.control.depth + 0.001, visible : false});
+	this.cursor = Luxe.draw.line({ id : this.control.name + ".cursor", batcher : this.render.options.batcher, p0 : new phoenix_Vector(0,0), p1 : new phoenix_Vector(0,0), color : this.color_cursor, depth : this.render.options.depth + this.control.depth + 0.002, visible : false});
+	this.textedit.onmouseenter.listen(function(e,c) {
+		_gthis.visual.set_color(_gthis.color_hover);
+	});
+	this.textedit.onmouseleave.listen(function(e1,c1) {
+		_gthis.visual.set_color(_gthis.color);
+	});
+	this.textedit.ontextinput.listen(function(_,_1) {
+		var tmp = _gthis.textedit.isfocused || _gthis.textedit.iscaptured;
+	});
+	this.textedit.onfocused.listen(function(state) {
+		_gthis.focus.set_visible(state);
+		if(state) {
+			_gthis.start_cursor();
+		} else {
+			_gthis.stop_cursor();
+		}
+	});
+	this.textedit.onchangeindex.listen(function(index) {
+		_gthis.update_cursor();
+	});
+	this.update_clip(this.control.canvas.scale);
+};
+$hxClasses["mint.render.luxe.TextEdit"] = mint_render_luxe_TextEdit;
+mint_render_luxe_TextEdit.__name__ = ["mint","render","luxe","TextEdit"];
+mint_render_luxe_TextEdit.__super__ = mint_render_Render;
+mint_render_luxe_TextEdit.prototype = $extend(mint_render_Render.prototype,{
+	update_clip: function(_scale) {
+		var _clip = mint_render_luxe_Convert.clip_bounds(this.control.clip_with,this.render.options.batcher.view,_scale);
+		this.visual.set_clip_rect(_clip);
+		this.focus.set_clip_rect(_clip);
+		this.cursor.set_clip_rect(_clip);
+	}
+	,onscale: function(_scale,_prev_scale) {
+		this.update_clip(_scale);
+		this.update_cursor();
+	}
+	,start_cursor: function() {
+		this.cursor.set_visible(true);
+		this.update_cursor();
+		this.timer = Luxe.timer.schedule(this.cursor_blink_rate,$bind(this,this.blink_cursor),true);
+	}
+	,stop_cursor: function() {
+		if(this.timer != null) {
+			this.timer.stop();
+		}
+		this.timer = null;
+		this.cursor.set_visible(false);
+	}
+	,blink_cursor: function() {
+		if(this.timer == null) {
+			return;
+		}
+		this.cursor.set_visible(!this.cursor.visible);
+	}
+	,reset_cursor: function() {
+		if(this.timer != null) {
+			this.cursor.set_visible(true);
+			var _this = Luxe.core.app;
+			var tmp = window.performance.now() / 1000.0 - snow_core_web_Runtime.timestamp_start;
+			this.timer.fire_at = tmp + this.cursor_blink_rate;
+		}
+	}
+	,update_cursor: function() {
+		var _text_visual = this.textedit.label.renderer.text;
+		var _font = _text_visual.get_font();
+		var _point_size = _text_visual.get_point_size();
+		var _value = _text_visual.get_letter_spacing();
+		var _letter_space = this.control.canvas.scale * _value;
+		var cur = this.textedit.index;
+		var s = this.textedit.display;
+		var index = 0;
+		var this1 = s;
+		var this2 = this1;
+		var this3 = this2;
+		var index1 = index;
+		var len = this3.length;
+		var i = 0;
+		while(i < 0 && index1 < len) {
+			var c = this3.charCodeAt(index1);
+			index1 += !(55296 <= c && c <= 56319) ? 1 : 2;
+			++i;
+		}
+		var si = index1;
+		var ei;
+		if(cur == null) {
+			ei = s.length;
+		} else if(cur < 0) {
+			ei = si;
+		} else {
+			var this4 = s;
+			var this5 = this4;
+			var this6 = this5;
+			if(cur >= 0) {
+				var index2 = si;
+				var len1 = this6.length;
+				var i1 = 0;
+				while(i1 < cur && index2 < len1) {
+					var c1 = this6.charCodeAt(index2);
+					index2 += !(55296 <= c1 && c1 <= 56319) ? 1 : 2;
+					++i1;
+				}
+				ei = index2;
+			} else {
+				var index3 = si;
+				var count = 0;
+				while(count < -cur && 0 < index3) {
+					var c2 = this6.charCodeAt(index3 - 1);
+					index3 -= !(56320 <= c2 && c2 <= 57343) ? 1 : 2;
+					++count;
+				}
+				ei = index3;
+			}
+		}
+		var _text_before = s.substring(si,ei);
+		var _text_all = this.textedit.edit;
+		var _max_w = 0.0;
+		var _push_widths = false;
+		var _lines = luxe_utils_unifill_Unifill.uSplit(_text_all,"\n");
+		var _g = 0;
+		while(_g < _lines.length) {
+			var _line = _lines[_g];
+			++_g;
+			var _cur_w = _font.width_of_line(_line,_point_size,_letter_space);
+			_max_w = Math.max(_max_w,_cur_w);
+			if(_push_widths) {
+				null.push(_cur_w);
+			}
+		}
+		var _text_width = _max_w;
+		var _lines1 = _text_before.split("\n");
+		var _ratio = _point_size / _font.info.point_size;
+		var _text_height = _lines1.length * (_font.info.line_height * _ratio);
+		var _label_x = this.control.canvas.scale * this.textedit.label.x;
+		var _label_y = this.control.canvas.scale * this.textedit.label.y;
+		var _label_w = this.control.canvas.scale * this.textedit.label.w;
+		var _label_h = this.control.canvas.scale * this.textedit.label.h;
+		var _max_w1 = 0.0;
+		var _push_widths1 = false;
+		var _lines2 = luxe_utils_unifill_Unifill.uSplit(_text_before,"\n");
+		var _g1 = 0;
+		while(_g1 < _lines2.length) {
+			var _line1 = _lines2[_g1];
+			++_g1;
+			var _cur_w1 = _font.width_of_line(_line1,_point_size,_letter_space);
+			_max_w1 = Math.max(_max_w1,_cur_w1);
+			if(_push_widths1) {
+				null.push(_cur_w1);
+			}
+		}
+		var _x = _max_w1;
+		var _y = _text_height * 0.2;
+		var _left = _label_x;
+		var _g2 = _text_visual.get_align();
+		switch(_g2) {
+		case 1:
+			_x -= _text_width;
+			_left = _label_w;
+			break;
+		case 2:
+			_x -= _text_width / 2.0;
+			_left = _label_x + _label_w / 2;
+			break;
+		default:
+		}
+		var _cursor_pad = this.control.canvas.scale * 2;
+		var _cursor_x = _left + _x;
+		var _cursor_y = _label_y + _cursor_pad;
+		this.cursor.set_p0(new phoenix_Vector(_cursor_x,_cursor_y));
+		this.cursor.set_p1(new phoenix_Vector(_cursor_x,_cursor_y + _label_h - _cursor_pad * 2));
+		if(this.timer != null) {
+			this.cursor.set_visible(true);
+			var _this = Luxe.core.app;
+			var tmp = window.performance.now() / 1000.0 - snow_core_web_Runtime.timestamp_start;
+			this.timer.fire_at = tmp + this.cursor_blink_rate;
+		}
+	}
+	,ondestroy: function() {
+		this.stop_cursor();
+		this.cursor.drop();
+		this.visual.drop();
+		this.focus.drop();
+		this.visual = null;
+		this.cursor = null;
+		this.focus = null;
+	}
+	,onbounds: function() {
+		var _this = this.visual.transform.local.pos;
+		var _x = this.control.x * this.control.canvas.scale;
+		var _y = this.control.y * this.control.canvas.scale;
+		var prev = _this.ignore_listeners;
+		_this.ignore_listeners = true;
+		_this.x = _x;
+		if(!_this._construct) {
+			if(_this.listen_x != null && !_this.ignore_listeners) {
+				_this.listen_x(_x);
+			}
+		}
+		_this.y = _y;
+		if(!_this._construct) {
+			if(_this.listen_y != null && !_this.ignore_listeners) {
+				_this.listen_y(_y);
+			}
+		}
+		_this.ignore_listeners = prev;
+		if(_this.listen_x != null && !_this.ignore_listeners) {
+			_this.listen_x(_this.x);
+		}
+		if(_this.listen_y != null && !_this.ignore_listeners) {
+			_this.listen_y(_this.y);
+		}
+		this.visual.resize_xy(this.control.w * this.control.canvas.scale,this.control.h * this.control.canvas.scale);
+		var _this1 = this.focus.transform.local.pos;
+		var _x1 = this.control.x * this.control.canvas.scale;
+		var _y1 = this.control.y * this.control.canvas.scale;
+		var prev1 = _this1.ignore_listeners;
+		_this1.ignore_listeners = true;
+		_this1.x = _x1;
+		if(!_this1._construct) {
+			if(_this1.listen_x != null && !_this1.ignore_listeners) {
+				_this1.listen_x(_x1);
+			}
+		}
+		_this1.y = _y1;
+		if(!_this1._construct) {
+			if(_this1.listen_y != null && !_this1.ignore_listeners) {
+				_this1.listen_y(_y1);
+			}
+		}
+		_this1.ignore_listeners = prev1;
+		if(_this1.listen_x != null && !_this1.ignore_listeners) {
+			_this1.listen_x(_this1.x);
+		}
+		if(_this1.listen_y != null && !_this1.ignore_listeners) {
+			_this1.listen_y(_this1.y);
+		}
+		this.focus.set_xywh(this.control.x * this.control.canvas.scale,this.control.y * this.control.canvas.scale,this.control.w * this.control.canvas.scale,this.control.h * this.control.canvas.scale);
+		if(this.timer != null) {
+			this.cursor.set_visible(true);
+			var _this2 = Luxe.core.app;
+			var tmp = window.performance.now() / 1000.0 - snow_core_web_Runtime.timestamp_start;
+			this.timer.fire_at = tmp + this.cursor_blink_rate;
+		}
+		this.update_cursor();
+	}
+	,onclip: function(_disable,_x,_y,_w,_h) {
+		this.update_clip(this.control.canvas.scale);
+	}
+	,onvisible: function(_visible) {
+		this.visual.set_visible(_visible);
+		if(!_visible) {
+			this.stop_cursor();
+			this.focus.set_visible(false);
+		} else if(_visible && this.textedit.isfocused) {
+			this.start_cursor();
+			this.focus.set_visible(true);
+		}
+	}
+	,ondepth: function(_depth) {
+		this.visual.set_depth(this.render.options.depth + _depth);
+		this.focus.set_depth(this.visual.state.depth + 0.001);
+		this.cursor.set_depth(this.visual.state.depth + 0.002);
+	}
+	,__class__: mint_render_luxe_TextEdit
+});
+var mint_render_luxe_Window = function(_render,_control) {
+	var _gthis = this;
+	this.window = _control;
+	this.render = _render;
+	mint_render_Render.call(this,this.render,_control);
+	var _opt = this.window.options.options;
+	if(_opt.color == null) {
+		_opt.color = new phoenix_Color().rgb(2039583);
+	}
+	this.color = _opt.color;
+	if(_opt.color_border == null) {
+		_opt.color_border = new phoenix_Color().rgb(394758);
+	}
+	this.color_border = _opt.color_border;
+	if(_opt.color_titlebar == null) {
+		_opt.color_titlebar = new phoenix_Color().rgb(2434341);
+	}
+	this.color_titlebar = _opt.color_titlebar;
+	if(_opt.color_close == null) {
+		_opt.color_close = new phoenix_Color().rgb(4473924);
+	}
+	this.color_close = _opt.color_close;
+	if(_opt.color_collapse == null) {
+		_opt.color_collapse = new phoenix_Color().rgb(4473924);
+	}
+	this.color_collapse = _opt.color_collapse;
+	if(_opt.color_close_hover == null) {
+		_opt.color_close_hover = new phoenix_Color().rgb(8947848);
+	}
+	this.color_close_hover = _opt.color_close_hover;
+	if(_opt.color_collapse_hover == null) {
+		_opt.color_collapse_hover = new phoenix_Color().rgb(8947848);
+	}
+	this.color_collapse_hover = _opt.color_collapse_hover;
+	this.visual = Luxe.draw.box({ id : this.control.name + ".visual", batcher : this.render.options.batcher, x : this.control.x * this.control.canvas.scale, y : this.control.y * this.control.canvas.scale, w : this.control.w * this.control.canvas.scale, h : this.control.h * this.control.canvas.scale, color : this.color, depth : this.render.options.depth + this.window.depth, visible : this.window.visible});
+	this.top = Luxe.draw.box({ id : this.control.name + ".top", batcher : this.render.options.batcher, x : this.control.canvas.scale * this.window.title.x, y : this.control.canvas.scale * this.window.title.y, w : this.control.canvas.scale * this.window.title.w, h : this.control.canvas.scale * this.window.title.h, color : this.color_titlebar, depth : this.render.options.depth + this.window.depth + 0.001, visible : this.window.visible});
+	this.border = Luxe.draw.rectangle({ id : this.control.name + ".border", batcher : this.render.options.batcher, x : this.control.x * this.control.canvas.scale, y : this.control.y * this.control.canvas.scale, w : this.control.w * this.control.canvas.scale + 1, h : this.control.h * this.control.canvas.scale, color : this.color_border, depth : this.render.options.depth + this.window.depth + 0.002, visible : this.window.visible});
+	this.collapse = Luxe.draw.ngon({ id : this.control.name + ".border", batcher : this.render.options.batcher, r : 5, solid : true, angle : 180, sides : 3, color : this.color_collapse, depth : this.render.options.depth + this.window.depth + 0.003, visible : this.window.collapsible && this.window.visible});
+	var _close_poly = [new phoenix_Vector(0.00,0.00),new phoenix_Vector(-0.50,0.33),new phoenix_Vector(-0.17,0.00),new phoenix_Vector(-0.50,-0.33),new phoenix_Vector(-0.33,-0.50),new phoenix_Vector(0.00,-0.17),new phoenix_Vector(0.33,-0.50),new phoenix_Vector(0.50,-0.33),new phoenix_Vector(0.17,0.00),new phoenix_Vector(0.50,0.33),new phoenix_Vector(0.33,0.50),new phoenix_Vector(0.00,0.17),new phoenix_Vector(-0.33,0.50),new phoenix_Vector(-0.50,0.33)];
+	if(_opt.size_close == null) {
+		_opt.size_close = 10;
+	}
+	var _close_size = _opt.size_close;
+	var _g = 0;
+	while(_g < _close_poly.length) {
+		var _point = _close_poly[_g];
+		++_g;
+		var _x = _point.x * _close_size;
+		var _y = _point.y * _close_size;
+		var _z = _point.z * _close_size;
+		var prev = _point.ignore_listeners;
+		_point.ignore_listeners = true;
+		_point.x = _x;
+		if(!_point._construct) {
+			if(_point.listen_x != null && !_point.ignore_listeners) {
+				_point.listen_x(_x);
+			}
+		}
+		_point.y = _y;
+		if(!_point._construct) {
+			if(_point.listen_y != null && !_point.ignore_listeners) {
+				_point.listen_y(_y);
+			}
+		}
+		_point.z = _z;
+		if(!_point._construct) {
+			if(_point.listen_z != null && !_point.ignore_listeners) {
+				_point.listen_z(_z);
+			}
+		}
+		_point.ignore_listeners = prev;
+		if(_point.listen_x != null && !_point.ignore_listeners) {
+			_point.listen_x(_point.x);
+		}
+		if(_point.listen_y != null && !_point.ignore_listeners) {
+			_point.listen_y(_point.y);
+		}
+		if(_point.listen_z != null && !_point.ignore_listeners) {
+			_point.listen_z(_point.z);
+		}
+	}
+	this.close = Luxe.draw.poly({ id : this.control.name + ".border", batcher : this.render.options.batcher, points : _close_poly, close : true, solid : true, color : this.color_close, depth : this.render.options.depth + this.window.depth + 0.004, visible : this.window.closable && this.window.visible});
+	var _closer = this.window.close_handle;
+	var _collapser = this.window.collapse_handle;
+	var _this = this.close.transform.local.scale;
+	var _x1 = this.control.canvas.scale;
+	var _y1 = this.control.canvas.scale;
+	var prev1 = _this.ignore_listeners;
+	_this.ignore_listeners = true;
+	_this.x = _x1;
+	if(!_this._construct) {
+		if(_this.listen_x != null && !_this.ignore_listeners) {
+			_this.listen_x(_x1);
+		}
+	}
+	_this.y = _y1;
+	if(!_this._construct) {
+		if(_this.listen_y != null && !_this.ignore_listeners) {
+			_this.listen_y(_y1);
+		}
+	}
+	_this.ignore_listeners = prev1;
+	if(_this.listen_x != null && !_this.ignore_listeners) {
+		_this.listen_x(_this.x);
+	}
+	if(_this.listen_y != null && !_this.ignore_listeners) {
+		_this.listen_y(_this.y);
+	}
+	var _this1 = this.close.transform.local.pos;
+	var _x2 = this.control.canvas.scale * (_closer.x + _closer.w / 2);
+	var _y2 = this.control.canvas.scale * (_closer.y + _closer.h / 2);
+	var prev2 = _this1.ignore_listeners;
+	_this1.ignore_listeners = true;
+	_this1.x = _x2;
+	if(!_this1._construct) {
+		if(_this1.listen_x != null && !_this1.ignore_listeners) {
+			_this1.listen_x(_x2);
+		}
+	}
+	_this1.y = _y2;
+	if(!_this1._construct) {
+		if(_this1.listen_y != null && !_this1.ignore_listeners) {
+			_this1.listen_y(_y2);
+		}
+	}
+	_this1.ignore_listeners = prev2;
+	if(_this1.listen_x != null && !_this1.ignore_listeners) {
+		_this1.listen_x(_this1.x);
+	}
+	if(_this1.listen_y != null && !_this1.ignore_listeners) {
+		_this1.listen_y(_this1.y);
+	}
+	var _this2 = this.collapse.transform.local.scale;
+	var _x3 = this.control.canvas.scale;
+	var _y3 = this.control.canvas.scale;
+	var prev3 = _this2.ignore_listeners;
+	_this2.ignore_listeners = true;
+	_this2.x = _x3;
+	if(!_this2._construct) {
+		if(_this2.listen_x != null && !_this2.ignore_listeners) {
+			_this2.listen_x(_x3);
+		}
+	}
+	_this2.y = _y3;
+	if(!_this2._construct) {
+		if(_this2.listen_y != null && !_this2.ignore_listeners) {
+			_this2.listen_y(_y3);
+		}
+	}
+	_this2.ignore_listeners = prev3;
+	if(_this2.listen_x != null && !_this2.ignore_listeners) {
+		_this2.listen_x(_this2.x);
+	}
+	if(_this2.listen_y != null && !_this2.ignore_listeners) {
+		_this2.listen_y(_this2.y);
+	}
+	var _this3 = this.collapse.transform.local.pos;
+	var _x4 = this.control.canvas.scale * (_collapser.x + _collapser.w / 2);
+	var _y4 = this.control.canvas.scale * (_collapser.y + _collapser.h / 2);
+	var prev4 = _this3.ignore_listeners;
+	_this3.ignore_listeners = true;
+	_this3.x = _x4;
+	if(!_this3._construct) {
+		if(_this3.listen_x != null && !_this3.ignore_listeners) {
+			_this3.listen_x(_x4);
+		}
+	}
+	_this3.y = _y4;
+	if(!_this3._construct) {
+		if(_this3.listen_y != null && !_this3.ignore_listeners) {
+			_this3.listen_y(_y4);
+		}
+	}
+	_this3.ignore_listeners = prev4;
+	if(_this3.listen_x != null && !_this3.ignore_listeners) {
+		_this3.listen_x(_this3.x);
+	}
+	if(_this3.listen_y != null && !_this3.ignore_listeners) {
+		_this3.listen_y(_this3.y);
+	}
+	_closer.onmouseenter.listen(function(_,_1) {
+		_gthis.close.set_color(_gthis.color_close_hover);
+	});
+	_closer.onmouseleave.listen(function(_2,_3) {
+		_gthis.close.set_color(_gthis.color_close);
+	});
+	_closer.onbounds.listen(function() {
+		var _this4 = _gthis.close.transform.local.pos;
+		var _x5 = _gthis.control.canvas.scale * (_closer.x + _closer.w / 2);
+		var _y5 = _gthis.control.canvas.scale * (_closer.y + _closer.h / 2);
+		var prev5 = _this4.ignore_listeners;
+		_this4.ignore_listeners = true;
+		_this4.x = _x5;
+		if(!_this4._construct) {
+			if(_this4.listen_x != null && !_this4.ignore_listeners) {
+				_this4.listen_x(_x5);
+			}
+		}
+		_this4.y = _y5;
+		if(!_this4._construct) {
+			if(_this4.listen_y != null && !_this4.ignore_listeners) {
+				_this4.listen_y(_y5);
+			}
+		}
+		_this4.ignore_listeners = prev5;
+		if(_this4.listen_x != null && !_this4.ignore_listeners) {
+			_this4.listen_x(_this4.x);
+		}
+		if(_this4.listen_y != null && !_this4.ignore_listeners) {
+			_this4.listen_y(_this4.y);
+		}
+	});
+	_closer.onvisible.listen(function(_visible) {
+		_gthis.close.set_visible(_visible);
+	});
+	_collapser.onmouseenter.listen(function(_4,_5) {
+		_gthis.collapse.set_color(_gthis.color_collapse_hover);
+	});
+	_collapser.onmouseleave.listen(function(_6,_7) {
+		_gthis.collapse.set_color(_gthis.color_collapse);
+	});
+	_collapser.onbounds.listen(function() {
+		var _this5 = _gthis.collapse.transform.local.pos;
+		var _x6 = _gthis.control.canvas.scale * (_collapser.x + _collapser.w / 2);
+		var _y6 = _gthis.control.canvas.scale * (_collapser.y + _collapser.h / 2);
+		var prev6 = _this5.ignore_listeners;
+		_this5.ignore_listeners = true;
+		_this5.x = _x6;
+		if(!_this5._construct) {
+			if(_this5.listen_x != null && !_this5.ignore_listeners) {
+				_this5.listen_x(_x6);
+			}
+		}
+		_this5.y = _y6;
+		if(!_this5._construct) {
+			if(_this5.listen_y != null && !_this5.ignore_listeners) {
+				_this5.listen_y(_y6);
+			}
+		}
+		_this5.ignore_listeners = prev6;
+		if(_this5.listen_x != null && !_this5.ignore_listeners) {
+			_this5.listen_x(_this5.x);
+		}
+		if(_this5.listen_y != null && !_this5.ignore_listeners) {
+			_this5.listen_y(_this5.y);
+		}
+	});
+	_collapser.onvisible.listen(function(_visible1) {
+		_gthis.collapse.set_visible(_visible1);
+	});
+	this.window.oncollapse.listen($bind(this,this.oncollapse));
+	this.update_clip(this.control.canvas.scale);
+};
+$hxClasses["mint.render.luxe.Window"] = mint_render_luxe_Window;
+mint_render_luxe_Window.__name__ = ["mint","render","luxe","Window"];
+mint_render_luxe_Window.__super__ = mint_render_Render;
+mint_render_luxe_Window.prototype = $extend(mint_render_Render.prototype,{
+	update_clip: function(_scale) {
+		var _clip = mint_render_luxe_Convert.clip_bounds(this.control.clip_with,this.render.options.batcher.view,_scale);
+		this.visual.set_clip_rect(_clip);
+		this.top.set_clip_rect(_clip);
+		this.collapse.set_clip_rect(_clip);
+		this.close.set_clip_rect(_clip);
+		this.border.set_clip_rect(_clip);
+	}
+	,onscale: function(_scale,_prev_scale) {
+		this.update_clip(_scale);
+		var _this = this.close.transform.local.scale;
+		var prev = _this.ignore_listeners;
+		_this.ignore_listeners = true;
+		_this.x = _scale;
+		if(!_this._construct) {
+			if(_this.listen_x != null && !_this.ignore_listeners) {
+				_this.listen_x(_scale);
+			}
+		}
+		_this.y = _scale;
+		if(!_this._construct) {
+			if(_this.listen_y != null && !_this.ignore_listeners) {
+				_this.listen_y(_scale);
+			}
+		}
+		_this.ignore_listeners = prev;
+		if(_this.listen_x != null && !_this.ignore_listeners) {
+			_this.listen_x(_this.x);
+		}
+		if(_this.listen_y != null && !_this.ignore_listeners) {
+			_this.listen_y(_this.y);
+		}
+		var _this1 = this.collapse.transform.local.scale;
+		var prev1 = _this1.ignore_listeners;
+		_this1.ignore_listeners = true;
+		_this1.x = _scale;
+		if(!_this1._construct) {
+			if(_this1.listen_x != null && !_this1.ignore_listeners) {
+				_this1.listen_x(_scale);
+			}
+		}
+		_this1.y = _scale;
+		if(!_this1._construct) {
+			if(_this1.listen_y != null && !_this1.ignore_listeners) {
+				_this1.listen_y(_scale);
+			}
+		}
+		_this1.ignore_listeners = prev1;
+		if(_this1.listen_x != null && !_this1.ignore_listeners) {
+			_this1.listen_x(_this1.x);
+		}
+		if(_this1.listen_y != null && !_this1.ignore_listeners) {
+			_this1.listen_y(_this1.y);
+		}
+	}
+	,ondestroy: function() {
+		this.visual.drop();
+		this.top.drop();
+		this.border.drop();
+		this.collapse.drop();
+		this.close.drop();
+		this.visual = null;
+		this.top = null;
+		this.border = null;
+		this.collapse = null;
+		this.close = null;
+	}
+	,onbounds: function() {
+		var _this = this.visual.transform.local.pos;
+		var _x = this.control.x * this.control.canvas.scale;
+		var _y = this.control.y * this.control.canvas.scale;
+		var prev = _this.ignore_listeners;
+		_this.ignore_listeners = true;
+		_this.x = _x;
+		if(!_this._construct) {
+			if(_this.listen_x != null && !_this.ignore_listeners) {
+				_this.listen_x(_x);
+			}
+		}
+		_this.y = _y;
+		if(!_this._construct) {
+			if(_this.listen_y != null && !_this.ignore_listeners) {
+				_this.listen_y(_y);
+			}
+		}
+		_this.ignore_listeners = prev;
+		if(_this.listen_x != null && !_this.ignore_listeners) {
+			_this.listen_x(_this.x);
+		}
+		if(_this.listen_y != null && !_this.ignore_listeners) {
+			_this.listen_y(_this.y);
+		}
+		this.visual.resize_xy(this.control.w * this.control.canvas.scale,this.control.h * this.control.canvas.scale);
+		var _this1 = this.top.transform.local.pos;
+		var _x1 = this.control.canvas.scale * this.window.title.x;
+		var _y1 = this.control.canvas.scale * this.window.title.y;
+		var prev1 = _this1.ignore_listeners;
+		_this1.ignore_listeners = true;
+		_this1.x = _x1;
+		if(!_this1._construct) {
+			if(_this1.listen_x != null && !_this1.ignore_listeners) {
+				_this1.listen_x(_x1);
+			}
+		}
+		_this1.y = _y1;
+		if(!_this1._construct) {
+			if(_this1.listen_y != null && !_this1.ignore_listeners) {
+				_this1.listen_y(_y1);
+			}
+		}
+		_this1.ignore_listeners = prev1;
+		if(_this1.listen_x != null && !_this1.ignore_listeners) {
+			_this1.listen_x(_this1.x);
+		}
+		if(_this1.listen_y != null && !_this1.ignore_listeners) {
+			_this1.listen_y(_this1.y);
+		}
+		this.top.resize_xy(this.control.canvas.scale * this.window.title.w,this.control.canvas.scale * this.window.title.h);
+		this.border.set_xywh(this.control.x * this.control.canvas.scale,this.control.y * this.control.canvas.scale,this.control.w * this.control.canvas.scale + 1,this.control.h * this.control.canvas.scale);
+	}
+	,onclip: function(_disable,_x,_y,_w,_h) {
+		this.update_clip(this.control.canvas.scale);
+	}
+	,onvisible: function(_visible) {
+		this.visual.set_visible(_visible);
+		this.top.set_visible(_visible);
+		this.border.set_visible(_visible);
+	}
+	,ondepth: function(_depth) {
+		this.visual.set_depth(this.render.options.depth + _depth);
+		this.top.set_depth(this.visual.state.depth + 0.001);
+		this.border.set_depth(this.visual.state.depth + 0.002);
+		this.collapse.set_depth(this.visual.state.depth + 0.003);
+		this.close.set_depth(this.visual.state.depth + 0.004);
+	}
+	,oncollapse: function(state) {
+		var a = state ? -90 : 0;
+		this.collapse.transform.local.rotation.setFromEuler(new phoenix_Vector(0,0,a * 0.017453292519943278));
+	}
+	,__class__: mint_render_luxe_Window
+});
+var mint_types_TextEventType = $hxClasses["mint.types.TextEventType"] = { __ename__ : ["mint","types","TextEventType"], __constructs__ : ["unknown","edit","input"] };
+mint_types_TextEventType.unknown = ["unknown",0];
+mint_types_TextEventType.unknown.toString = $estr;
+mint_types_TextEventType.unknown.__enum__ = mint_types_TextEventType;
+mint_types_TextEventType.edit = ["edit",1];
+mint_types_TextEventType.edit.toString = $estr;
+mint_types_TextEventType.edit.__enum__ = mint_types_TextEventType;
+mint_types_TextEventType.input = ["input",2];
+mint_types_TextEventType.input.toString = $estr;
+mint_types_TextEventType.input.__enum__ = mint_types_TextEventType;
+var mint_types_Helper = function() { };
+$hxClasses["mint.types.Helper"] = mint_types_Helper;
+mint_types_Helper.__name__ = ["mint","types","Helper"];
+mint_types_Helper.clamp = function(value,a,b) {
+	if(value < a) {
+		return a;
+	} else if(value > b) {
+		return b;
+	} else {
+		return value;
+	}
+};
+mint_types_Helper.sign = function(x) {
+	if(x < 0) {
+		return -1;
+	} else if(x > 0) {
+		return 1;
+	} else {
+		return 0;
+	}
+};
+mint_types_Helper.in_rect = function(x,y,rx,ry,rw,rh) {
+	if(x < rx) {
+		return false;
+	}
+	if(y < ry) {
+		return false;
+	}
+	if(x > rx + rw) {
+		return false;
+	}
+	if(y > ry + rh) {
+		return false;
+	}
+	return true;
+};
+mint_types_Helper.uniqueid = function(val) {
+	if(val == null) {
+		val = Std.random(2147483647);
+	}
+	var to_char = function(value) {
+		if(value > 9) {
+			var ascii = 65 + (value - 10);
+			if(ascii > 90) {
+				ascii += 6;
+			}
+			return String.fromCharCode(ascii);
+		} else {
+			return (value == null ? "null" : "" + value).charAt(0);
+		}
+	};
+	var r = val % 62 | 0;
+	var q = val / 62 | 0;
+	if(q > 0) {
+		return mint_types_Helper.uniqueid(q) + to_char(r);
+	} else {
+		return Std.string(to_char(r));
+	}
 };
 var phoenix_BatchState = function(_r) {
 	this.log = false;
@@ -34426,113 +44868,6 @@ phoenix_Spatial.prototype = {
 	,__class__: phoenix_Spatial
 	,__properties__: {set_matrix:"set_matrix",get_matrix:"get_matrix",set_scale:"set_scale",set_rotation:"set_rotation",set_pos:"set_pos"}
 };
-var phoenix_Vector = function(_x,_y,_z,_w) {
-	if(_w == null) {
-		_w = 0;
-	}
-	if(_z == null) {
-		_z = 0;
-	}
-	if(_y == null) {
-		_y = 0;
-	}
-	if(_x == null) {
-		_x = 0;
-	}
-	this._construct = false;
-	this.ignore_listeners = false;
-	this.w = 0;
-	this.z = 0;
-	this.y = 0;
-	this.x = 0;
-	this._construct = true;
-	this.x = _x;
-	if(!this._construct) {
-		if(this.listen_x != null && !this.ignore_listeners) {
-			this.listen_x(_x);
-		}
-	}
-	this.y = _y;
-	if(!this._construct) {
-		if(this.listen_y != null && !this.ignore_listeners) {
-			this.listen_y(_y);
-		}
-	}
-	this.z = _z;
-	if(!this._construct) {
-		if(this.listen_z != null && !this.ignore_listeners) {
-			this.listen_z(_z);
-		}
-	}
-	this.w = _w;
-	this._construct = false;
-};
-$hxClasses["phoenix.Vector"] = phoenix_Vector;
-phoenix_Vector.__name__ = ["phoenix","Vector"];
-phoenix_Vector.prototype = {
-	toString: function() {
-		return "{ x:" + this.x + ", y:" + this.y + ", z:" + this.z + " }";
-	}
-	,set_x: function(_x) {
-		this.x = _x;
-		if(this._construct) {
-			return this.x;
-		}
-		if(this.listen_x != null && !this.ignore_listeners) {
-			this.listen_x(_x);
-		}
-		return this.x;
-	}
-	,set_y: function(_y) {
-		this.y = _y;
-		if(this._construct) {
-			return this.y;
-		}
-		if(this.listen_y != null && !this.ignore_listeners) {
-			this.listen_y(_y);
-		}
-		return this.y;
-	}
-	,set_z: function(_z) {
-		this.z = _z;
-		if(this._construct) {
-			return this.z;
-		}
-		if(this.listen_z != null && !this.ignore_listeners) {
-			this.listen_z(_z);
-		}
-		return this.z;
-	}
-	,set_angle2D: function(value) {
-		var len = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
-		var _x = Math.cos(value) * len;
-		var _y = Math.sin(value) * len;
-		var prev = this.ignore_listeners;
-		this.ignore_listeners = true;
-		this.x = _x;
-		if(!this._construct) {
-			if(this.listen_x != null && !this.ignore_listeners) {
-				this.listen_x(_x);
-			}
-		}
-		this.y = _y;
-		if(!this._construct) {
-			if(this.listen_y != null && !this.ignore_listeners) {
-				this.listen_y(_y);
-			}
-		}
-		this.ignore_listeners = prev;
-		if(this.listen_x != null && !this.ignore_listeners) {
-			this.listen_x(this.x);
-		}
-		if(this.listen_y != null && !this.ignore_listeners) {
-			this.listen_y(this.y);
-		}
-		return value;
-	}
-	,__class__: phoenix_Vector
-	,__properties__: {set_angle2D:"set_angle2D",set_z:"set_z",set_y:"set_y",set_x:"set_x"}
-};
 var phoenix__$Vector_Vec_$Impl_$ = {};
 $hxClasses["phoenix._Vector.Vec_Impl_"] = phoenix__$Vector_Vec_$Impl_$;
 phoenix__$Vector_Vec_$Impl_$.__name__ = ["phoenix","_Vector","Vec_Impl_"];
@@ -44280,6 +54615,13 @@ luxe_utils_unifill_Unicode.minHighSurrogate = 55296;
 luxe_utils_unifill_Unicode.maxHighSurrogate = 56319;
 luxe_utils_unifill_Unicode.minLowSurrogate = 56320;
 luxe_utils_unifill_Unicode.maxLowSurrogate = 57343;
+mint_core_unifill_Unicode.minCodePoint = 0;
+mint_core_unifill_Unicode.maxCodePoint = 1114111;
+mint_core_unifill_Unicode.minHighSurrogate = 55296;
+mint_core_unifill_Unicode.maxHighSurrogate = 56319;
+mint_core_unifill_Unicode.minLowSurrogate = 56320;
+mint_core_unifill_Unicode.maxLowSurrogate = 57343;
+mint_render_luxe_Convert.tmp = new phoenix_Vector();
 phoenix_Batcher._sequence_key = -1;
 phoenix_Batcher.all = [];
 phoenix_Batcher.vert_attribute = 0;
