@@ -3,7 +3,7 @@
     
     // These first two are required
     name: 'social',
-    version: '1.0.0',
+    version: '0.0.1',
     author: 'iLXXIX',
     
     // This configures your app.
