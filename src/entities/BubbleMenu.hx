@@ -27,7 +27,7 @@ class BubbleMenu extends Panel {
             
             bubbleOp.parent = this; // adopt them!
             
-            if(!bubbleOp.zooming) bubbleOp.zooming = options.zooming; // grow them!
+            if(bubbleOp.zooming==null) bubbleOp.zooming = options.zooming; // grow them!
             bubbleOp.x = options.zooming/2; // (leave margin for the growing)
             bubbleOp.y = options.zooming/2 + (Bubble.BUBBLE_SIZE + options.zooming) * bubbles.length; // (leave margin for the growing AND give each bubble a different y)
             // kick them out your house!
