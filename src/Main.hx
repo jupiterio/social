@@ -34,26 +34,30 @@ class Main extends luxe.Game {
     }
 
     override function ready() {
+        
+        // load all the graphics! Remember to add new graphics here!
         var parcel = new Parcel({
             "textures": [
                 {"id":"assets/ui/bubble.png"}
             ]
         });
         
+        // get a simple loading screen for all that stuff. Builtin will do
         new ParcelProgress({
             parcel: parcel,
             background: new Color().rgb(0xf94b04),
-            oncomplete: assets_loaded
+            oncomplete: assets_loaded // replacement for ready() since we're using it for the parcel,
+            // and since it loads asynchronously
         });
         
+        // load it!
         parcel.load();
     }
     
     var bubbles : entities.BubbleMenu;
     
-    function assets_loaded(_) {
-        Luxe.renderer.clear_color.rgb(0x121219);
-        
+    function assets_loaded(_) { // we're ready to use all that stuff!
+        // setup the mint canvas {
         rendering = new LuxeMintRender();
         
         var autocanvas = new AutoCanvas(Luxe.camera.view, {
@@ -64,13 +68,16 @@ class Main extends luxe.Game {
             x: 0, y:0, w: Luxe.screen.w, h: Luxe.screen.h
         });
         autocanvas.auto_listen();
-        canvas = autocanvas;
+        canvas = autocanvas; // turn that thing into an actual canvas!
         
-        focus = new Focus(canvas);
+        focus = new Focus(canvas); // apparently this is necessary
+        // } mint canvas setup'd
         
+        // example bubble menu. It's probably gonna be the final bubble menu tho
         bubbles = new entities.BubbleMenu({
             parent: canvas,
             name: "Toolbar",
+            zooming: 8,
             x: 10, y:10, w: 58, h:180
         }, [
             {
