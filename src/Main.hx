@@ -54,8 +54,6 @@ class Main extends luxe.Game {
         parcel.load();
     }
     
-    var bubbles : entities.BubbleMenu;
-    
     function assets_loaded(_) { // we're ready to use all that stuff!
         // setup the mint canvas {
         rendering = new LuxeMintRender();
@@ -74,15 +72,23 @@ class Main extends luxe.Game {
         // } mint canvas setup'd
         
         // example bubble menu. It's probably gonna be the final bubble menu tho
-        bubbles = new entities.BubbleMenu({
+        var bubbles = new entities.BubbleMenu({
             parent: canvas,
             name: "Toolbar",
             zooming: 8,
-            x: 10, y:10, w: 58, h:180
+            x: 10, y:10, h:180
         }, [
             {
                 name: "Profile",
                 onclicked: function(_,_) { trace("Profile clicked!"); }
+            },
+            {
+                name: "Profile",
+                onclicked: function(_,_) { trace("Map clicked!"); }
+            },
+            {
+                name: "Feed",
+                onclicked: function(_,_) { trace("Map clicked!"); }
             },
             {
                 name: "Map",
@@ -93,6 +99,14 @@ class Main extends luxe.Game {
                 onclicked: function(_,_) { trace("LogOut clicked!"); }
             }
         ]);
+        
+        // example content window
+        var content = new entities.ContentWindow({
+            parent: canvas,
+            x: 66,
+            name: "Content",
+            title: "this will change I swear"
+        });
     }
 
     override function onkeyup(event:KeyEvent) {
