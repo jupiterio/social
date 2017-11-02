@@ -38,7 +38,8 @@ class Main extends luxe.Game {
         // load all the graphics! Remember to add new graphics here!
         var parcel = new Parcel({
             "textures": [
-                {"id":"assets/ui/bubble.png"}
+                {"id":"assets/ui/bubble.png"},
+                {"id":"assets/ui/profile.png"}
             ]
         });
         
@@ -80,15 +81,16 @@ class Main extends luxe.Game {
         }, [
             {
                 name: "Profile",
+                icon: "assets/ui/profile.png",
                 onclicked: function(_,_) { trace("Profile clicked!"); }
-            },
+            }/*,
             {
-                name: "Profile",
-                onclicked: function(_,_) { trace("Map clicked!"); }
+                name: "Inbox",
+                onclicked: function(_,_) { trace("Inbox clicked!"); }
             },
             {
                 name: "Feed",
-                onclicked: function(_,_) { trace("Map clicked!"); }
+                onclicked: function(_,_) { trace("Feed clicked!"); }
             },
             {
                 name: "Map",
@@ -97,15 +99,14 @@ class Main extends luxe.Game {
             {
                 name: "LogOut",
                 onclicked: function(_,_) { trace("LogOut clicked!"); }
-            }
+            }*/
         ]);
         
-        // example content window
-        var content = new entities.ContentWindow({
+        var ProfileWindow = new entities.ContentWindow({
             parent: canvas,
             x: 66,
-            name: "Content",
-            title: "this will change I swear"
+            name: "ProfileWindow",
+            title: "Profile"
         });
     }
 

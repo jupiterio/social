@@ -2329,7 +2329,7 @@ Main.prototype = $extend(luxe_Game.prototype,{
 		return config;
 	}
 	,ready: function() {
-		var parcel = new luxe_Parcel({ "textures" : [{ "id" : "assets/ui/bubble.png"}]});
+		var parcel = new luxe_Parcel({ "textures" : [{ "id" : "assets/ui/bubble.png"},{ "id" : "assets/ui/profile.png"}]});
 		new luxe_ParcelProgress({ parcel : parcel, background : new phoenix_Color().rgb(16337668), oncomplete : $bind(this,this.assets_loaded)});
 		parcel.load();
 	}
@@ -2339,18 +2339,10 @@ Main.prototype = $extend(luxe_Game.prototype,{
 		autocanvas.auto_listen();
 		Main.canvas = autocanvas;
 		Main.focus = new mint_focus_Focus(Main.canvas);
-		var bubbles = new entities_BubbleMenu({ parent : Main.canvas, name : "Toolbar", zooming : 8, x : 10, y : 10, h : 180},[{ name : "Profile", onclicked : function(_1,_2) {
-			haxe_Log.trace("Profile clicked!",{ fileName : "Main.hx", lineNumber : 83, className : "Main", methodName : "assets_loaded"});
-		}},{ name : "Profile", onclicked : function(_3,_4) {
-			haxe_Log.trace("Map clicked!",{ fileName : "Main.hx", lineNumber : 87, className : "Main", methodName : "assets_loaded"});
-		}},{ name : "Feed", onclicked : function(_5,_6) {
-			haxe_Log.trace("Map clicked!",{ fileName : "Main.hx", lineNumber : 91, className : "Main", methodName : "assets_loaded"});
-		}},{ name : "Map", onclicked : function(_7,_8) {
-			haxe_Log.trace("Map clicked!",{ fileName : "Main.hx", lineNumber : 95, className : "Main", methodName : "assets_loaded"});
-		}},{ name : "LogOut", onclicked : function(_9,_10) {
-			haxe_Log.trace("LogOut clicked!",{ fileName : "Main.hx", lineNumber : 99, className : "Main", methodName : "assets_loaded"});
+		var bubbles = new entities_BubbleMenu({ parent : Main.canvas, name : "Toolbar", zooming : 8, x : 10, y : 10, h : 180},[{ name : "Profile", icon : "assets/ui/profile.png", onclicked : function(_1,_2) {
+			haxe_Log.trace("Profile clicked!",{ fileName : "Main.hx", lineNumber : 85, className : "Main", methodName : "assets_loaded"});
 		}}]);
-		var content = new entities_ContentWindow({ parent : Main.canvas, x : 66, name : "Content", title : "this will change I swear"});
+		var ProfileWindow = new entities_ContentWindow({ parent : Main.canvas, x : 66, name : "ProfileWindow", title : "Profile"});
 	}
 	,onkeyup: function(event) {
 		if(event.keycode == 27) {
@@ -2730,12 +2722,16 @@ mint_Image.prototype = $extend(mint_Control.prototype,{
 var entities_Bubble = function(options) {
 	var _gthis = this;
 	options.path = "assets/ui/bubble.png";
-	options.w = options.h = 48;
+	options.w = options.h = entities_Bubble.BUBBLE_SIZE;
 	options.options = { color : new phoenix_Color(1,1,1,0.85)};
 	mint_Image.call(this,options);
 	this.mouse_input = true;
 	this.onclicked = options.onclicked;
 	this.zooming = options.zooming;
+	this.iconPath = options.icon;
+	var originalx = this.x;
+	var originaly = this.y;
+	this.icon = new mint_Image({ parent : this, path : this.iconPath, w : entities_Bubble.ICON_SIZE, h : entities_Bubble.ICON_SIZE, x : (entities_Bubble.BUBBLE_SIZE - entities_Bubble.ICON_SIZE) / 2, y : (entities_Bubble.BUBBLE_SIZE - entities_Bubble.ICON_SIZE) / 2});
 	var visual = (js_Boot.__cast(this.renderer , mint_render_luxe_Image)).visual;
 	var pressed = false;
 	this.onmousedown.listen(function(_,_1) {
@@ -2749,10 +2745,9 @@ var entities_Bubble = function(options) {
 			pressed = false;
 		}
 	});
-	var originalx = this.x;
-	var originaly = this.y;
 	this.onmouseenter.listen(function(_2,_3) {
 		luxe_tween_Actuate.tween(_gthis,0.1,{ w : entities_Bubble.BUBBLE_SIZE + _gthis.zooming, h : entities_Bubble.BUBBLE_SIZE + _gthis.zooming, x : originalx - _gthis.zooming / 2, y : originaly - _gthis.zooming / 2},true);
+		luxe_tween_Actuate.tween(_gthis.icon,0.1,{ w : entities_Bubble.ICON_SIZE + _gthis.zooming, h : entities_Bubble.ICON_SIZE + _gthis.zooming},true);
 	});
 	this.onmouseleave.listen(function(_4,_5) {
 		if(pressed) {
@@ -2760,6 +2755,7 @@ var entities_Bubble = function(options) {
 			pressed = false;
 		}
 		luxe_tween_Actuate.tween(_gthis,0.1,{ w : entities_Bubble.BUBBLE_SIZE, h : entities_Bubble.BUBBLE_SIZE, x : originalx, y : originaly},true);
+		luxe_tween_Actuate.tween(_gthis.icon,0.1,{ w : entities_Bubble.ICON_SIZE, h : entities_Bubble.ICON_SIZE},true);
 	});
 };
 $hxClasses["entities.Bubble"] = entities_Bubble;
@@ -54616,6 +54612,7 @@ if(ArrayBuffer.prototype.slice == null) {
 var Float32Array = $global.Float32Array || js_html_compat_Float32Array._new;
 var Uint8Array = $global.Uint8Array || js_html_compat_Uint8Array._new;
 entities_Bubble.BUBBLE_SIZE = 48;
+entities_Bubble.ICON_SIZE = entities_Bubble.BUBBLE_SIZE / 2;
 haxe_Serializer.USE_CACHE = false;
 haxe_Serializer.USE_ENUM_INDEX = false;
 haxe_Serializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%:";
